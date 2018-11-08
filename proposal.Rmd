@@ -20,7 +20,7 @@ Influential Factors in Critical Care Patients
 
 ### The motivation for this project
 
-In critical care, we assume that the factors influencing care are limited to physiologic and disease characteristics. For this project, we’d like to explore if demographic characteristics like ethnicity, language, and insurance coverage have associations with outcomes like number of prescribed medicines and mortality. If we find a significant association, we can further explore if this difference in outcomes  Finally, for the most commonly prescribed medicines in the ICU, we plan to compare any adverse chart events experienced by the patients with adverse events reported in to the FDA for the same active ingredients over the same period of time to answer the question of whether adverse medication events are reflected in this critical care dataset.
+In critical care, we assume that the factors influencing care are limited to physiologic and disease characteristics. For this project, we’d like to explore if demographic characteristics like ethnicity, language, and insurance coverage have associations with outcomes like number of prescribed medicines and mortality. If we find a significant association, we can further explore if this difference in outcomes is driven by clinical factors like diagnosis or number of chart events rather than demographic factors. Finally, for the most commonly prescribed medicines in the ICU, we plan to compare any adverse chart events experienced by the patients with adverse events reported in to the FDA for the same active ingredients over the same period of time to answer the question of whether adverse medication events are reflected in this critical care dataset.
 
 ### The intended final products
 
