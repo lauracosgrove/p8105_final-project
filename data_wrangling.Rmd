@@ -2,12 +2,22 @@
 title: "data_wrangling"
 author: "Francis"
 date: "11/10/2018"
-output: html_document
+output: github_document
 ---
 
+After consideration, the `admissions.csv` database seems really interesting. It is useful to analyze the  connection between mutiple factors and death.
 ```{r}
 library(tidyverse)
 library(devtools)
+```
+
+```{r}
+read.csv("./database/MIMIC3/admissions.csv")
+```
+
+###OpenFDA
+```{r}
+library(openfda)
 ```
 
 
