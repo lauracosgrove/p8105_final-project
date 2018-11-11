@@ -208,10 +208,19 @@ library(jsonlite)
 
 ``` r
 fda <- 
-  fromJSON("https://api.fda.gov/drug/event.json?search=receivedate:[20030101+TO+20181201]&count=receivedate")
+  fromJSON("https://api.fda.gov/drug/event.json") %>% 
+  janitor::clean_names()
+
 names(fda$results)
 ```
 
-    ## [1] "time"  "count"
+    ##  [1] "receiptdateformat"          "receiver"                  
+    ##  [3] "companynumb"                "receivedateformat"         
+    ##  [5] "primarysource"              "seriousnessother"          
+    ##  [7] "transmissiondateformat"     "fulfillexpeditecriteria"   
+    ##  [9] "safetyreportid"             "sender"                    
+    ## [11] "receivedate"                "patient"                   
+    ## [13] "seriousnesshospitalization" "transmissiondate"          
+    ## [15] "serious"                    "receiptdate"
 
-There are only two observations in the `result` dataset: `time` and `count`.
+There are 16 observations in the `event` dataset under `drug`, they are: receiptdateformat, receiver, companynumb, receivedateformat, primarysource, seriousnessother, transmissiondateformat, fulfillexpeditecriteria, safetyreportid, sender, receivedate, patient, seriousnesshospitalization, transmissiondate, serious, receiptdate.
