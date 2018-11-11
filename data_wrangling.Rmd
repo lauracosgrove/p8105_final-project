@@ -11,8 +11,56 @@ library(tidyverse)
 library(devtools)
 ```
 
+### MIMIC3
+
+## Import data
 ```{r}
-read.csv("./database/MIMIC3/admissions.csv")
+admissions <- 
+  read.csv("./database/MIMIC3/admissions.csv") %>% 
+  janitor::clean_names()
+names(admissions)
+  
+# The year should be delt with to become normal. Since the discharge time equals to death time, we transfered for easier discussion.
+admissions %>% 
+  mutate(deathtime = dischtime)
+
+# see types
+class(admissions$admittime)
+class(admissions$deathtime)
+class(admissions$admission_type) 
+class(admissions$insurance)
+class(admissions$religion)
+class(admissions$ethnicity)
+class(admissions$edregtime)
+class(admissions$edouttime)
+
+#Found all of them are factors.
+
+```
+
+## Tidy data
+```{r}
+#Create year, month, day variables
+admissions <- 
+  admissions %>% 
+  separate(admittime, into = c("admittime_year", "admittime_month", "admittime_day"), sep = "-")
+admissions <- 
+  admissions %>% 
+  separate(deathtime, into = c("deathtime_year", "deathtime_month", "deathtime_day"), sep = "-") %>% 
+  separate(deathtime_day, into = c("deathtime_day", "deathtime_time"), sep = " ")
+admissions <- 
+  admissions %>% 
+  separate(edregtime, into = c("edregtime_year", "edregtime_month", "edregtime_day"), sep = "-") %>% 
+  separate(edregtime_day, into = c("edregtime_day", "edregtime_time"), sep = " ")
+admissions <- 
+  admissions %>% 
+  separate(edouttime, into = c("edouttime_year", "edouttime_month", "edouttime_day"), sep = "-") %>% 
+  separate(edouttime_day, into = c("edouttime_day", "edouttime_time"), sep = " ")
+
+# Correct year to normal
+admissions %>% 
+  mutate(admittime_year = as.numeric(admittime_year) - 200, deathtime_year = as.numeric(deathtime_year) - 200, edregtime_year = as.numeric(edregtime_year) - 200, edouttime_year = as.numeric(edouttime_year) - 200)
+
 ```
 
 ###OpenFDA
