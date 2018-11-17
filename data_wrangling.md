@@ -9,14 +9,14 @@ After consideration, the `admissions.csv` database seems really interesting. It 
 library(tidyverse)
 ```
 
-    ## ── Attaching packages ──────────────────────────────────────────────────────────────────────── tidyverse 1.2.1 ──
+    ## ── Attaching packages ─────────────────────────────────────────────────────────────────────── tidyverse 1.2.1 ──
 
     ## ✔ ggplot2 3.1.0     ✔ purrr   0.2.5
-    ## ✔ tibble  1.4.2     ✔ dplyr   0.7.7
+    ## ✔ tibble  1.4.2     ✔ dplyr   0.7.8
     ## ✔ tidyr   0.8.2     ✔ stringr 1.3.1
     ## ✔ readr   1.1.1     ✔ forcats 0.3.0
 
-    ## ── Conflicts ─────────────────────────────────────────────────────────────────────────── tidyverse_conflicts() ──
+    ## ── Conflicts ────────────────────────────────────────────────────────────────────────── tidyverse_conflicts() ──
     ## ✖ dplyr::filter() masks stats::filter()
     ## ✖ dplyr::lag()    masks stats::lag()
 
@@ -31,7 +31,7 @@ MIMIC3
 
 ``` r
 admissions <- 
-  read.csv("./database/MIMIC3/admissions.csv") %>% 
+  read.csv("./database/admissions.csv") %>% 
   janitor::clean_names()
 names(admissions)
 ```
@@ -119,15 +119,35 @@ admissions <-
   admissions %>% 
   separate(deathtime, into = c("deathtime_year", "deathtime_month", "deathtime_day"), sep = "-") %>% 
   separate(deathtime_day, into = c("deathtime_day", "deathtime_time"), sep = " ")
+```
+
+    ## Warning: Expected 3 pieces. Missing pieces filled with `NA` in 53122
+    ## rows [1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+    ## 21, ...].
+
+``` r
 admissions <- 
   admissions %>% 
   separate(edregtime, into = c("edregtime_year", "edregtime_month", "edregtime_day"), sep = "-") %>% 
   separate(edregtime_day, into = c("edregtime_day", "edregtime_time"), sep = " ")
+```
+
+    ## Warning: Expected 3 pieces. Missing pieces filled with `NA` in 28099 rows
+    ## [2, 3, 4, 6, 7, 8, 9, 10, 11, 13, 15, 16, 18, 20, 21, 22, 28, 29, 35,
+    ## 36, ...].
+
+``` r
 admissions <- 
   admissions %>% 
   separate(edouttime, into = c("edouttime_year", "edouttime_month", "edouttime_day"), sep = "-") %>% 
   separate(edouttime_day, into = c("edouttime_day", "edouttime_time"), sep = " ")
+```
 
+    ## Warning: Expected 3 pieces. Missing pieces filled with `NA` in 28099 rows
+    ## [2, 3, 4, 6, 7, 8, 9, 10, 11, 13, 15, 16, 18, 20, 21, 22, 28, 29, 35,
+    ## 36, ...].
+
+``` r
 # Correct year to normal
 admissions <- 
   admissions %>% 
@@ -137,61 +157,68 @@ head(admissions)
 ```
 
     ##   row_id subject_id hadm_id admittime_year admittime_month admittime_day
-    ## 1     83         82  110641           1950              06            24
-    ## 2     84         83  158569           1942              04            01
-    ## 3     85         84  120969           1996              02            02
-    ## 4     86         84  166401           1996              04            14
-    ## 5     87         85  116630           1962              03            02
-    ## 6     88         85  112077           1967              07            25
+    ## 1     21         22  165315           1996              04   09 12:26:00
+    ## 2     22         23  152223           1953              09   03 07:15:00
+    ## 3     23         23  124321           1957              10   18 19:34:00
+    ## 4     24         24  161859           1939              06   06 16:14:00
+    ## 5     25         25  129635           1960              11   02 02:06:00
+    ## 6     26         26  197661           1926              05   06 15:16:00
     ##   dischtime_year dischtime_month dischtime_day dischtime_time
-    ## 1           1950              06            29       15:00:00
-    ## 2           1942              04            08       14:46:00
-    ## 3           1996              02            04       17:48:00
-    ## 4           1996              04            17       13:42:00
-    ## 5           1962              03            10       13:15:00
-    ## 6           1967              07            30       15:24:00
+    ## 1           1996              04            10       15:54:00
+    ## 2           1953              09            08       19:10:00
+    ## 3           1957              10            25       14:00:00
+    ## 4           1939              06            09       12:48:00
+    ## 5           1960              11            05       14:55:00
+    ## 6           1926              05            13       15:00:00
     ##   deathtime_year deathtime_month deathtime_day deathtime_time
     ## 1             NA            <NA>          <NA>           <NA>
     ## 2             NA            <NA>          <NA>           <NA>
     ## 3             NA            <NA>          <NA>           <NA>
-    ## 4           1996              04            17       13:42:00
+    ## 4             NA            <NA>          <NA>           <NA>
     ## 5             NA            <NA>          <NA>           <NA>
     ## 6             NA            <NA>          <NA>           <NA>
-    ##   admission_type        admission_location       discharge_location
-    ## 1        NEWBORN PHYS REFERRAL/NORMAL DELI                     HOME
-    ## 2         URGENT TRANSFER FROM HOSP/EXTRAM         HOME HEALTH CARE
-    ## 3       ELECTIVE PHYS REFERRAL/NORMAL DELI                     HOME
-    ## 4      EMERGENCY      EMERGENCY ROOM ADMIT             DEAD/EXPIRED
-    ## 5      EMERGENCY CLINIC REFERRAL/PREMATURE REHAB/DISTINCT PART HOSP
-    ## 6      EMERGENCY CLINIC REFERRAL/PREMATURE                      SNF
-    ##   insurance language     religion marital_status             ethnicity
-    ## 1   Private     <NA> UNOBTAINABLE           <NA>                 OTHER
-    ## 2  Medicare     <NA> UNOBTAINABLE        MARRIED UNKNOWN/NOT SPECIFIED
-    ## 3   Private     <NA>        OTHER        MARRIED                 WHITE
-    ## 4   Private     <NA>        OTHER        MARRIED                 WHITE
-    ## 5  Medicare     ENGL     CATHOLIC        MARRIED                 WHITE
-    ## 6  Medicare     ENGL     CATHOLIC        MARRIED                 WHITE
-    ##   edregtime_year edregtime_month edregtime_day edregtime_time
-    ## 1             NA            <NA>          <NA>           <NA>
-    ## 2             NA            <NA>          <NA>           <NA>
-    ## 3             NA            <NA>          <NA>           <NA>
-    ## 4           1996              04            13       22:23:00
-    ## 5             NA            <NA>          <NA>           <NA>
-    ## 6           1967              07            25       16:37:00
-    ##   edouttime_year edouttime_month edouttime_day edouttime_time
-    ## 1             NA            <NA>          <NA>           <NA>
-    ## 2             NA            <NA>          <NA>           <NA>
-    ## 3             NA            <NA>          <NA>           <NA>
-    ## 4           1996              04            14       04:31:00
-    ## 5             NA            <NA>          <NA>           <NA>
-    ## 6           1967              07            25       20:46:00
-    ##                       diagnosis hospital_expire_flag has_chartevents_data
-    ## 1                       NEWBORN                    0                    1
-    ## 2              CAROTID STENOSIS                    0                    1
-    ## 3     MEDIAL PARIETAL TUMOR/SDA                    0                    0
-    ## 4           GLIOBLASTOMA,NAUSEA                    1                    1
-    ## 5 AORTIC STENOSIS\\CARDIAC CATH                    0                    1
-    ## 6                     PNEUMONIA                    0                    1
+    ##   admission_type        admission_location        discharge_location
+    ## 1      EMERGENCY      EMERGENCY ROOM ADMIT DISC-TRAN CANCER/CHLDRN H
+    ## 2       ELECTIVE PHYS REFERRAL/NORMAL DELI          HOME HEALTH CARE
+    ## 3      EMERGENCY TRANSFER FROM HOSP/EXTRAM          HOME HEALTH CARE
+    ## 4      EMERGENCY TRANSFER FROM HOSP/EXTRAM                      HOME
+    ## 5      EMERGENCY      EMERGENCY ROOM ADMIT                      HOME
+    ## 6      EMERGENCY TRANSFER FROM HOSP/EXTRAM                      HOME
+    ##   insurance language          religion marital_status
+    ## 1   Private               UNOBTAINABLE        MARRIED
+    ## 2  Medicare                   CATHOLIC        MARRIED
+    ## 3  Medicare     ENGL          CATHOLIC        MARRIED
+    ## 4   Private          PROTESTANT QUAKER         SINGLE
+    ## 5   Private               UNOBTAINABLE        MARRIED
+    ## 6  Medicare                   CATHOLIC         SINGLE
+    ##               ethnicity edregtime_year edregtime_month edregtime_day
+    ## 1                 WHITE           1996              04            09
+    ## 2                 WHITE             NA            <NA>          <NA>
+    ## 3                 WHITE             NA            <NA>          <NA>
+    ## 4                 WHITE             NA            <NA>          <NA>
+    ## 5                 WHITE           1960              11            02
+    ## 6 UNKNOWN/NOT SPECIFIED             NA            <NA>          <NA>
+    ##   edregtime_time edouttime_year edouttime_month edouttime_day
+    ## 1       10:06:00           1996              04            09
+    ## 2           <NA>             NA            <NA>          <NA>
+    ## 3           <NA>             NA            <NA>          <NA>
+    ## 4           <NA>             NA            <NA>          <NA>
+    ## 5       01:01:00           1960              11            02
+    ## 6           <NA>             NA            <NA>          <NA>
+    ##   edouttime_time                                                 diagnosis
+    ## 1       13:24:00                                   BENZODIAZEPINE OVERDOSE
+    ## 2           <NA> CORONARY ARTERY DISEASE\\CORONARY ARTERY BYPASS GRAFT/SDA
+    ## 3           <NA>                                                BRAIN MASS
+    ## 4           <NA>                            INTERIOR MYOCARDIAL INFARCTION
+    ## 5       04:27:00                                   ACUTE CORONARY SYNDROME
+    ## 6           <NA>                                                    V-TACH
+    ##   hospital_expire_flag has_chartevents_data
+    ## 1                    0                    1
+    ## 2                    0                    1
+    ## 3                    0                    1
+    ## 4                    0                    1
+    ## 5                    0                    1
+    ## 6                    0                    1
 
 OpenFDA
 =======
