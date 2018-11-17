@@ -22,6 +22,19 @@ library(tidyverse)
 
 ``` r
 library(devtools)
+library(readr)
+library(lubridate)
+```
+
+    ## 
+    ## Attaching package: 'lubridate'
+
+    ## The following object is masked from 'package:base':
+    ## 
+    ##     date
+
+``` r
+knitr::opts_chunk$set(echo = TRUE)
 ```
 
 MIMIC3
@@ -219,6 +232,178 @@ head(admissions)
     ## 4                    0                    1
     ## 5                    0                    1
     ## 6                    0                    1
+
+### linear regression
+
+``` r
+# read original data
+admissions_origin <- 
+  read.csv("./database/admissions.csv") %>% 
+  janitor::clean_names()
+
+
+# add a death factor and duration factor
+admissions_death <- 
+  mutate(admissions_origin, living = is.na(admissions_origin$deathtime), hospitaltime = as.duration(dischtime %--% admittime))
+```
+
+``` r
+# glance data
+skimr::skim(admissions_death)
+```
+
+    ## Warning in .x(x): Variable contains value(s) of "" that have been converted
+    ## to "empty".
+
+    ## Warning in .x(x): Variable contains value(s) of "" that have been converted
+    ## to "empty".
+
+    ## Warning in .x(x): Variable contains value(s) of "" that have been converted
+    ## to "empty".
+
+    ## Warning in .x(x): Variable contains value(s) of "" that have been converted
+    ## to "empty".
+
+    ## Warning in .x(x): Variable contains value(s) of "" that have been converted
+    ## to "empty".
+
+    ## Warning in .x(x): Variable contains value(s) of "" that have been converted
+    ## to "empty".
+
+    ## Warning in .x(x): Variable contains value(s) of "" that have been converted
+    ## to "empty".
+
+    ## Warning: No summary functions for vectors of class: Duration.
+    ## Coercing to character
+
+    ## Skim summary statistics
+    ##  n obs: 58976 
+    ##  n variables: 21 
+    ## 
+    ## ── Variable type:character ─────────────────────────────────────────────────────────────────────────────────────
+    ##      variable missing complete     n min max empty n_unique
+    ##  hospitaltime       0    58976 58976  16  24     0    26232
+    ## 
+    ## ── Variable type:factor ────────────────────────────────────────────────────────────────────────────────────────
+    ##            variable missing complete     n n_unique
+    ##  admission_location       0    58976 58976        9
+    ##      admission_type       0    58976 58976        4
+    ##           admittime       0    58976 58976    58651
+    ##           deathtime       0    58976 58976     5835
+    ##           diagnosis       0    58976 58976    15692
+    ##  discharge_location       0    58976 58976       17
+    ##           dischtime       0    58976 58976    58657
+    ##           edouttime       0    58976 58976    30865
+    ##           edregtime       0    58976 58976    30875
+    ##           ethnicity       0    58976 58976       41
+    ##           insurance       0    58976 58976        5
+    ##            language       0    58976 58976       76
+    ##      marital_status       0    58976 58976        8
+    ##            religion       0    58976 58976       21
+    ##                                     top_counts ordered
+    ##  EME: 22754, PHY: 15079, CLI: 12032, TRA: 8456   FALSE
+    ##    EME: 42071, NEW: 7863, ELE: 7706, URG: 1336   FALSE
+    ##                 210: 4, 219: 4, 210: 3, 211: 3   FALSE
+    ##             emp: 53122, 210: 2, 210: 2, 210: 2   FALSE
+    ##      NEW: 7823, PNE: 1566, SEP: 1184, CON: 928   FALSE
+    ##   HOM: 18962, HOM: 13963, SNF: 7705, REH: 6429   FALSE
+    ##                 210: 3, 212: 3, 210: 2, 210: 2   FALSE
+    ##             emp: 28099, 210: 2, 210: 2, 210: 2   FALSE
+    ##             emp: 28099, 210: 2, 213: 2, 213: 2   FALSE
+    ##    WHI: 40996, BLA: 5440, UNK: 4523, HIS: 1696   FALSE
+    ##   Med: 28215, Pri: 22582, Med: 5785, Gov: 1783   FALSE
+    ##    ENG: 29086, emp: 25332, SPA: 1083, RUS: 790   FALSE
+    ##  MAR: 24239, SIN: 13254, emp: 10128, WID: 7211   FALSE
+    ##   CAT: 20606, NOT: 11753, UNO: 8269, PRO: 7134   FALSE
+    ## 
+    ## ── Variable type:integer ───────────────────────────────────────────────────────────────────────────────────────
+    ##              variable missing complete     n       mean       sd    p0
+    ##               hadm_id       0    58976 58976 149970.81  28883.1  1e+05
+    ##  has_chartevents_data       0    58976 58976      0.97      0.16     0
+    ##  hospital_expire_flag       0    58976 58976      0.099     0.3      0
+    ##                row_id       0    58976 58976  29488.5   17025.05     1
+    ##            subject_id       0    58976 58976  33755.58  28092.73     2
+    ##        p25      p50       p75  p100     hist
+    ##  124952.75 149989.5 174966.5  2e+05 ▇▇▇▇▇▇▇▇
+    ##       1         1        1        1 ▁▁▁▁▁▁▁▇
+    ##       0         0        0        1 ▇▁▁▁▁▁▁▁
+    ##   14744.75  29488.5  44232.25 58976 ▇▇▇▇▇▇▇▇
+    ##   11993.75  24133.5  53851.5  99999 ▇▇▅▂▂▂▂▂
+    ## 
+    ## ── Variable type:logical ───────────────────────────────────────────────────────────────────────────────────────
+    ##  variable missing complete     n mean             count
+    ##    living       0    58976 58976    0 FAL: 58976, NA: 0
+
+``` r
+#admissions_death <- 
+#  admissions_death %>% 
+#  mutate(religion = as.character(religion), hotpitaltime = as.numeric(hospitaltime)) %>% View
+# regression
+living_lm <- 
+  lm(as.numeric(hospitaltime) ~ as.character(religion), data = admissions_death)
+summary(living_lm)
+```
+
+    ## 
+    ## Call:
+    ## lm(formula = as.numeric(hospitaltime) ~ as.character(religion), 
+    ##     data = admissions_death)
+    ## 
+    ## Residuals:
+    ##       Min        1Q    Median        3Q       Max 
+    ## -24590505   -136099    312029    557495   1275239 
+    ## 
+    ## Coefficients:
+    ##                                              Estimate Std. Error t value
+    ## (Intercept)                                   -860003      50248 -17.115
+    ## as.character(religion)7TH DAY ADVENTIST       -320276     129619  -2.471
+    ## as.character(religion)BAPTIST                  -86557     209342  -0.413
+    ## as.character(religion)BUDDHIST                 122942      82800   1.485
+    ## as.character(religion)CATHOLIC                 -44782      50803  -0.881
+    ## as.character(religion)CHRISTIAN SCIENTIST      -16679      72252  -0.231
+    ## as.character(religion)EPISCOPALIAN              -8152      63395  -0.129
+    ## as.character(religion)GREEK ORTHODOX           -59173      71022  -0.833
+    ## as.character(religion)HEBREW                    73804     273493   0.270
+    ## as.character(religion)HINDU                     80567     112953   0.713
+    ## as.character(religion)JEHOVAH'S WITNESS       -108052     104135  -1.038
+    ## as.character(religion)JEWISH                    45897      52368   0.876
+    ## as.character(religion)LUTHERAN                 273143    1076524   0.254
+    ## as.character(religion)METHODIST               -483234     409538  -1.180
+    ## as.character(religion)MUSLIM                   -72222      87546  -0.825
+    ## as.character(religion)NOT SPECIFIED             51351      51218   1.003
+    ## as.character(religion)OTHER                    -66083      54349  -1.216
+    ## as.character(religion)PROTESTANT QUAKER        -48318      51836  -0.932
+    ## as.character(religion)ROMANIAN EAST. ORTH     -423396     128285  -3.300
+    ## as.character(religion)UNITARIAN-UNIVERSALIST   -24639     108860  -0.226
+    ## as.character(religion)UNOBTAINABLE             -26781      51621  -0.519
+    ##                                              Pr(>|t|)    
+    ## (Intercept)                                   < 2e-16 ***
+    ## as.character(religion)7TH DAY ADVENTIST      0.013480 *  
+    ## as.character(religion)BAPTIST                0.679261    
+    ## as.character(religion)BUDDHIST               0.137602    
+    ## as.character(religion)CATHOLIC               0.378062    
+    ## as.character(religion)CHRISTIAN SCIENTIST    0.817432    
+    ## as.character(religion)EPISCOPALIAN           0.897682    
+    ## as.character(religion)GREEK ORTHODOX         0.404758    
+    ## as.character(religion)HEBREW                 0.787272    
+    ## as.character(religion)HINDU                  0.475674    
+    ## as.character(religion)JEHOVAH'S WITNESS      0.299452    
+    ## as.character(religion)JEWISH                 0.380803    
+    ## as.character(religion)LUTHERAN               0.799708    
+    ## as.character(religion)METHODIST              0.238025    
+    ## as.character(religion)MUSLIM                 0.409395    
+    ## as.character(religion)NOT SPECIFIED          0.316057    
+    ## as.character(religion)OTHER                  0.224026    
+    ## as.character(religion)PROTESTANT QUAKER      0.351274    
+    ## as.character(religion)ROMANIAN EAST. ORTH    0.000966 ***
+    ## as.character(religion)UNITARIAN-UNIVERSALIST 0.820938    
+    ## as.character(religion)UNOBTAINABLE           0.603901    
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+    ## 
+    ## Residual standard error: 1075000 on 58955 degrees of freedom
+    ## Multiple R-squared:  0.002023,   Adjusted R-squared:  0.001684 
+    ## F-statistic: 5.975 on 20 and 58955 DF,  p-value: 3.686e-16
 
 OpenFDA
 =======
