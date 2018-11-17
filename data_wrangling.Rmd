@@ -16,17 +16,16 @@ library(devtools)
 ### Import data
 ```{r}
 admissions <- 
-  read.csv("./database/MIMIC3/admissions.csv") %>% 
+  read.csv("./database/admissions.csv") %>% 
   janitor::clean_names()
 names(admissions)
   
-# The year should be delt with to become normal. Since the discharge time equals to death time, we transfered for easier discussion.
-admissions <- 
-  admissions %>% 
-  mutate(deathtime = dischtime)
+# The year should be delt with to become normal. The discharge time means the time when the patient leave the hospital.
+
 
 # see types
 class(admissions$admittime)
+class(admissions$dischtime)
 class(admissions$deathtime)
 class(admissions$admission_type) 
 class(admissions$insurance)
@@ -48,6 +47,10 @@ admissions <-
   separate(admittime, into = c("admittime_year", "admittime_month", "admittime_day"), sep = "-")
 admissions <- 
   admissions %>% 
+  separate(dischtime, into = c("dischtime_year", "dischtime_month", "dischtime_day"), sep = "-") %>% 
+  separate(dischtime_day, into = c("dischtime_day", "dischtime_time"), sep = " ")
+admissions <- 
+  admissions %>% 
   separate(deathtime, into = c("deathtime_year", "deathtime_month", "deathtime_day"), sep = "-") %>% 
   separate(deathtime_day, into = c("deathtime_day", "deathtime_time"), sep = " ")
 admissions <- 
@@ -62,7 +65,7 @@ admissions <-
 # Correct year to normal
 admissions <- 
   admissions %>% 
-  mutate(admittime_year = as.numeric(admittime_year) - 200, deathtime_year = as.numeric(deathtime_year) - 200, edregtime_year = as.numeric(edregtime_year) - 200, edouttime_year = as.numeric(edouttime_year) - 200)
+  mutate(admittime_year = as.numeric(admittime_year) - 200, dischtime_year = as.numeric(dischtime_year) - 200, deathtime_year = as.numeric(deathtime_year) - 200, edregtime_year = as.numeric(edregtime_year) - 200, edouttime_year = as.numeric(edouttime_year) - 200)
 # Take a look
 head(admissions)
 ```
