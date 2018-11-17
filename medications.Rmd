@@ -1,0 +1,78 @@
+---
+title: "Medications"
+author: "Laura Cosgrove"
+date: "11/15/2018"
+output: github_document
+---
+
+```{r setup}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+devtools::install_github("tidyverse/dplyr")
+library(dplyr)
+library(readr)
+library(lubridate)
+```
+```
+
+## MIMIC prescriptions description
+
+```{r}
+
+prescriptions_data <- read_csv("./database/data/PRESCRIPTIONS.csv.gz")
+  
+prescriptions_data = prescriptions_data %>% 
+  janitor::clean_names() %>% 
+  mutate(drug_type = factor(drug_type), dose_val_rx = as.integer(dose_val_rx),
+          time_delta = as.duration(startdate %--% enddate),
+          time_delta_num = as.numeric(time_delta))
+
+```
+
+What is the distribution of medications prescribed per person?
+```{r}
+
+#Plot distribution of total medications prescribed per person
+prescriptions_data %>% 
+  group_by(subject_id) %>% 
+  add_tally() %>% 
+  select(n, subject_id) %>% 
+  distinct(subject_id, .keep_all = TRUE) %>% 
+  ggplot(aes(x = n)) +
+  geom_density()
+
+#Plot distribution of prescription length
+prescriptions_data %>% 
+  distinct(time_delta_num) %>% 
+  ggplot(aes(x = time_delta_num)) +
+  geom_density()
+
+prescriptions_data %>% 
+  arrange(time_delta) %>% 
+  select(time_delta) 
+  
+prescriptions_data %>% 
+  arrange(desc(time_delta)) %>% 
+  select(time_delta) 
+```
+
+Since the data was collected only over ~11 years, we can safely eliminate some of the largest durations..
+
+I'm having trouble right now because dplyr filter has some known issues with period and interval objects from lubridate. https://community.rstudio.com/t/dplyr-filter-issue-with-intervals-from-lubridate/9456/2. Hence all this weird code.
+
+
+This is broken, will take another approach soon..
+```{r}
+prescriptions_data %>% 
+  mutate(time_period = as.period(startdate %--% enddate),
+        year_delta = year(time_period),
+        year_delta_num = as.integer(year_delta)) %>% 
+  filter(year_delta_num < 10 & year_delta_num < -10) %>% 
+  select(time_period) %>% 
+  arrange(time_period)
+```
+
+```{r}
+
+```
+
