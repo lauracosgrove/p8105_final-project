@@ -8,14 +8,14 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 ```
 
-    ## ── Attaching packages ─────────────────────────────────────────────────────────── tidyverse 1.2.1 ──
+    ## ── Attaching packages ────────────────────────────────────────────────────────────────────── tidyverse 1.2.1 ──
 
     ## ✔ ggplot2 3.1.0           ✔ purrr   0.2.5      
     ## ✔ tibble  1.4.2           ✔ dplyr   0.7.99.9000
     ## ✔ tidyr   0.8.2           ✔ stringr 1.3.1      
     ## ✔ readr   1.1.1           ✔ forcats 0.3.0
 
-    ## ── Conflicts ────────────────────────────────────────────────────────────── tidyverse_conflicts() ──
+    ## ── Conflicts ───────────────────────────────────────────────────────────────────────── tidyverse_conflicts() ──
     ## ✖ dplyr::filter() masks stats::filter()
     ## ✖ dplyr::lag()    masks stats::lag()
 
@@ -97,6 +97,24 @@ prescriptions_data %>%
 ![](medications_files/figure-markdown_github/unnamed-chunk-2-1.png)
 
 ``` r
+#Plot distribution of distinct medications prescribed per person (with drug type not equal to an additive)
+
+prescriptions_data %>%
+  filter(drug_type != "ADDITIVE") %>% 
+  group_by(subject_id) %>% 
+  distinct(subject_id, drug, .keep_all = TRUE) %>% 
+  add_tally() %>% 
+  ggplot(aes(x = n)) +
+  geom_density()
+```
+
+![](medications_files/figure-markdown_github/unnamed-chunk-2-2.png)
+
+``` r
+#What's the most common drug prescribed per person?
+
+
+
 #Plot distribution of prescription length
 prescriptions_data %>% 
   distinct(time_delta_num) %>% 
@@ -106,7 +124,7 @@ prescriptions_data %>%
 
     ## Warning: Removed 1 rows containing non-finite values (stat_density).
 
-![](medications_files/figure-markdown_github/unnamed-chunk-2-2.png)
+![](medications_files/figure-markdown_github/unnamed-chunk-2-3.png)
 
 ``` r
 prescriptions_data %>% 
@@ -153,6 +171,8 @@ prescriptions_data %>%
 Since the data was collected only over ~11 years, we can safely eliminate some of the largest durations..
 
 I'm having trouble right now because dplyr filter has some known issues with period and interval objects from lubridate. <https://community.rstudio.com/t/dplyr-filter-issue-with-intervals-from-lubridate/9456/2>. Hence all this weird code.
+
+This is broken, will take another approach soon..
 
 ``` r
 prescriptions_data %>% 

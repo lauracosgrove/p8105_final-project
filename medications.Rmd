@@ -17,7 +17,7 @@ library(lubridate)
 
 ## MIMIC prescriptions description
 
-```{r}
+```{r, cache=TRUE}
 
 prescriptions_data <- read_csv("./database/data/PRESCRIPTIONS.csv.gz")
   
@@ -31,7 +31,6 @@ prescriptions_data = prescriptions_data %>%
 
 What is the distribution of medications prescribed per person?
 ```{r}
-
 #Plot distribution of total medications prescribed per person
 prescriptions_data %>% 
   group_by(subject_id) %>% 
@@ -40,6 +39,21 @@ prescriptions_data %>%
   distinct(subject_id, .keep_all = TRUE) %>% 
   ggplot(aes(x = n)) +
   geom_density()
+
+#Plot distribution of distinct medications prescribed per person (with drug type not equal to an additive)
+
+prescriptions_data %>%
+  filter(drug_type != "ADDITIVE") %>% 
+  group_by(subject_id) %>% 
+  distinct(subject_id, drug, .keep_all = TRUE) %>% 
+  add_tally() %>% 
+  ggplot(aes(x = n)) +
+  geom_density()
+  
+
+#What's the most common drug prescribed per person?
+
+
 
 #Plot distribution of prescription length
 prescriptions_data %>% 
