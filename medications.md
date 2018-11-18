@@ -39,6 +39,21 @@ library(lubridate)
     ## 
     ##     date
 
+``` r
+library(scales)
+```
+
+    ## 
+    ## Attaching package: 'scales'
+
+    ## The following object is masked from 'package:purrr':
+    ## 
+    ##     discard
+
+    ## The following object is masked from 'package:readr':
+    ## 
+    ##     col_factor
+
 \`\`\`
 
 MIMIC prescriptions description
@@ -100,7 +115,7 @@ prescriptions_data %>%
 #Plot distribution of distinct medications prescribed per person (with drug type not equal to an additive)
 
 prescriptions_data %>%
-  filter(drug_type != "ADDITIVE") %>% 
+  filter(drug_type == "MAIN") %>% 
   group_by(subject_id) %>% 
   distinct(subject_id, drug, .keep_all = TRUE) %>% 
   add_tally() %>% 
@@ -111,8 +126,43 @@ prescriptions_data %>%
 ![](medications_files/figure-markdown_github/unnamed-chunk-2-2.png)
 
 ``` r
-#What's the most common drug prescribed per person?
+#What's the most commonly-administered drug per person?
+prescriptions_data %>%
+  filter(drug_type == "MAIN") %>% 
+  group_by(drug) %>% 
+  add_tally() %>% 
+  distinct(drug, .keep_all = TRUE) %>% 
+  select(n, drug, drug_type, formulary_drug_cd) %>% 
+  arrange(desc(n)) %>% 
+  head(n = 20L) %>% 
+  knitr::kable()
+```
 
+|       n| drug                       | drug\_type | formulary\_drug\_cd |
+|-------:|:---------------------------|:-----------|:--------------------|
+|  187859| Potassium Chloride         | MAIN       | MICROK10            |
+|  143468| Insulin                    | MAIN       | INSULIN             |
+|  133122| Furosemide                 | MAIN       | FURO20              |
+|   90370| Magnesium Sulfate          | MAIN       | MAGS1I              |
+|   83392| Sodium Chloride 0.9% Flush | MAIN       | NACLFLUSH           |
+|   78771| Acetaminophen              | MAIN       | ACET650R            |
+|   73990| Metoprolol                 | MAIN       | METO50              |
+|   62159| Morphine Sulfate           | MAIN       | MORP2I              |
+|   59824| Metoprolol Tartrate        | MAIN       | METO25              |
+|   55352| Lorazepam                  | MAIN       | LORA2I              |
+|   52072| Heparin                    | MAIN       | HEPA5I              |
+|   51365| Calcium Gluconate          | MAIN       | CALG1I              |
+|   45694| Docusate Sodium            | MAIN       | DOCU100             |
+|   42636| Vancomycin                 | MAIN       | VANC1F              |
+|   41075| Bisacodyl                  | MAIN       | BISA10R             |
+|   39678| Warfarin                   | MAIN       | WARF5               |
+|   37673| HYDROmorphone (Dilaudid)   | MAIN       | HYDR2I              |
+|   37658| Heparin Sodium             | MAIN       | HEPAPREMIX          |
+|   34462| Propofol                   | MAIN       | PROP100IG           |
+|   33587| Pantoprazole               | MAIN       | PANT40              |
+
+``` r
+#Are some drugs prescribed for longer periods of time compared to others?
 
 
 #Plot distribution of prescription length
@@ -172,26 +222,33 @@ Since the data was collected only over ~11 years, we can safely eliminate some o
 
 I'm having trouble right now because dplyr filter has some known issues with period and interval objects from lubridate. <https://community.rstudio.com/t/dplyr-filter-issue-with-intervals-from-lubridate/9456/2>. Hence all this weird code.
 
-This is broken, will take another approach soon..
+This is broken, will take another approach soon.. Scratch that, it magically worked.
 
 ``` r
-prescriptions_data %>% 
+prescriptions_data_time = prescriptions_data %>% 
   mutate(time_period = as.period(startdate %--% enddate),
         year_delta = year(time_period),
         year_delta_num = as.integer(year_delta)) %>% 
-  filter(year_delta_num < 10 & year_delta_num < -10) %>% 
-  select(time_period) %>% 
-  arrange(time_period)
+  filter(year_delta_num < 10 & year_delta_num > -10) %>% 
+  select(time_delta, year_delta, startdate, enddate, drug, drug_type, formulary_drug_cd, subject_id)
+
+#Look at if type of drugs are more commonly prescribed for larger amounts of time
+#maybe a heatmap with drugs on an axis and time_delta on another axis, with instances prescribed as fill
+
+
+#Look at if duration drug is prescribed changes over time
+
+#prescriptions_data_time %>% 
+# mutate(startdate = as.Date(startdate, "%m-%d-%y")) %>% 
+# ggplot(aes(x = startdate, y = as.numeric(time_delta))) +
+#    geom_point() +
+#    scale_x_date(labels = date_format("%b/%y")) 
 ```
 
-    ## # A tibble: 8 x 1
-    ##   time_period            
-    ##   <S4: Period>           
-    ## 1 -94y -11m -14d 0H 0M 0S
-    ## 2 -94y -11m -14d 0H 0M 0S
-    ## 3 -27y -1m -24d 0H 0M 0S 
-    ## 4 -27y -1m -24d 0H 0M 0S 
-    ## 5 -27y 0m -14d 0H 0M 0S  
-    ## 6 -27y 0m -14d 0H 0M 0S  
-    ## 7 -27y -5m -28d 0H 0M 0S 
-    ## 8 -27y -5m -28d 0H 0M 0S
+``` r
+#output_data <- read_csv("./database/data/OUTPUTEVENTS.csv.gz")
+#caregivers_data = read_csv("./database/data/CAREGIVERS.csv.gz")
+#cpt_events_data = read_csv("./database/data/CPTEVENTS.csv.gz")
+#services_data = read_csv("./database/data/CPTEVENTS.csv.gz")
+#transfers_data = read_csv("./database/data/TRANSFERS.csv.gz")
+```

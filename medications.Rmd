@@ -12,6 +12,8 @@ devtools::install_github("tidyverse/dplyr")
 library(dplyr)
 library(readr)
 library(lubridate)
+library(scales)
+
 ```
 ```
 
@@ -43,7 +45,7 @@ prescriptions_data %>%
 #Plot distribution of distinct medications prescribed per person (with drug type not equal to an additive)
 
 prescriptions_data %>%
-  filter(drug_type != "ADDITIVE") %>% 
+  filter(drug_type == "MAIN") %>% 
   group_by(subject_id) %>% 
   distinct(subject_id, drug, .keep_all = TRUE) %>% 
   add_tally() %>% 
@@ -51,8 +53,19 @@ prescriptions_data %>%
   geom_density()
   
 
-#What's the most common drug prescribed per person?
+#What's the most commonly-administered drug per person?
+prescriptions_data %>%
+  filter(drug_type == "MAIN") %>% 
+  group_by(drug) %>% 
+  add_tally() %>% 
+  distinct(drug, .keep_all = TRUE) %>% 
+  select(n, drug, drug_type, formulary_drug_cd) %>% 
+  arrange(desc(n)) %>% 
+  head(n = 20L) %>% 
+  knitr::kable()
 
+
+#Are some drugs prescribed for longer periods of time compared to others?
 
 
 #Plot distribution of prescription length
@@ -75,18 +88,39 @@ Since the data was collected only over ~11 years, we can safely eliminate some o
 I'm having trouble right now because dplyr filter has some known issues with period and interval objects from lubridate. https://community.rstudio.com/t/dplyr-filter-issue-with-intervals-from-lubridate/9456/2. Hence all this weird code.
 
 
-This is broken, will take another approach soon..
+This is broken, will take another approach soon.. Scratch that, it magically worked.
 ```{r}
-prescriptions_data %>% 
+
+prescriptions_data_time = prescriptions_data %>% 
   mutate(time_period = as.period(startdate %--% enddate),
         year_delta = year(time_period),
         year_delta_num = as.integer(year_delta)) %>% 
-  filter(year_delta_num < 10 & year_delta_num < -10) %>% 
-  select(time_period) %>% 
-  arrange(time_period)
+  filter(year_delta_num < 10 & year_delta_num > -10) %>% 
+  select(time_delta, year_delta, startdate, enddate, drug, drug_type, formulary_drug_cd, subject_id)
+
+#Look at if type of drugs are more commonly prescribed for larger amounts of time
+#maybe a heatmap with drugs on an axis and time_delta on another axis, with instances prescribed as fill
+
+
+#Look at if duration drug is prescribed changes over time
+
+#prescriptions_data_time %>% 
+# mutate(startdate = as.Date(startdate, "%m-%d-%y")) %>% 
+# ggplot(aes(x = startdate, y = as.numeric(time_delta))) +
+#    geom_point() +
+#    scale_x_date(labels = date_format("%b/%y")) 
+    
+
+  
 ```
 
-```{r}
+```{r other datasets, eval = FALSE}
+#output_data <- read_csv("./database/data/OUTPUTEVENTS.csv.gz")
+#caregivers_data = read_csv("./database/data/CAREGIVERS.csv.gz")
+#cpt_events_data = read_csv("./database/data/CPTEVENTS.csv.gz")
+#services_data = read_csv("./database/data/CPTEVENTS.csv.gz")
+#transfers_data = read_csv("./database/data/TRANSFERS.csv.gz")
+
 
 ```
 
