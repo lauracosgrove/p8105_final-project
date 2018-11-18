@@ -82,3 +82,14 @@ admissions <-
 ```
 
 
+
+```{r}
+## Laura's Method
+admissions_data <- read_csv("./database/data/admissions.csv") %>% 
+  janitor::clean_names()
+admissions_data %>% 
+  mutate(difference = dischtime - admittime) %>% 
+  select(difference)
+
+```
+
