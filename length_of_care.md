@@ -20,7 +20,7 @@ names(admissions)
 
 ``` r
 ## Top 10 causes of recorded mortalities
-deaths = admissions %>% 
+top_causes_of_deaths = admissions %>% 
   filter(deathtime != "NA") %>%
   count(diagnosis) %>% 
   top_n(10)
@@ -29,22 +29,14 @@ deaths = admissions %>%
     ## Selecting by n
 
 ``` r
-deaths
-```
+sepsis = admissions %>% 
+  filter(diagnosis == "SEPSIS") %>% 
+  mutate(mortality = ifelse(deathtime == "NA", 0, 1))
 
-    ## # A tibble: 10 x 2
-    ##    diagnosis                                      n
-    ##    <fct>                                      <int>
-    ##  1 ABDOMINAL PAIN                                 7
-    ##  2 ALTERED MENTAL STATUS                         10
-    ##  3 CARDIAC ARREST                                11
-    ##  4 CONGESTIVE HEART FAILURE                      12
-    ##  5 HEAD BLEED                                     9
-    ##  6 HYPOTENSION                                   12
-    ##  7 INTRACRANIAL HEMORRHAGE                       23
-    ##  8 PNEUMONIA                                     23
-    ##  9 SEPSIS                                        33
-    ## 10 STROKE;TELEMETRY;TRANSIENT ISCHEMIC ATTACK     9
+## Look at top 10 causes of mortalities
+mortalities = admissions %>% 
+  filter(diagnosis == c("ABDOMINAL PAIN", "ALTERED MENTAL STATUS", "CARDIAC ARREST", "CONGESTIVE HEART FAILURE", "HEAD BLEED", "HYPOTENSION", "INTACRANIAL HEMORRHAGE", "PNEUMONIA", "SEPSIS", "STROKE;TELEMETRY;TRANSIENT ISCHEMIC ATTACK"))
+```
 
 Exploratory:
 ------------
