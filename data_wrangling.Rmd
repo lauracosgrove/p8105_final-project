@@ -3,12 +3,18 @@ title: "data_wrangling"
 author: "Francis"
 date: "11/10/2018"
 output: github_document
+editor_options: 
+  chunk_output_type: console
 ---
 
 After consideration, the `admissions.csv` database seems really interesting. It is useful to analyze the  connection between mutiple factors and death.
 ```{r}
 library(tidyverse)
 library(devtools)
+library(readr)
+library(lubridate)
+
+knitr::opts_chunk$set(echo = TRUE)
 ```
 
 # MIMIC3
@@ -69,6 +75,86 @@ admissions <-
 # Take a look
 head(admissions)
 ```
+
+
+
+
+
+### linear regression
+
+```{r}
+# read original data
+admissions_origin <- 
+  read.csv("./database/admissions.csv") %>% 
+  janitor::clean_names()
+
+
+# add a death factor and duration factor
+admissions_death <- 
+  mutate(admissions_origin, living = is.na(admissions_origin$deathtime), hospitaltime = as.duration(dischtime %--% admittime))
+
+
+
+
+ 
+
+
+```
+
+
+
+```{r}
+# glance data
+skimr::skim(admissions_death)
+
+
+
+
+
+```
+
+
+
+```{r}
+#admissions_death <- 
+#  admissions_death %>% 
+#  mutate(religion = as.character(religion), hotpitaltime = as.numeric(hospitaltime)) %>% View
+# regression
+living_lm <- 
+  lm(as.numeric(hospitaltime) ~ as.character(religion), data = admissions_death)
+summary(living_lm)
+
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #OpenFDA
 
