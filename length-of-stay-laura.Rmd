@@ -9,6 +9,7 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 library(ggplot2)
 library(RPostgreSQL)
+library(tidyverse)
 ```
 
 This implementation works if you use knitr to generate the analysis! But in building the analysis it is maybe better to run your query by saving the sql query as a character object then using `dbGetQuery`.
@@ -41,6 +42,7 @@ SELECT i.subject_id, i.hadm_id, i.los
               FROM icustays i;
 ```
 
+Another option is to save the SQL directly using readLines, then use a wrapper to apply `dbGetQuery` to each line. This will be implemented for larger SQL files.
 
 ```{r just print los for now}
 head(los_data)
