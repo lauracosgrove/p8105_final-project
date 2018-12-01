@@ -124,3 +124,6 @@ prescriptions_data_time = prescriptions_data %>%
 
 ```
 
+## Provide the number of medications dataset 
+
+Join to admissions the number of medications prescribed per person. 

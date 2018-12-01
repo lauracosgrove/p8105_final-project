@@ -1,0 +1,64 @@
+---
+title: "Minor improvement in generating LOS"
+author: "Laura Cosgrove"
+date: "11/20/2018"
+output: html_document
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+library(RPostgreSQL)
+library(tidyverse)
+```
+
+This implementation works if you use knitr to generate the analysis! But in building the analysis it is maybe better to run your query by saving the sql query as a character object then using `dbGetQuery`.
+
+```{r dbconnect}
+# Load configuration settings
+dbdriver <- 'PostgreSQL'
+host  <- '127.0.0.1'
+port  <- '5432'
+user  <- 'postgres'
+password <- 'postgres'
+dbname <- 'mimic'
+schema <- 'mimiciii'
+# Connect to the database using the configuration settings
+con <- dbConnect(dbDriver(dbdriver), dbname = dbname, host = host, port = port, 
+                 user = user, password = password)
+# Set the default schema
+dbExecute(con, paste("SET search_path TO ", schema, sep=" "))
+```
+
+Set this database as the connection for all future sql chunks:
+
+```{r}
+knitr::opts_chunk$set(connection = "con")
+```
+
+Credit for SQL code authoring is not mine:
+```{sql, connection=con, output.var="los_data"}
+SELECT i.subject_id, i.hadm_id, i.los
+              FROM icustays i;
+```
+
+Another option is to save the SQL directly using readLines, then use a wrapper to apply `dbGetQuery` to each line. This will be implemented for larger SQL files.
+
+```{r just print los for now}
+head(los_data)
+
+```
+
+Now calculate medians (redo in tibble framework later)
+
+```{r calculate_mean_los}
+avg_los <- median(los_data$los, na.rm=TRUE)
+rounded_avg_los <-round(avg_los, digits = 2)
+```
+
+Todo is to redo plot in ggplot framework   
+   
+```{r plot_los, echo=FALSE, include=TRUE,  warning = FALSE}
+#qplot(data$los, geom="histogram",xlim=c(0,25), binwidth = 1,
+      #xlab = "Length of stay in the ICU, days.",fill=I("#FF9999"), col=I("white"))
+```
