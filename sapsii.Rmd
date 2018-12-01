@@ -9,6 +9,7 @@ knitr::opts_chunk$set(echo = TRUE)
 library(ggplot2)
 library(RPostgreSQL)
 library(tidyverse)
+library(dbplyr)
 ```
 
 
@@ -34,7 +35,7 @@ Set this database as the connection for all future sql chunks:
 knitr::opts_chunk$set(connection = "con")
 ```
 
-The below chunk works if you use knitr to generate the analysis! But in building the analysis it is maybe better to run your query by saving the sql query as a character object then using `dbGetQuery`.
+The above chunk works if you use knitr to generate the analysis! But in building the analysis it is maybe better to run your query by saving the sql query as a character object then using `dbGetQuery`.
 
 Credit for SQL code authoring is not mine:
 
@@ -67,12 +68,19 @@ dbGetQuery(con, sapsii_view)
 
 ```
 
+Rewrite `sapsii_view` in R using `dbplyr`?
+
+```{r}
+
+```
+
+
 ```{r view}
 #View sapsii_data
 sapsii_query <- "SELECT *
               FROM sapsii i;"
 sapsii_data <- as.tibble(dbGetQuery(con, sapsii_query))
-sapsii_data
+write_csv(sapsii_data, path = "./database/sapsii.csv")
 
 ```
 

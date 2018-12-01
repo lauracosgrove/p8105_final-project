@@ -27,7 +27,7 @@ Set this database as the connection for all future sql chunks:
 knitr::opts_chunk$set(connection = "con")
 ```
 
-The below chunk works if you use knitr to generate the analysis! But in building the analysis it is maybe better to run your query by saving the sql query as a character object then using `dbGetQuery`.
+The above chunk works if you use knitr to generate the analysis! But in building the analysis it is maybe better to run your query by saving the sql query as a character object then using `dbGetQuery`.
 
 Credit for SQL code authoring is not mine:
 
@@ -53,32 +53,15 @@ dbGetQuery(con, bloodgasarterial_view)
 dbGetQuery(con, sapsii_view)
 ```
 
+Rewrite `sapsii_view` in R using `dbplyr`?
+
 ``` r
 #View sapsii_data
 sapsii_query <- "SELECT *
               FROM sapsii i;"
 sapsii_data <- as.tibble(dbGetQuery(con, sapsii_query))
-sapsii_data
+write_csv(sapsii_data, path = "./database/sapsii.csv")
 ```
-
-    ## # A tibble: 61,532 x 20
-    ##    subject_id hadm_id icustay_id sapsii sapsii_prob age_score hr_score
-    ##  *      <int>   <int>      <int>  <int>       <dbl>     <int>    <int>
-    ##  1      55973  152234     200001     38     0.213          12        4
-    ##  2      27513  163557     200003     30     0.106           7        4
-    ##  3      10950  189514     200006     20     0.0372          7        2
-    ##  4      20707  129310     200007     18     0.0293          7        0
-    ##  5      29904  129607     200009     21     0.0418          7        0
-    ##  6      11861  192256     200010      6     0.00458         0        0
-    ##  7      93535  121562     200011     41     0.266          18        2
-    ##  8      28448  177527     200012     11     0.0113          0        0
-    ##  9       9514  127229     200014     43     0.306          18        2
-    ## 10      74032  117458     200016     20     0.0372         12        2
-    ## # ... with 61,522 more rows, and 13 more variables: sysbp_score <int>,
-    ## #   temp_score <int>, pao2fio2_score <int>, uo_score <int>,
-    ## #   bun_score <int>, wbc_score <int>, potassium_score <int>,
-    ## #   sodium_score <int>, bicarbonate_score <int>, bilirubin_score <int>,
-    ## #   gcs_score <int>, comorbidity_score <int>, admissiontype_score <int>
 
 OMG Finally!
 
@@ -92,6 +75,6 @@ sapsii_data %>%
 
     ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
 
-![](sapsii_files/figure-markdown_github/unnamed-chunk-3-1.png)
+![](sapsii_files/figure-markdown_github/unnamed-chunk-4-1.png)
 
 A future option is to use `dbplyr` to create SQL queries using R syntax. Hopefully we will only need to do it for the last SQL file.
