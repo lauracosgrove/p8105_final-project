@@ -26,7 +26,7 @@ prescriptions_data <- read_csv("./database/data/PRESCRIPTIONS.csv.gz")
 prescriptions_data = prescriptions_data %>% 
   janitor::clean_names() %>% 
   mutate(drug_type = factor(drug_type), dose_val_rx = as.integer(dose_val_rx),
-          time_delta = as.duration(startdate %--% enddate),
+          time_delta = lubridate::as.duration(startdate %--% enddate),
           time_delta_num = as.numeric(time_delta))
 
 ```
