@@ -29,13 +29,52 @@ top_causes_of_deaths = admissions %>%
     ## Selecting by n
 
 ``` r
+## Look at sepsis diagnoses
 sepsis = admissions %>% 
   filter(diagnosis == "SEPSIS") %>% 
-  mutate(mortality = ifelse(deathtime == "NA", 0, 1))
+  ## discharge = 1, mortality = 0
+  mutate(mortality = ifelse(is.na(deathtime), 1, 0)) %>% 
+  ## create indicator variable: married = 1, not married = 0
+  mutate(marital_status = ifelse(marital_status == "MARRIED", 1, 0)) %>% 
+  select(subject_id, insurance, marital_status, ethnicity, mortality)
+
 
 ## Look at top 10 causes of mortalities
 mortalities = admissions %>% 
   filter(diagnosis == c("ABDOMINAL PAIN", "ALTERED MENTAL STATUS", "CARDIAC ARREST", "CONGESTIVE HEART FAILURE", "HEAD BLEED", "HYPOTENSION", "INTACRANIAL HEMORRHAGE", "PNEUMONIA", "SEPSIS", "STROKE;TELEMETRY;TRANSIENT ISCHEMIC ATTACK"))
+```
+
+``` r
+## Insurance -- mortality vs. no mortality 
+
+## mortality
+mortalities = admissions %>% 
+  filter(deathtime != "NA") %>% 
+  group_by(insurance) %>% 
+  count() %>% 
+  mutate(outcome = "mortality")
+
+total_mortalities = sum(mortalities$n)
+
+mortalities = mortalities %>% 
+  mutate(patient_proportion = round(n/total_mortalities, digits = 4))
+
+discharge = admissions %>% 
+  filter(is.na(deathtime)) %>% 
+  group_by(insurance) %>% 
+  count() %>% 
+  mutate(outcome = "no_mortality")
+
+total_discharge = sum(discharge$n)
+
+dishcharge = discharge %>% 
+  mutate(patient_proportion = round(n/total_discharge, digits = 4)) %>% 
+  rbind(mortalities)
+  
+
+##mutate(log_count = log(n)) %>% 
+##ggplot(aes(x = reorder(insurance, log_count), y = log_count)) +
+##geom_point(color = "blue") 
 ```
 
 Exploratory:
@@ -64,8 +103,22 @@ class(admissions$dischtime)
 time_in = as.POSIXct.Date(admissions$admittime)
 time_out = as.POSIXct.Date(admissions$dischtime)
 
-length_of_care = time_out - time_in %>% 
-  View()
+length_of_care = cbind(time_in, time_out) %>% 
+  as.tibble() %>% 
+  mutate(difference = as.POSIXct.Date(time_out - time_in))
+```
+
+``` r
+admissions_dates = admissions %>% 
+  separate(dischtime, into = c("dischtime_year", "dischtime_month", "dischtime_day"), sep = "-") %>% 
+  separate(dischtime_day, into = c("dischtime_day", "dischtime_time"), sep = " ") %>% 
+  separate(admittime, into = c("admittime_year", "admittime_month", "admittime_day"), sep = "-") %>% 
+  mutate(dischtime_year = as.numeric(dischtime_year), 
+         dischtime_month = as.numeric(dischtime_month),
+         dischtime_day = as.numeric(dischtime_day),
+         admittime_year = as.numeric(admittime_year), 
+         admittime_month = as.numeric(admittime_month), 
+         admittime_day = as.numeric(admittime_day))
 ```
 
 ``` r
@@ -98,6 +151,7 @@ admissions <-
 
 ``` r
 ## Laura's Method
+library(lubridate)
 admissions_data <- read_csv("./database/data/admissions.csv") %>% 
   janitor::clean_names()
 ```
@@ -134,7 +188,6 @@ admissions_data <- read_csv("./database/data/admissions.csv") %>%
     ## See problems(...) for more details.
 
 ``` r
-difference = admissions_data %>% 
-  mutate(difference = as.POSIXct(dischtime - admittime, origin = "1556-04-29 19:03:58")) %>% 
-  select(difference)
+##difference = admissions_data %>% 
+  ##mutate(difference =  lubridate::as.duration(admittime %--% dischtime, origin = "1556-04-29 19:03:58")) 
 ```
