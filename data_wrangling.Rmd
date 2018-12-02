@@ -13,8 +13,9 @@ library(tidyverse)
 library(devtools)
 library(readr)
 library(lubridate)
+library(broom)
 
-knitr::opts_chunk$set(echo = TRUE)
+
 ```
 
 # MIMIC3
@@ -22,7 +23,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ### Import data
 ```{r}
 admissions <- 
-  read_csv("./database/admissions.csv") %>% 
+  read_csv("./database/data/admissions.csv") %>% 
   janitor::clean_names()
 names(admissions)
   
@@ -85,15 +86,16 @@ head(admissions)
 ```{r}
 # read original data
 admissions_origin <- 
-  read_csv("./database/admissions.csv") %>% 
+  read_csv("./database/data/admissions.csv") %>% 
   janitor::clean_names()
 
 
 # add a death factor and duration factor
+# exclude NEWBORN, because they are not treated as patients.
+### There are too many diagnosis, so the diagnosis will be analyzed by some analysis of scores in another part.
 admissions_death <- 
-  mutate(admissions_origin, living = is.na(admissions_origin$deathtime), hospitaltime =  admissions_origin$dischtime - admissions_origin$admittime, edtime = admissions_origin$edouttime - admissions_origin$edregtime)
-
-
+  mutate(admissions_origin, living = is.na(admissions_origin$deathtime), hospitaltime =  admissions_origin$dischtime - admissions_origin$admittime, edtime = admissions_origin$edouttime - admissions_origin$edregtime) %>% 
+  filter(diagnosis != "NEWBORN")
 
 ```
 
@@ -107,7 +109,7 @@ skimr::skim(admissions_death)
 
 
 
-```{r, eval=FALSE}
+```{r}
 
 
 ### try logistic regression step by step.
@@ -115,52 +117,74 @@ skimr::skim(admissions_death)
 #SLR
 
 living_lm1 <- 
-  lm(living ~ admission_type, data = admissions_death)
-summary(living_lm1)    
+  glm(living ~ admission_type, data = admissions_death)
+summary(living_lm1)
+broom::glance(living_lm1)
+broom::tidy(living_lm1)
 
 living_lm2 <- 
-  lm(living ~ admission_location, data = admissions_death)
-summary(living_lm2)
+  glm(living ~ admission_location, data = admissions_death)
+summary(living_lm1)
+broom::glance(living_lm2)
+broom::tidy(living_lm2)
 
 living_lm3 <- 
-  lm(living ~ insurance, data = admissions_death)
+  glm(living ~ insurance, data = admissions_death)
 summary(living_lm3)
+broom::glance(living_lm3)
+broom::tidy(living_lm3)
 
 living_lm4 <- 
-  lm(living ~ language, data = na.omit(select(admissions_death, living, language)))
+  glm(living ~ language, data = na.omit(select(admissions_death, living, language)))
 summary(living_lm4)
+broom::glance(living_lm4)
+broom::tidy(living_lm4)
 
 living_lm5 <- 
-  lm(living ~ religion, data = admissions_death)
+  glm(living ~ religion, data = admissions_death)
 summary(living_lm5)
+broom::glance(living_lm5)
+broom::tidy(living_lm5)
 
 living_lm6 <- 
-  lm(living ~ marital_status, data = admissions_death)
+  glm(living ~ marital_status, data = admissions_death)
 summary(living_lm6)
+broom::glance(living_lm6)
+broom::tidy(living_lm6)
 
 living_lm7 <- 
-  lm(living ~ ethnicity, data = admissions_death)
+  glm(living ~ ethnicity, data = admissions_death)
 summary(living_lm7)
+broom::glance(living_lm7)
+broom::tidy(living_lm7)
 
-living_lm8 <- 
-  lm(living ~ diagnosis, data = admissions_death)
-summary(living_lm8)
+#living_lm8 <-   Too many diagnosis 
+#  glm(living ~ diagnosis, data = admissions_death)
+#summary(living_lm8)
 
 living_lm9 <- 
-  lm(living ~ hospital_expire_flag, data = admissions_death)
+  glm(living ~ hospital_expire_flag, data = admissions_death)
 summary(living_lm9)
+broom::glance(living_lm9)
+broom::tidy(living_lm9)
 
 living_lm10 <- 
-  lm(living ~ has_chartevents_data, data = admissions_death)
+  glm(living ~ has_chartevents_data, data = admissions_death)
 summary(living_lm10)
+broom::glance(living_lm10)
+broom::tidy(living_lm10)
 
 living_lm11 <- 
-  lm(living ~ hospitaltime, data = admissions_death)
+  glm(living ~ hospitaltime, data = admissions_death)
 summary(living_lm11)
+broom::glance(living_lm11)
+broom::tidy(living_lm11)
 
 living_lm12 <- 
-  lm(living ~ edtime, data = filter(edtime > 0))
+  glm(living ~ edtime, data = na.omit(select(admissions_death, living, edtime)))
 summary(living_lm12)
+broom::glance(living_lm12)
+broom::tidy(living_lm12)
 ```
 
 
@@ -169,7 +193,7 @@ summary(living_lm12)
 #MLR
 
 living_mlr <- 
-  lm(living ~ hospitaltime + admission_type + admission_location + insurance + language + religion + marital_status + ethnicity + edtime + hospital_expire_flag + has_chartevents_data + insurance, data = admissions_death)
+  glm(living ~ admission_type + admission_location + insurance + language + religion + marital_status + ethnicity + hospital_expire_flag + has_chartevents_data + hospitaltime + edtime, data = admissions_death)
 summary(living_mlr)
 
 
@@ -181,7 +205,10 @@ anova(living_mlr)
 vcov(living_mlr)
 influence(living_mlr)
 
-ggplot(living_mlr)
+mutate(admissions_death, fitted = fitted(living_mlr)) %>%
+  ggplot(., aes(y = , x = )) + 
+  geom_point() + 
+  geom_line(aes(y = fitted), color = "red") + theme_bw()
 ```
 
 
@@ -189,12 +216,15 @@ ggplot(living_mlr)
 ```{r eval=FALSE}
 # K-fold cross-validation
 library(DAAG)
-cv.lm(df = admissions_death, living_mlr, m = 3) # 3 fold cross-validation
+cv.lm(df = admissions_death, living_mlr, m = 5) # 5 fold cross-validation
 
 
 
 ```{r}
-# step seems not working???
+step <- step(living_mlr)
+broom::tidy(step)
+step$anova
+
 ```
 
 
@@ -218,10 +248,10 @@ subsets(leaps, statistic = "rsq")
 
 
 
-```{r eval=FALSE}
+```{r }
 # Calculate Relative Importance for Each Predictor
 library(relaimpo)
-calc.relimp(fit,type=c("lmg","last","first","pratt"),
+calc.relimp(admissions_death, type=c("lmg","last","first","pratt"),
    rela=TRUE)
 ```
 
