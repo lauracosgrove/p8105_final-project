@@ -19,14 +19,44 @@ names(admissions)
     ## [19] "has_chartevents_data"
 
 ``` r
+n_admits = admissions %>% 
+  nrow()
+
+n_discharge = admissions %>% 
+  filter(is.na(deathtime)) %>% 
+  nrow()
+
+round((1 - (n_discharge/n_admits)) * 100, digits = 2)
+```
+
+    ## [1] 9.88
+
+**Out of 5770 patient admissions, 5200 patients were ultimately discharged. The remaining 9.88% were recorded deaths.**
+
+``` r
 ## Top 10 causes of recorded mortalities
-top_causes_of_deaths = admissions %>% 
+admissions %>% 
   filter(deathtime != "NA") %>%
   count(diagnosis) %>% 
-  top_n(10)
+  top_n(10) %>% 
+  arrange(desc(n))
 ```
 
     ## Selecting by n
+
+    ## # A tibble: 10 x 2
+    ##    diagnosis                                      n
+    ##    <fct>                                      <int>
+    ##  1 SEPSIS                                        33
+    ##  2 INTRACRANIAL HEMORRHAGE                       23
+    ##  3 PNEUMONIA                                     23
+    ##  4 CONGESTIVE HEART FAILURE                      12
+    ##  5 HYPOTENSION                                   12
+    ##  6 CARDIAC ARREST                                11
+    ##  7 ALTERED MENTAL STATUS                         10
+    ##  8 HEAD BLEED                                     9
+    ##  9 STROKE;TELEMETRY;TRANSIENT ISCHEMIC ATTACK     9
+    ## 10 ABDOMINAL PAIN                                 7
 
 ``` r
 ## Look at sepsis diagnoses
@@ -40,7 +70,7 @@ sepsis = admissions %>%
 
 
 ## Look at top 10 causes of mortalities
-mortalities = admissions %>% 
+top_10_causes = admissions %>% 
   filter(diagnosis == c("ABDOMINAL PAIN", "ALTERED MENTAL STATUS", "CARDIAC ARREST", "CONGESTIVE HEART FAILURE", "HEAD BLEED", "HYPOTENSION", "INTACRANIAL HEMORRHAGE", "PNEUMONIA", "SEPSIS", "STROKE;TELEMETRY;TRANSIENT ISCHEMIC ATTACK"))
 ```
 
@@ -69,12 +99,10 @@ total_discharge = sum(discharge$n)
 
 dishcharge = discharge %>% 
   mutate(patient_proportion = round(n/total_discharge, digits = 4)) %>% 
-  rbind(mortalities)
-  
-
-##mutate(log_count = log(n)) %>% 
-##ggplot(aes(x = reorder(insurance, log_count), y = log_count)) +
-##geom_point(color = "blue") 
+  rbind(mortalities) %>% 
+  mutate(log_count = log(n)) %>% 
+  ggplot(aes(x = reorder(insurance, log_count), y = log_count)) +
+  geom_point(color = "blue") 
 ```
 
 Exploratory:
