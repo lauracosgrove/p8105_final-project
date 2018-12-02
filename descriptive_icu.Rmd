@@ -1,0 +1,57 @@
+---
+title: "icu details"
+author: "Laura Cosgrove"
+date: "12/1/2018"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+library(ggplot2)
+library(RPostgreSQL)
+library(tidyverse)
+library(dbplyr)
+```
+
+
+```{r dbconnect}
+# Load configuration settings
+dbdriver <- 'PostgreSQL'
+host  <- '127.0.0.1'
+port  <- '5432'
+user  <- 'postgres'
+password <- 'postgres'
+dbname <- 'mimic'
+schema <- 'mimiciii'
+# Connect to the database using the configuration settings
+con <- dbConnect(dbDriver(dbdriver), dbname = dbname, host = host, port = port, 
+                 user = user, password = password)
+# Set the default schema
+dbExecute(con, paste("SET search_path TO ", schema, sep=" "))
+```
+
+Set this database as the connection for all future sql chunks:
+
+```{r}
+knitr::opts_chunk$set(connection = "con")
+```
+
+Set evaluation to false so that you don't requery your database every time you knit.
+```{r, eval=FALSE}
+icu_detail_view <- read_file("./database/mimic-code/concepts/demographics/icustay-detail.sql")
+
+
+#Generate materialized views
+dbGetQuery(con, icu_detail_view)
+```
+
+```{r}
+icu_detail_query <- "SELECT *
+              FROM icustay_detail i;"
+icu_detail_data <- as.tibble(dbGetQuery(con, icu_detail_query))
+#write_csv(sapsii_data, path = "./database/sapsii.csv")
+icu_detail_data
+```
+
+The ICU detail query extracts both hospital level length of stay as well as ICU-level length of stay.
+
+
