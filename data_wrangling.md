@@ -14,7 +14,7 @@ library(tidyverse)
     ## ✔ ggplot2 3.1.0     ✔ purrr   0.2.5
     ## ✔ tibble  1.4.2     ✔ dplyr   0.7.8
     ## ✔ tidyr   0.8.2     ✔ stringr 1.3.1
-    ## ✔ readr   1.1.1     ✔ forcats 0.3.0
+    ## ✔ readr   1.2.1     ✔ forcats 0.3.0
 
     ## ── Conflicts ────────────────────────────────────────────────────────────────────────── tidyverse_conflicts() ──
     ## ✖ dplyr::filter() masks stats::filter()
@@ -44,8 +44,34 @@ MIMIC3
 
 ``` r
 admissions <- 
-  read.csv("./database/admissions.csv") %>% 
+  read_csv("./database/admissions.csv") %>% 
   janitor::clean_names()
+```
+
+    ## Parsed with column specification:
+    ## cols(
+    ##   ROW_ID = col_double(),
+    ##   SUBJECT_ID = col_double(),
+    ##   HADM_ID = col_double(),
+    ##   ADMITTIME = col_datetime(format = ""),
+    ##   DISCHTIME = col_datetime(format = ""),
+    ##   DEATHTIME = col_datetime(format = ""),
+    ##   ADMISSION_TYPE = col_character(),
+    ##   ADMISSION_LOCATION = col_character(),
+    ##   DISCHARGE_LOCATION = col_character(),
+    ##   INSURANCE = col_character(),
+    ##   LANGUAGE = col_character(),
+    ##   RELIGION = col_character(),
+    ##   MARITAL_STATUS = col_character(),
+    ##   ETHNICITY = col_character(),
+    ##   EDREGTIME = col_datetime(format = ""),
+    ##   EDOUTTIME = col_datetime(format = ""),
+    ##   DIAGNOSIS = col_character(),
+    ##   HOSPITAL_EXPIRE_FLAG = col_double(),
+    ##   HAS_CHARTEVENTS_DATA = col_double()
+    ## )
+
+``` r
 names(admissions)
 ```
 
@@ -65,55 +91,55 @@ names(admissions)
 class(admissions$admittime)
 ```
 
-    ## [1] "factor"
+    ## [1] "POSIXct" "POSIXt"
 
 ``` r
 class(admissions$dischtime)
 ```
 
-    ## [1] "factor"
+    ## [1] "POSIXct" "POSIXt"
 
 ``` r
 class(admissions$deathtime)
 ```
 
-    ## [1] "factor"
+    ## [1] "POSIXct" "POSIXt"
 
 ``` r
 class(admissions$admission_type) 
 ```
 
-    ## [1] "factor"
+    ## [1] "character"
 
 ``` r
 class(admissions$insurance)
 ```
 
-    ## [1] "factor"
+    ## [1] "character"
 
 ``` r
 class(admissions$religion)
 ```
 
-    ## [1] "factor"
+    ## [1] "character"
 
 ``` r
 class(admissions$ethnicity)
 ```
 
-    ## [1] "factor"
+    ## [1] "character"
 
 ``` r
 class(admissions$edregtime)
 ```
 
-    ## [1] "factor"
+    ## [1] "POSIXct" "POSIXt"
 
 ``` r
 class(admissions$edouttime)
 ```
 
-    ## [1] "factor"
+    ## [1] "POSIXct" "POSIXt"
 
 All of them are factors.
 
@@ -132,35 +158,15 @@ admissions <-
   admissions %>% 
   separate(deathtime, into = c("deathtime_year", "deathtime_month", "deathtime_day"), sep = "-") %>% 
   separate(deathtime_day, into = c("deathtime_day", "deathtime_time"), sep = " ")
-```
-
-    ## Warning: Expected 3 pieces. Missing pieces filled with `NA` in 53122
-    ## rows [1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
-    ## 21, ...].
-
-``` r
 admissions <- 
   admissions %>% 
   separate(edregtime, into = c("edregtime_year", "edregtime_month", "edregtime_day"), sep = "-") %>% 
   separate(edregtime_day, into = c("edregtime_day", "edregtime_time"), sep = " ")
-```
-
-    ## Warning: Expected 3 pieces. Missing pieces filled with `NA` in 28099 rows
-    ## [2, 3, 4, 6, 7, 8, 9, 10, 11, 13, 15, 16, 18, 20, 21, 22, 28, 29, 35,
-    ## 36, ...].
-
-``` r
 admissions <- 
   admissions %>% 
   separate(edouttime, into = c("edouttime_year", "edouttime_month", "edouttime_day"), sep = "-") %>% 
   separate(edouttime_day, into = c("edouttime_day", "edouttime_time"), sep = " ")
-```
 
-    ## Warning: Expected 3 pieces. Missing pieces filled with `NA` in 28099 rows
-    ## [2, 3, 4, 6, 7, 8, 9, 10, 11, 13, 15, 16, 18, 20, 21, 22, 28, 29, 35,
-    ## 36, ...].
-
-``` r
 # Correct year to normal
 admissions <- 
   admissions %>% 
@@ -169,82 +175,62 @@ admissions <-
 head(admissions)
 ```
 
+    ## # A tibble: 6 x 33
     ##   row_id subject_id hadm_id admittime_year admittime_month admittime_day
-    ## 1     21         22  165315           1996              04   09 12:26:00
-    ## 2     22         23  152223           1953              09   03 07:15:00
-    ## 3     23         23  124321           1957              10   18 19:34:00
-    ## 4     24         24  161859           1939              06   06 16:14:00
-    ## 5     25         25  129635           1960              11   02 02:06:00
-    ## 6     26         26  197661           1926              05   06 15:16:00
-    ##   dischtime_year dischtime_month dischtime_day dischtime_time
-    ## 1           1996              04            10       15:54:00
-    ## 2           1953              09            08       19:10:00
-    ## 3           1957              10            25       14:00:00
-    ## 4           1939              06            09       12:48:00
-    ## 5           1960              11            05       14:55:00
-    ## 6           1926              05            13       15:00:00
-    ##   deathtime_year deathtime_month deathtime_day deathtime_time
-    ## 1             NA            <NA>          <NA>           <NA>
-    ## 2             NA            <NA>          <NA>           <NA>
-    ## 3             NA            <NA>          <NA>           <NA>
-    ## 4             NA            <NA>          <NA>           <NA>
-    ## 5             NA            <NA>          <NA>           <NA>
-    ## 6             NA            <NA>          <NA>           <NA>
-    ##   admission_type        admission_location        discharge_location
-    ## 1      EMERGENCY      EMERGENCY ROOM ADMIT DISC-TRAN CANCER/CHLDRN H
-    ## 2       ELECTIVE PHYS REFERRAL/NORMAL DELI          HOME HEALTH CARE
-    ## 3      EMERGENCY TRANSFER FROM HOSP/EXTRAM          HOME HEALTH CARE
-    ## 4      EMERGENCY TRANSFER FROM HOSP/EXTRAM                      HOME
-    ## 5      EMERGENCY      EMERGENCY ROOM ADMIT                      HOME
-    ## 6      EMERGENCY TRANSFER FROM HOSP/EXTRAM                      HOME
-    ##   insurance language          religion marital_status
-    ## 1   Private               UNOBTAINABLE        MARRIED
-    ## 2  Medicare                   CATHOLIC        MARRIED
-    ## 3  Medicare     ENGL          CATHOLIC        MARRIED
-    ## 4   Private          PROTESTANT QUAKER         SINGLE
-    ## 5   Private               UNOBTAINABLE        MARRIED
-    ## 6  Medicare                   CATHOLIC         SINGLE
-    ##               ethnicity edregtime_year edregtime_month edregtime_day
-    ## 1                 WHITE           1996              04            09
-    ## 2                 WHITE             NA            <NA>          <NA>
-    ## 3                 WHITE             NA            <NA>          <NA>
-    ## 4                 WHITE             NA            <NA>          <NA>
-    ## 5                 WHITE           1960              11            02
-    ## 6 UNKNOWN/NOT SPECIFIED             NA            <NA>          <NA>
-    ##   edregtime_time edouttime_year edouttime_month edouttime_day
-    ## 1       10:06:00           1996              04            09
-    ## 2           <NA>             NA            <NA>          <NA>
-    ## 3           <NA>             NA            <NA>          <NA>
-    ## 4           <NA>             NA            <NA>          <NA>
-    ## 5       01:01:00           1960              11            02
-    ## 6           <NA>             NA            <NA>          <NA>
-    ##   edouttime_time                                                 diagnosis
-    ## 1       13:24:00                                   BENZODIAZEPINE OVERDOSE
-    ## 2           <NA> CORONARY ARTERY DISEASE\\CORONARY ARTERY BYPASS GRAFT/SDA
-    ## 3           <NA>                                                BRAIN MASS
-    ## 4           <NA>                            INTERIOR MYOCARDIAL INFARCTION
-    ## 5       04:27:00                                   ACUTE CORONARY SYNDROME
-    ## 6           <NA>                                                    V-TACH
-    ##   hospital_expire_flag has_chartevents_data
-    ## 1                    0                    1
-    ## 2                    0                    1
-    ## 3                    0                    1
-    ## 4                    0                    1
-    ## 5                    0                    1
-    ## 6                    0                    1
+    ##    <dbl>      <dbl>   <dbl>          <dbl> <chr>           <chr>        
+    ## 1     21         22  165315           1996 04              09 12:26:00  
+    ## 2     22         23  152223           1953 09              03 07:15:00  
+    ## 3     23         23  124321           1957 10              18 19:34:00  
+    ## 4     24         24  161859           1939 06              06 16:14:00  
+    ## 5     25         25  129635           1960 11              02 02:06:00  
+    ## 6     26         26  197661           1926 05              06 15:16:00  
+    ## # ... with 27 more variables: dischtime_year <dbl>, dischtime_month <chr>,
+    ## #   dischtime_day <chr>, dischtime_time <chr>, deathtime_year <dbl>,
+    ## #   deathtime_month <chr>, deathtime_day <chr>, deathtime_time <chr>,
+    ## #   admission_type <chr>, admission_location <chr>,
+    ## #   discharge_location <chr>, insurance <chr>, language <chr>,
+    ## #   religion <chr>, marital_status <chr>, ethnicity <chr>,
+    ## #   edregtime_year <dbl>, edregtime_month <chr>, edregtime_day <chr>,
+    ## #   edregtime_time <chr>, edouttime_year <dbl>, edouttime_month <chr>,
+    ## #   edouttime_day <chr>, edouttime_time <chr>, diagnosis <chr>,
+    ## #   hospital_expire_flag <dbl>, has_chartevents_data <dbl>
 
 ### linear regression
 
 ``` r
 # read original data
 admissions_origin <- 
-  read.csv("./database/admissions.csv") %>% 
+  read_csv("./database/admissions.csv") %>% 
   janitor::clean_names()
+```
 
+    ## Parsed with column specification:
+    ## cols(
+    ##   ROW_ID = col_double(),
+    ##   SUBJECT_ID = col_double(),
+    ##   HADM_ID = col_double(),
+    ##   ADMITTIME = col_datetime(format = ""),
+    ##   DISCHTIME = col_datetime(format = ""),
+    ##   DEATHTIME = col_datetime(format = ""),
+    ##   ADMISSION_TYPE = col_character(),
+    ##   ADMISSION_LOCATION = col_character(),
+    ##   DISCHARGE_LOCATION = col_character(),
+    ##   INSURANCE = col_character(),
+    ##   LANGUAGE = col_character(),
+    ##   RELIGION = col_character(),
+    ##   MARITAL_STATUS = col_character(),
+    ##   ETHNICITY = col_character(),
+    ##   EDREGTIME = col_datetime(format = ""),
+    ##   EDOUTTIME = col_datetime(format = ""),
+    ##   DIAGNOSIS = col_character(),
+    ##   HOSPITAL_EXPIRE_FLAG = col_double(),
+    ##   HAS_CHARTEVENTS_DATA = col_double()
+    ## )
 
+``` r
 # add a death factor and duration factor
 admissions_death <- 
-  mutate(admissions_origin, living = is.na(admissions_origin$deathtime), hospitaltime = as.duration(dischtime %--% admittime))
+  mutate(admissions_origin, living = is.na(admissions_origin$deathtime), hospitaltime =  admissions_origin$dischtime - admissions_origin$admittime, edtime = admissions_origin$edouttime - admissions_origin$edregtime)
 ```
 
 ``` r
@@ -252,71 +238,35 @@ admissions_death <-
 skimr::skim(admissions_death)
 ```
 
-    ## Warning in .x(x): Variable contains value(s) of "" that have been converted
-    ## to "empty".
-
-    ## Warning in .x(x): Variable contains value(s) of "" that have been converted
-    ## to "empty".
-
-    ## Warning in .x(x): Variable contains value(s) of "" that have been converted
-    ## to "empty".
-
-    ## Warning in .x(x): Variable contains value(s) of "" that have been converted
-    ## to "empty".
-
-    ## Warning in .x(x): Variable contains value(s) of "" that have been converted
-    ## to "empty".
-
-    ## Warning in .x(x): Variable contains value(s) of "" that have been converted
-    ## to "empty".
-
-    ## Warning in .x(x): Variable contains value(s) of "" that have been converted
-    ## to "empty".
-
-    ## Warning: No summary functions for vectors of class: Duration.
-    ## Coercing to character
-
     ## Skim summary statistics
     ##  n obs: 58976 
-    ##  n variables: 21 
+    ##  n variables: 22 
     ## 
     ## ── Variable type:character ─────────────────────────────────────────────────────────────────────────────────────
-    ##      variable missing complete     n min max empty n_unique
-    ##  hospitaltime       0    58976 58976  16  24     0    26232
+    ##            variable missing complete     n min max empty n_unique
+    ##  admission_location       0    58976 58976  17  25     0        9
+    ##      admission_type       0    58976 58976   6   9     0        4
+    ##           diagnosis      25    58951 58976   2 190     0    15646
+    ##  discharge_location       0    58976 58976   3  25     0       17
+    ##           ethnicity       0    58976 58976   5  56     0       41
+    ##           insurance       0    58976 58976   7  10     0        5
+    ##            language   25332    33644 58976   4   4     0       75
+    ##      marital_status   10128    48848 58976   6  17     0        7
+    ##            religion     458    58518 58976   5  22     0       20
     ## 
-    ## ── Variable type:factor ────────────────────────────────────────────────────────────────────────────────────────
-    ##            variable missing complete     n n_unique
-    ##  admission_location       0    58976 58976        9
-    ##      admission_type       0    58976 58976        4
-    ##           admittime       0    58976 58976    58651
-    ##           deathtime       0    58976 58976     5835
-    ##           diagnosis       0    58976 58976    15692
-    ##  discharge_location       0    58976 58976       17
-    ##           dischtime       0    58976 58976    58657
-    ##           edouttime       0    58976 58976    30865
-    ##           edregtime       0    58976 58976    30875
-    ##           ethnicity       0    58976 58976       41
-    ##           insurance       0    58976 58976        5
-    ##            language       0    58976 58976       76
-    ##      marital_status       0    58976 58976        8
-    ##            religion       0    58976 58976       21
-    ##                                     top_counts ordered
-    ##  EME: 22754, PHY: 15079, CLI: 12032, TRA: 8456   FALSE
-    ##    EME: 42071, NEW: 7863, ELE: 7706, URG: 1336   FALSE
-    ##                 210: 4, 219: 4, 210: 3, 211: 3   FALSE
-    ##             emp: 53122, 210: 2, 210: 2, 210: 2   FALSE
-    ##      NEW: 7823, PNE: 1566, SEP: 1184, CON: 928   FALSE
-    ##   HOM: 18962, HOM: 13963, SNF: 7705, REH: 6429   FALSE
-    ##                 210: 3, 212: 3, 210: 2, 210: 2   FALSE
-    ##             emp: 28099, 210: 2, 210: 2, 210: 2   FALSE
-    ##             emp: 28099, 210: 2, 213: 2, 213: 2   FALSE
-    ##    WHI: 40996, BLA: 5440, UNK: 4523, HIS: 1696   FALSE
-    ##   Med: 28215, Pri: 22582, Med: 5785, Gov: 1783   FALSE
-    ##    ENG: 29086, emp: 25332, SPA: 1083, RUS: 790   FALSE
-    ##  MAR: 24239, SIN: 13254, emp: 10128, WID: 7211   FALSE
-    ##   CAT: 20606, NOT: 11753, UNO: 8269, PRO: 7134   FALSE
+    ## ── Variable type:difftime ──────────────────────────────────────────────────────────────────────────────────────
+    ##      variable missing complete     n           min         max
+    ##        edtime   28099    30877 58976 -2504940 secs 253680 secs
+    ##  hospitaltime       0    58976 58976    -1361 mins 424311 mins
+    ##             median n_unique
+    ##  17700 secs            1483
+    ##        9312.5 mins    26302
     ## 
-    ## ── Variable type:integer ───────────────────────────────────────────────────────────────────────────────────────
+    ## ── Variable type:logical ───────────────────────────────────────────────────────────────────────────────────────
+    ##  variable missing complete     n mean                        count
+    ##    living       0    58976 58976  0.9 TRU: 53122, FAL: 5854, NA: 0
+    ## 
+    ## ── Variable type:numeric ───────────────────────────────────────────────────────────────────────────────────────
     ##              variable missing complete     n       mean       sd    p0
     ##               hadm_id       0    58976 58976 149970.81  28883.1  1e+05
     ##  has_chartevents_data       0    58976 58976      0.97      0.16     0
@@ -330,80 +280,134 @@ skimr::skim(admissions_death)
     ##   14744.75  29488.5  44232.25 58976 ▇▇▇▇▇▇▇▇
     ##   11993.75  24133.5  53851.5  99999 ▇▇▅▂▂▂▂▂
     ## 
-    ## ── Variable type:logical ───────────────────────────────────────────────────────────────────────────────────────
-    ##  variable missing complete     n mean             count
-    ##    living       0    58976 58976    0 FAL: 58976, NA: 0
+    ## ── Variable type:POSIXct ───────────────────────────────────────────────────────────────────────────────────────
+    ##   variable missing complete     n        min        max     median
+    ##  admittime       0    58976 58976 2100-06-07 2210-08-17 2151-01-15
+    ##  deathtime   53122     5854 58976 2100-06-19 2208-02-05 2150-09-15
+    ##  dischtime       0    58976 58976 2100-06-09 2210-08-24 2151-01-29
+    ##  edouttime   28099    30877 58976 2100-06-08 2210-08-17 2150-12-12
+    ##  edregtime   28099    30877 58976 2100-06-07 2210-08-17 2150-12-12
+    ##  n_unique
+    ##     58651
+    ##      5834
+    ##     58657
+    ##     30864
+    ##     30874
 
 ``` r
-#admissions_death <- 
-#  admissions_death %>% 
-#  mutate(religion = as.character(religion), hotpitaltime = as.numeric(hospitaltime)) %>% View
-# regression
-living_lm <- 
-  lm(as.numeric(hospitaltime) ~ as.character(religion), data = admissions_death)
-summary(living_lm)
+### try logistic regression step by step.
+
+#SLR
+
+living_lm1 <- 
+  lm(living ~ admission_type, data = admissions_death)
+summary(living_lm1)    
+
+living_lm2 <- 
+  lm(living ~ admission_location, data = admissions_death)
+summary(living_lm2)
+
+living_lm3 <- 
+  lm(living ~ insurance, data = admissions_death)
+summary(living_lm3)
+
+living_lm4 <- 
+  lm(living ~ language, data = na.omit(select(admissions_death, living, language)))
+summary(living_lm4)
+
+living_lm5 <- 
+  lm(living ~ religion, data = admissions_death)
+summary(living_lm5)
+
+living_lm6 <- 
+  lm(living ~ marital_status, data = admissions_death)
+summary(living_lm6)
+
+living_lm7 <- 
+  lm(living ~ ethnicity, data = admissions_death)
+summary(living_lm7)
+
+living_lm8 <- 
+  lm(living ~ diagnosis, data = admissions_death)
+summary(living_lm8)
+
+living_lm9 <- 
+  lm(living ~ hospital_expire_flag, data = admissions_death)
+summary(living_lm9)
+
+living_lm10 <- 
+  lm(living ~ has_chartevents_data, data = admissions_death)
+summary(living_lm10)
+
+living_lm11 <- 
+  lm(living ~ hospitaltime, data = admissions_death)
+summary(living_lm11)
+
+living_lm12 <- 
+  lm(living ~ edtime, data = filter(edtime > 0))
+summary(living_lm12)
 ```
 
-    ## 
-    ## Call:
-    ## lm(formula = as.numeric(hospitaltime) ~ as.character(religion), 
-    ##     data = admissions_death)
-    ## 
-    ## Residuals:
-    ##       Min        1Q    Median        3Q       Max 
-    ## -24590505   -136099    312029    557495   1275239 
-    ## 
-    ## Coefficients:
-    ##                                              Estimate Std. Error t value
-    ## (Intercept)                                   -860003      50248 -17.115
-    ## as.character(religion)7TH DAY ADVENTIST       -320276     129619  -2.471
-    ## as.character(religion)BAPTIST                  -86557     209342  -0.413
-    ## as.character(religion)BUDDHIST                 122942      82800   1.485
-    ## as.character(religion)CATHOLIC                 -44782      50803  -0.881
-    ## as.character(religion)CHRISTIAN SCIENTIST      -16679      72252  -0.231
-    ## as.character(religion)EPISCOPALIAN              -8152      63395  -0.129
-    ## as.character(religion)GREEK ORTHODOX           -59173      71022  -0.833
-    ## as.character(religion)HEBREW                    73804     273493   0.270
-    ## as.character(religion)HINDU                     80567     112953   0.713
-    ## as.character(religion)JEHOVAH'S WITNESS       -108052     104135  -1.038
-    ## as.character(religion)JEWISH                    45897      52368   0.876
-    ## as.character(religion)LUTHERAN                 273143    1076524   0.254
-    ## as.character(religion)METHODIST               -483234     409538  -1.180
-    ## as.character(religion)MUSLIM                   -72222      87546  -0.825
-    ## as.character(religion)NOT SPECIFIED             51351      51218   1.003
-    ## as.character(religion)OTHER                    -66083      54349  -1.216
-    ## as.character(religion)PROTESTANT QUAKER        -48318      51836  -0.932
-    ## as.character(religion)ROMANIAN EAST. ORTH     -423396     128285  -3.300
-    ## as.character(religion)UNITARIAN-UNIVERSALIST   -24639     108860  -0.226
-    ## as.character(religion)UNOBTAINABLE             -26781      51621  -0.519
-    ##                                              Pr(>|t|)    
-    ## (Intercept)                                   < 2e-16 ***
-    ## as.character(religion)7TH DAY ADVENTIST      0.013480 *  
-    ## as.character(religion)BAPTIST                0.679261    
-    ## as.character(religion)BUDDHIST               0.137602    
-    ## as.character(religion)CATHOLIC               0.378062    
-    ## as.character(religion)CHRISTIAN SCIENTIST    0.817432    
-    ## as.character(religion)EPISCOPALIAN           0.897682    
-    ## as.character(religion)GREEK ORTHODOX         0.404758    
-    ## as.character(religion)HEBREW                 0.787272    
-    ## as.character(religion)HINDU                  0.475674    
-    ## as.character(religion)JEHOVAH'S WITNESS      0.299452    
-    ## as.character(religion)JEWISH                 0.380803    
-    ## as.character(religion)LUTHERAN               0.799708    
-    ## as.character(religion)METHODIST              0.238025    
-    ## as.character(religion)MUSLIM                 0.409395    
-    ## as.character(religion)NOT SPECIFIED          0.316057    
-    ## as.character(religion)OTHER                  0.224026    
-    ## as.character(religion)PROTESTANT QUAKER      0.351274    
-    ## as.character(religion)ROMANIAN EAST. ORTH    0.000966 ***
-    ## as.character(religion)UNITARIAN-UNIVERSALIST 0.820938    
-    ## as.character(religion)UNOBTAINABLE           0.603901    
-    ## ---
-    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-    ## 
-    ## Residual standard error: 1075000 on 58955 degrees of freedom
-    ## Multiple R-squared:  0.002023,   Adjusted R-squared:  0.001684 
-    ## F-statistic: 5.975 on 20 and 58955 DF,  p-value: 3.686e-16
+``` r
+#MLR
+
+living_mlr <- 
+  lm(living ~ hospitaltime + admission_type + admission_location + insurance + language + religion + marital_status + ethnicity + edtime + hospital_expire_flag + has_chartevents_data + insurance, data = admissions_death)
+summary(living_mlr)
+
+
+coefficients(living_mlr)
+confint(living_mlr)
+fitted(living_mlr)
+residuals(living_mlr)
+anova(living_mlr)
+vcov(living_mlr)
+influence(living_mlr)
+
+ggplot(living_mlr)
+```
+
+``` r
+# K-fold cross-validation
+library(DAAG)
+cv.lm(df = admissions_death, living_mlr, m = 3) # 3 fold cross-validation
+```
+
+``` r
+# step seems not working???
+```
+
+``` r
+# All Subsets Regression
+library(leaps)
+attach(admissions_death)
+leaps <- 
+  regsubsets(living ~ hospitaltime + admission_type + admission_location + insurance + language + religion + marital_status + ethnicity + edtime + hospital_expire_flag + has_chartevents_data + insurance, data = admissions_death, nbest = 10)
+# view results 
+summary(leaps)
+# plot a table of models showing variables in each model.
+# models are ordered by the selection statistic.
+plot(leaps,scale = "r2")
+# plot statistic by subset size 
+library(car)
+subsets(leaps, statistic = "rsq")
+```
+
+``` r
+# Calculate Relative Importance for Each Predictor
+library(relaimpo)
+calc.relimp(fit,type=c("lmg","last","first","pratt"),
+   rela=TRUE)
+```
+
+``` r
+# Bootstrap Measures of Relative Importance (1000 samples) 
+boot <- boot.relimp(admissions_death, b = 1000, type = c("lmg", 
+  "last", "first", "pratt"), rank = TRUE, 
+  diff = TRUE, rela = TRUE)
+booteval.relimp(boot) # print result
+plot(booteval.relimp(boot,sort=TRUE)) # plot result
+```
 
 OpenFDA
 =======

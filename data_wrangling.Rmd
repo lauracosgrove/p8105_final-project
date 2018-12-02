@@ -107,7 +107,7 @@ skimr::skim(admissions_death)
 
 
 
-```{r}
+```{r, eval=FALSE}
 
 
 ### try logistic regression step by step.
@@ -165,7 +165,7 @@ summary(living_lm12)
 
 
 
-```{r}
+```{r eval=FALSE}
 #MLR
 
 living_mlr <- 
@@ -186,7 +186,7 @@ ggplot(living_mlr)
 
 
 
-```{r}
+```{r eval=FALSE}
 # K-fold cross-validation
 library(DAAG)
 cv.lm(df = admissions_death, living_mlr, m = 3) # 3 fold cross-validation
@@ -200,7 +200,7 @@ cv.lm(df = admissions_death, living_mlr, m = 3) # 3 fold cross-validation
 
 
 
-```{r}
+```{r eval=FALSE}
 # All Subsets Regression
 library(leaps)
 attach(admissions_death)
@@ -218,7 +218,7 @@ subsets(leaps, statistic = "rsq")
 
 
 
-```{r}
+```{r eval=FALSE}
 # Calculate Relative Importance for Each Predictor
 library(relaimpo)
 calc.relimp(fit,type=c("lmg","last","first","pratt"),
@@ -226,7 +226,7 @@ calc.relimp(fit,type=c("lmg","last","first","pratt"),
 ```
 
 
-```{r}
+```{r eval=FALSE}
 # Bootstrap Measures of Relative Importance (1000 samples) 
 boot <- boot.relimp(admissions_death, b = 1000, type = c("lmg", 
   "last", "first", "pratt"), rank = TRUE, 
