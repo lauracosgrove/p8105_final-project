@@ -260,3 +260,44 @@ admissions %>%
 ```
 
 ![](sapsii_files/figure-markdown_github/unnamed-chunk-9-1.png)
+
+``` r
+# Make a big datasheet?
+all_scores <- admissions %>% 
+  inner_join(., patients, by = "subject_id") %>% 
+  inner_join(., sapsii_data, by = "hadm_id") %>% 
+  inner_join(., sofa_data, by = "hadm_id") %>% 
+  inner_join(., lods_data, by = "hadm_id") %>% 
+  inner_join(., saps_data, by = "hadm_id") %>% 
+  inner_join(., apsiii_data, by = "hadm_id") %>% 
+  inner_join(., oasis_data, by = "hadm_id") %>% 
+  mutate(target = if_else(deathtime %in% NA, 0, 1)) %>% 
+  select(subject_id.x, hadm_id, target, sapsii, saps, sofa, lods, apsiii, oasis)
+
+all_scores %>% 
+  select(sapsii:oasis) %>% 
+  cor()
+```
+
+    ##           sapsii      saps      sofa      lods    apsiii     oasis
+    ## sapsii 1.0000000 0.4010758 0.2783896 0.3565768 0.3857193 0.3868378
+    ## saps   0.4010758 1.0000000 0.2097454 0.3023607 0.3534092 0.3647637
+    ## sofa   0.2783896 0.2097454 1.0000000 0.3652635 0.4195739 0.1785834
+    ## lods   0.3565768 0.3023607 0.3652635 1.0000000 0.3788145 0.2732510
+    ## apsiii 0.3857193 0.3534092 0.4195739 0.3788145 1.0000000 0.2824288
+    ## oasis  0.3868378 0.3647637 0.1785834 0.2732510 0.2824288 1.0000000
+
+``` r
+#Gather
+all_scores %>% 
+  gather(key = score, value, sapsii, saps, sofa, lods, apsiii, oasis) %>% 
+  group_by(score, value) %>% 
+  summarize(deaths = sum(target), 
+            n = n()) %>% 
+  mutate(frac_deaths = deaths/n) %>% 
+  ggplot(aes(x = value, y = frac_deaths)) + 
+  geom_point(aes(color = n)) +
+  facet_grid(~score)
+```
+
+![](sapsii_files/figure-markdown_github/unnamed-chunk-9-2.png)

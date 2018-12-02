@@ -218,6 +218,33 @@ admissions %>%
   geom_point(aes(color = n)) + 
   theme_bw()
 
+# Make a big datasheet?
+all_scores <- admissions %>% 
+  inner_join(., patients, by = "subject_id") %>% 
+  inner_join(., sapsii_data, by = "hadm_id") %>% 
+  inner_join(., sofa_data, by = "hadm_id") %>% 
+  inner_join(., lods_data, by = "hadm_id") %>% 
+  inner_join(., saps_data, by = "hadm_id") %>% 
+  inner_join(., apsiii_data, by = "hadm_id") %>% 
+  inner_join(., oasis_data, by = "hadm_id") %>% 
+  mutate(target = if_else(deathtime %in% NA, 0, 1)) %>% 
+  select(subject_id.x, hadm_id, target, sapsii, saps, sofa, lods, apsiii, oasis)
+
+all_scores %>% 
+  select(sapsii:oasis) %>% 
+  cor()
+
+#Gather
+all_scores %>% 
+  gather(key = score, value, sapsii, saps, sofa, lods, apsiii, oasis) %>% 
+  group_by(score, value) %>% 
+  summarize(deaths = sum(target), 
+            n = n()) %>% 
+  mutate(frac_deaths = deaths/n) %>% 
+  ggplot(aes(x = value, y = frac_deaths)) + 
+  geom_point(aes(color = n)) +
+  facet_grid(~score)
+
 
 ```
 
