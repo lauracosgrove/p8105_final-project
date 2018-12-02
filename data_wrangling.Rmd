@@ -22,7 +22,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ### Import data
 ```{r}
 admissions <- 
-  read.csv("./database/admissions.csv") %>% 
+  read_csv("./database/admissions.csv") %>% 
   janitor::clean_names()
 names(admissions)
   
@@ -85,18 +85,14 @@ head(admissions)
 ```{r}
 # read original data
 admissions_origin <- 
-  read.csv("./database/admissions.csv") %>% 
+  read_csv("./database/admissions.csv") %>% 
   janitor::clean_names()
 
 
 # add a death factor and duration factor
 admissions_death <- 
-  mutate(admissions_origin, living = is.na(admissions_origin$deathtime), hospitaltime = as.duration(dischtime %--% admittime))
+  mutate(admissions_origin, living = is.na(admissions_origin$deathtime), hospitaltime =  admissions_origin$dischtime - admissions_origin$admittime, edtime = admissions_origin$edouttime - admissions_origin$edregtime)
 
-
-
-
- 
 
 
 ```
@@ -107,25 +103,146 @@ admissions_death <-
 # glance data
 skimr::skim(admissions_death)
 
-
-
-
-
 ```
+
+
+
+```{r, eval=FALSE}
+
+
+### try logistic regression step by step.
+
+#SLR
+
+living_lm1 <- 
+  lm(living ~ admission_type, data = admissions_death)
+summary(living_lm1)    
+
+living_lm2 <- 
+  lm(living ~ admission_location, data = admissions_death)
+summary(living_lm2)
+
+living_lm3 <- 
+  lm(living ~ insurance, data = admissions_death)
+summary(living_lm3)
+
+living_lm4 <- 
+  lm(living ~ language, data = na.omit(select(admissions_death, living, language)))
+summary(living_lm4)
+
+living_lm5 <- 
+  lm(living ~ religion, data = admissions_death)
+summary(living_lm5)
+
+living_lm6 <- 
+  lm(living ~ marital_status, data = admissions_death)
+summary(living_lm6)
+
+living_lm7 <- 
+  lm(living ~ ethnicity, data = admissions_death)
+summary(living_lm7)
+
+living_lm8 <- 
+  lm(living ~ diagnosis, data = admissions_death)
+summary(living_lm8)
+
+living_lm9 <- 
+  lm(living ~ hospital_expire_flag, data = admissions_death)
+summary(living_lm9)
+
+living_lm10 <- 
+  lm(living ~ has_chartevents_data, data = admissions_death)
+summary(living_lm10)
+
+living_lm11 <- 
+  lm(living ~ hospitaltime, data = admissions_death)
+summary(living_lm11)
+
+living_lm12 <- 
+  lm(living ~ edtime, data = filter(edtime > 0))
+summary(living_lm12)
+```
+
+
+
+```{r eval=FALSE}
+#MLR
+
+living_mlr <- 
+  lm(living ~ hospitaltime + admission_type + admission_location + insurance + language + religion + marital_status + ethnicity + edtime + hospital_expire_flag + has_chartevents_data + insurance, data = admissions_death)
+summary(living_mlr)
+
+
+coefficients(living_mlr)
+confint(living_mlr)
+fitted(living_mlr)
+residuals(living_mlr)
+anova(living_mlr)
+vcov(living_mlr)
+influence(living_mlr)
+
+ggplot(living_mlr)
+```
+
+
+
+```{r eval=FALSE}
+# K-fold cross-validation
+library(DAAG)
+cv.lm(df = admissions_death, living_mlr, m = 3) # 3 fold cross-validation
 
 
 
 ```{r}
-#admissions_death <- 
-#  admissions_death %>% 
-#  mutate(religion = as.character(religion), hotpitaltime = as.numeric(hospitaltime)) %>% View
-# regression
-living_lm <- 
-  lm(as.numeric(hospitaltime) ~ as.character(religion), data = admissions_death)
-summary(living_lm)
-
-
+# step seems not working???
 ```
+
+
+
+
+```{r eval=FALSE}
+# All Subsets Regression
+library(leaps)
+attach(admissions_death)
+leaps <- 
+  regsubsets(living ~ hospitaltime + admission_type + admission_location + insurance + language + religion + marital_status + ethnicity + edtime + hospital_expire_flag + has_chartevents_data + insurance, data = admissions_death, nbest = 10)
+# view results 
+summary(leaps)
+# plot a table of models showing variables in each model.
+# models are ordered by the selection statistic.
+plot(leaps,scale = "r2")
+# plot statistic by subset size 
+library(car)
+subsets(leaps, statistic = "rsq")
+```
+
+
+
+```{r eval=FALSE}
+# Calculate Relative Importance for Each Predictor
+library(relaimpo)
+calc.relimp(fit,type=c("lmg","last","first","pratt"),
+   rela=TRUE)
+```
+
+
+```{r eval=FALSE}
+# Bootstrap Measures of Relative Importance (1000 samples) 
+boot <- boot.relimp(admissions_death, b = 1000, type = c("lmg", 
+  "last", "first", "pratt"), rank = TRUE, 
+  diff = TRUE, rela = TRUE)
+booteval.relimp(boot) # print result
+plot(booteval.relimp(boot,sort=TRUE)) # plot result
+```
+
+
+
+
+
+
+
+
+
 
 
 
