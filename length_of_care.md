@@ -5,18 +5,10 @@ Samantha Brown
 
 ``` r
 admissions <- 
-  read.csv("./database/admissions.csv") %>% 
-  janitor::clean_names()
-names(admissions)
+  read_csv("./database/data/admissions.csv") %>% 
+  janitor::clean_names() %>% 
+  mutate(diagnosis = factor(diagnosis))
 ```
-
-    ##  [1] "row_id"               "subject_id"           "hadm_id"             
-    ##  [4] "admittime"            "dischtime"            "deathtime"           
-    ##  [7] "admission_type"       "admission_location"   "discharge_location"  
-    ## [10] "insurance"            "language"             "religion"            
-    ## [13] "marital_status"       "ethnicity"            "edregtime"           
-    ## [16] "edouttime"            "diagnosis"            "hospital_expire_flag"
-    ## [19] "has_chartevents_data"
 
 ``` r
 n_admits = admissions %>% 
@@ -29,34 +21,37 @@ n_discharge = admissions %>%
 round((1 - (n_discharge/n_admits)) * 100, digits = 2)
 ```
 
-    ## [1] 9.88
+    ## [1] 9.93
 
-**Out of 5770 patient admissions, 5200 patients were ultimately discharged. The remaining 9.88% were recorded deaths.**
+**Out of 58976 patient admissions, 53122 patients were ultimately discharged. The remaining 9.93% were recorded deaths.**
 
 ``` r
 ## Top 10 causes of recorded mortalities
 admissions %>% 
-  filter(deathtime != "NA") %>%
+  filter(deathtime > 0) %>%
   count(diagnosis) %>% 
   top_n(10) %>% 
   arrange(desc(n))
 ```
 
+    ## Warning: Factor `diagnosis` contains implicit NA, consider using
+    ## `forcats::fct_explicit_na`
+
     ## Selecting by n
 
     ## # A tibble: 10 x 2
-    ##    diagnosis                                      n
-    ##    <fct>                                      <int>
-    ##  1 SEPSIS                                        33
-    ##  2 INTRACRANIAL HEMORRHAGE                       23
-    ##  3 PNEUMONIA                                     23
-    ##  4 CONGESTIVE HEART FAILURE                      12
-    ##  5 HYPOTENSION                                   12
-    ##  6 CARDIAC ARREST                                11
-    ##  7 ALTERED MENTAL STATUS                         10
-    ##  8 HEAD BLEED                                     9
-    ##  9 STROKE;TELEMETRY;TRANSIENT ISCHEMIC ATTACK     9
-    ## 10 ABDOMINAL PAIN                                 7
+    ##    diagnosis                    n
+    ##    <fct>                    <int>
+    ##  1 SEPSIS                     267
+    ##  2 PNEUMONIA                  264
+    ##  3 INTRACRANIAL HEMORRHAGE    231
+    ##  4 CONGESTIVE HEART FAILURE   126
+    ##  5 ALTERED MENTAL STATUS       88
+    ##  6 CARDIAC ARREST              81
+    ##  7 ABDOMINAL PAIN              80
+    ##  8 S/P FALL                    78
+    ##  9 HYPOTENSION                 74
+    ## 10 SUBARACHNOID HEMORRHAGE     71
 
 ``` r
 ## Look at sepsis diagnoses
@@ -74,12 +69,18 @@ top_10_causes = admissions %>%
   filter(diagnosis == c("ABDOMINAL PAIN", "ALTERED MENTAL STATUS", "CARDIAC ARREST", "CONGESTIVE HEART FAILURE", "HEAD BLEED", "HYPOTENSION", "INTACRANIAL HEMORRHAGE", "PNEUMONIA", "SEPSIS", "STROKE;TELEMETRY;TRANSIENT ISCHEMIC ATTACK"))
 ```
 
+    ## Warning in `==.default`(diagnosis, c("ABDOMINAL PAIN", "ALTERED MENTAL
+    ## STATUS", : longer object length is not a multiple of shorter object length
+
+    ## Warning in is.na(e1) | is.na(e2): longer object length is not a multiple of
+    ## shorter object length
+
 ``` r
 ## Insurance -- mortality vs. no mortality 
 
 ## mortality
 mortalities = admissions %>% 
-  filter(deathtime != "NA") %>% 
+  filter(deathtime > 0) %>% 
   group_by(insurance) %>% 
   count() %>% 
   mutate(outcome = "mortality")
@@ -90,7 +91,7 @@ mortalities = mortalities %>%
   mutate(patient_proportion = round(n/total_mortalities, digits = 4))
 
 discharge = admissions %>% 
-  filter(is.na(deathtime)) %>% 
+  filter(deathtime > 0) %>% 
   group_by(insurance) %>% 
   count() %>% 
   mutate(outcome = "no_mortality")
@@ -119,13 +120,13 @@ Should we measure length of stays by hours? then we can combine day and hour to 
 class(admissions$admittime)
 ```
 
-    ## [1] "factor"
+    ## [1] "POSIXct" "POSIXt"
 
 ``` r
 class(admissions$dischtime)
 ```
 
-    ## [1] "factor"
+    ## [1] "POSIXct" "POSIXt"
 
 ``` r
 time_in = as.POSIXct.Date(admissions$admittime)
@@ -148,6 +149,8 @@ admissions_dates = admissions %>%
          admittime_month = as.numeric(admittime_month), 
          admittime_day = as.numeric(admittime_day))
 ```
+
+    ## Warning: NAs introduced by coercion
 
 ``` r
 ## Manipulate time with Francis's method 
@@ -179,6 +182,7 @@ admissions <-
 
 ``` r
 ## Laura's Method
+
 library(lubridate)
 admissions_data <- read_csv("./database/data/admissions.csv") %>% 
   janitor::clean_names()
@@ -186,36 +190,110 @@ admissions_data <- read_csv("./database/data/admissions.csv") %>%
 
     ## Parsed with column specification:
     ## cols(
-    ##   row_id = col_integer(),
-    ##   subject_id = col_integer(),
-    ##   hadm_id = col_integer(),
-    ##   admittime = col_integer(),
-    ##   dischtime = col_date(format = ""),
-    ##   deathtime = col_datetime(format = ""),
-    ##   admission_type = col_datetime(format = ""),
-    ##   admission_location = col_character(),
-    ##   discharge_location = col_character(),
-    ##   insurance = col_character(),
-    ##   language = col_character(),
-    ##   religion = col_character(),
-    ##   marital_status = col_character(),
-    ##   ethnicity = col_character(),
-    ##   edregtime = col_character(),
-    ##   edouttime = col_datetime(format = ""),
-    ##   diagnosis = col_datetime(format = ""),
-    ##   hospital_expire_flag = col_character(),
-    ##   has_chartevents_data = col_integer()
+    ##   ROW_ID = col_integer(),
+    ##   SUBJECT_ID = col_integer(),
+    ##   HADM_ID = col_integer(),
+    ##   ADMITTIME = col_datetime(format = ""),
+    ##   DISCHTIME = col_datetime(format = ""),
+    ##   DEATHTIME = col_datetime(format = ""),
+    ##   ADMISSION_TYPE = col_character(),
+    ##   ADMISSION_LOCATION = col_character(),
+    ##   DISCHARGE_LOCATION = col_character(),
+    ##   INSURANCE = col_character(),
+    ##   LANGUAGE = col_character(),
+    ##   RELIGION = col_character(),
+    ##   MARITAL_STATUS = col_character(),
+    ##   ETHNICITY = col_character(),
+    ##   EDREGTIME = col_datetime(format = ""),
+    ##   EDOUTTIME = col_datetime(format = ""),
+    ##   DIAGNOSIS = col_character(),
+    ##   HOSPITAL_EXPIRE_FLAG = col_integer(),
+    ##   HAS_CHARTEVENTS_DATA = col_integer()
     ## )
 
-    ## Warning in rbind(names(probs), probs_f): number of columns of result is not
-    ## a multiple of vector length (arg 1)
+``` r
+difference = admissions_data %>% 
+  mutate(length_of_stay =  lubridate::as.duration(admittime %--% dischtime),
+        marital_status = ifelse(marital_status == "MARRIED", 1, 0),
+        mortality = ifelse(is.na(deathtime), 1, 0),
+        insurance = recode_factor(insurance, "Private" = 1, "Medicare" = 2, "Medicaid" = 3, "Government" = 4, "Self Pay" = 5))
 
-    ## Warning: 5772 parsing failures.
-    ## row # A tibble: 5 x 5 col     row col   expected   actual     file                             expected   <int> <chr> <chr>      <chr>      <chr>                            actual 1     1 <NA>  19 columns 20 columns './database/data/admissions.csv' file 2     2 <NA>  19 columns 20 columns './database/data/admissions.csv' row 3     3 <NA>  19 columns 20 columns './database/data/admissions.csv' col 4     4 <NA>  19 columns 20 columns './database/data/admissions.csv' expected 5     5 <NA>  19 columns 20 columns './database/data/admissions.csv'
-    ## ... ................. ... .................................................................... ........ .................................................................... ...... .................................................................... .... .................................................................... ... .................................................................... ... .................................................................... ........ ....................................................................
-    ## See problems(...) for more details.
+admissions %>% distinct(admission_type)
+```
+
+    ## # A tibble: 4 x 1
+    ##   admission_type
+    ##   <chr>         
+    ## 1 EMERGENCY     
+    ## 2 ELECTIVE      
+    ## 3 NEWBORN       
+    ## 4 URGENT
 
 ``` r
-##difference = admissions_data %>% 
-  ##mutate(difference =  lubridate::as.duration(admittime %--% dischtime, origin = "1556-04-29 19:03:58")) 
+icu_data = read_csv("./database/data/icu_detail.csv")
 ```
+
+    ## Parsed with column specification:
+    ## cols(
+    ##   subject_id = col_integer(),
+    ##   hadm_id = col_integer(),
+    ##   icustay_id = col_integer(),
+    ##   gender = col_character(),
+    ##   dod = col_datetime(format = ""),
+    ##   admittime = col_datetime(format = ""),
+    ##   dischtime = col_datetime(format = ""),
+    ##   los_hospital = col_double(),
+    ##   admission_age = col_double(),
+    ##   ethnicity = col_character(),
+    ##   admission_type = col_character(),
+    ##   hospital_expire_flag = col_integer(),
+    ##   hospstay_seq = col_integer(),
+    ##   first_hosp_stay = col_logical(),
+    ##   intime = col_datetime(format = ""),
+    ##   outtime = col_datetime(format = ""),
+    ##   los_icu = col_double(),
+    ##   icustay_seq = col_integer(),
+    ##   first_icu_stay = col_logical()
+    ## )
+
+``` r
+length_of_care = lm(length_of_stay ~ insurance + marital_status + mortality, data = difference)
+```
+
+    ## Note: method with signature 'Duration#ANY' chosen for function '-',
+    ##  target signature 'Duration#Duration'.
+    ##  "ANY#Duration" would also be valid
+
+``` r
+summary(length_of_care)
+```
+
+    ## 
+    ## Call:
+    ## lm(formula = length_of_stay ~ insurance + marital_status + mortality, 
+    ##     data = difference)
+    ## 
+    ## Residuals:
+    ##      Min       1Q   Median       3Q      Max 
+    ## -1016219  -507517  -258543   174203 24614124 
+    ## attr(,"class")
+    ## [1] "Duration"
+    ## attr(,"class")attr(,"package")
+    ## [1] "lubridate"
+    ## 
+    ## Coefficients:
+    ##                Estimate Std. Error t value Pr(>|t|)    
+    ## (Intercept)      902415      15888  56.799  < 2e-16 ***
+    ## insurance2         3549       9565   0.371    0.711    
+    ## insurance3        82724      16322   5.068 4.03e-07 ***
+    ## insurance4       -16526      26536  -0.623    0.533    
+    ## insurance5      -233825      45780  -5.108 3.28e-07 ***
+    ## marital_status     9061       8744   1.036    0.300    
+    ## mortality        -61427      13802  -4.451 8.58e-06 ***
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+    ## 
+    ## Residual standard error: 936000 on 48841 degrees of freedom
+    ##   (10128 observations deleted due to missingness)
+    ## Multiple R-squared:  0.001597,   Adjusted R-squared:  0.001474 
+    ## F-statistic: 13.02 on 6 and 48841 DF,  p-value: 9.059e-15
