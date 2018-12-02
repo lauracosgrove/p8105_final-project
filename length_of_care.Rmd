@@ -71,12 +71,11 @@ total_discharge = sum(discharge$n)
 
 dishcharge = discharge %>% 
   mutate(patient_proportion = round(n/total_discharge, digits = 4)) %>% 
-  rbind(mortalities)
-  
+  rbind(mortalities) %>% 
+  mutate(log_count = log(n)) %>% 
+  ggplot(aes(x = reorder(insurance, log_count), y = log_count)) +
+  geom_point(color = "blue") 
 
-##mutate(log_count = log(n)) %>% 
-##ggplot(aes(x = reorder(insurance, log_count), y = log_count)) +
-##geom_point(color = "blue") 
   
 ```
 
