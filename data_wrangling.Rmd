@@ -23,7 +23,7 @@ library(broom)
 ### Import data
 ```{r}
 admissions <- 
-  read_csv("./database/admissions.csv") %>% 
+  read_csv("./database/data/admissions.csv") %>% 
   janitor::clean_names()
 names(admissions)
   
@@ -86,15 +86,16 @@ head(admissions)
 ```{r}
 # read original data
 admissions_origin <- 
-  read_csv("./database/admissions.csv") %>% 
+  read_csv("./database/data/admissions.csv") %>% 
   janitor::clean_names()
 
 
 # add a death factor and duration factor
+# exclude NEWBORN, because they are not treated as patients.
+### There are too many diagnosis, so the diagnosis will be analyzed by some analysis of scores in another part.
 admissions_death <- 
-  mutate(admissions_origin, living = is.na(admissions_origin$deathtime), hospitaltime =  admissions_origin$dischtime - admissions_origin$admittime, edtime = admissions_origin$edouttime - admissions_origin$edregtime)
-
-
+  mutate(admissions_origin, living = is.na(admissions_origin$deathtime), hospitaltime =  admissions_origin$dischtime - admissions_origin$admittime, edtime = admissions_origin$edouttime - admissions_origin$edregtime) %>% 
+  filter(diagnosis != "NEWBORN")
 
 ```
 
@@ -192,7 +193,7 @@ broom::tidy(living_lm12)
 #MLR
 
 living_mlr <- 
-  lm(living ~ hospitaltime + admission_type + admission_location + insurance + language + religion + marital_status + ethnicity + edtime + hospital_expire_flag + has_chartevents_data + insurance, data = admissions_death)
+  glm(living ~ admission_type + admission_location + insurance + language + religion + marital_status + ethnicity + hospital_expire_flag + has_chartevents_data + hospitaltime + edtime, data = admissions_death)
 summary(living_mlr)
 
 
@@ -204,7 +205,10 @@ anova(living_mlr)
 vcov(living_mlr)
 influence(living_mlr)
 
-ggplot(living_mlr)
+mutate(admissions_death, fitted = fitted(living_mlr)) %>%
+  ggplot(., aes(y = , x = )) + 
+  geom_point() + 
+  geom_line(aes(y = fitted), color = "red") + theme_bw()
 ```
 
 
@@ -212,12 +216,15 @@ ggplot(living_mlr)
 ```{r eval=FALSE}
 # K-fold cross-validation
 library(DAAG)
-cv.lm(df = admissions_death, living_mlr, m = 3) # 3 fold cross-validation
+cv.lm(df = admissions_death, living_mlr, m = 5) # 5 fold cross-validation
 
 
 
 ```{r}
-# step seems not working???
+step <- step(living_mlr)
+broom::tidy(step)
+step$anova
+
 ```
 
 
