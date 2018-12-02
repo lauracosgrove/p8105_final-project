@@ -1,4 +1,4 @@
-Generating SAPS II scores
+Generating severity scores
 ================
 Laura Cosgrove
 11/20/2018
@@ -77,7 +77,7 @@ sapsii_data %>%
 
 ![](sapsii_files/figure-markdown_github/unnamed-chunk-4-1.png)
 
-A note in the SQL file is the following: -- Note: -- The score is calculated for *all* ICU patients, with the assumption that the user will subselect appropriate ICUSTAY\_IDs. -- For example, the score is calculated for neonates, but it is likely inappropriate to actually use the score values for these patients.
+A note in the SQL file is the following: Note: The score is calculated for *all* ICU patients, with the assumption that the user will subselect appropriate ICUSTAY\_IDs. For example, the score is calculated for neonates, but it is likely inappropriate to actually use the score values for these patients.
 
 ``` sql
 SELECT *
@@ -96,38 +96,6 @@ FROM sapsii i
 |        28448|    177527|       200012|      11|     0.0112653|           0|          0|             5|            0|               NA|          0|           0|           0|                 0|              0|                   0|                NA|           0|                   0|                     6|
 |         9514|    127229|       200014|      43|     0.3055972|          18|          2|             5|            0|                6|          4|           0|           0|                 0|              0|                   0|                 0|           0|                   0|                     8|
 |        74032|    117458|       200016|      20|     0.0372047|          12|          2|             5|            0|               NA|          0|           0|           0|                 0|              1|                   0|                NA|           0|                   0|                     0|
-
-``` sql
--- Calculate the AUROC of age for predicting in-hospital mortality
--- You can easily calculate the AUROC of any model you'd like by:
---  Replacing "PRED" with your predictor
---  Replacing "TAR" with the target (*must* be a binary target)
-
-with datatable as (
-select
-  -- name the predictor "PRED"
-  cast(adm.admittime as date) - cast(pat.dob as date) as PRED -- age is our predictor
-  -- name the target variable "TAR"
-  , case when adm.deathtime is not null then 1 else 0 end as TAR -- in-hospital mortality
-from admissions adm
-inner join patients pat
-  on adm.subject_id = pat.subject_id
-)
-, datacs as (
-select
-  TAR
-  -- calculate the cumulative sum of negative targets, then multiply by positive targets
-  -- this has the effect of returning 0 for negative targets, and the # of negative targets below each positive target
-  , TAR * SUM(1-TAR) OVER (ORDER BY PRED ASC ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS AUROC
-from datatable
-)
-select
-  -- Calculate the AUROC as:
-  --    SUM( number of negative targets below each positive target )
-  -- /  number of possible negative/positive target pairs
-  round(sum(AUROC) / (sum(TAR)*sum(1-TAR)),4) as AUROC
-from datacs;
-```
 
 ROC curve for saps ii score:
 
@@ -209,4 +177,86 @@ admissions %>%
   theme_bw()
 ```
 
-![](sapsii_files/figure-markdown_github/unnamed-chunk-7-1.png)
+![](sapsii_files/figure-markdown_github/unnamed-chunk-6-1.png)
+
+Repeat for other severity scores:
+
+``` r
+sofa_view <- read_file("./database/mimic-code/concepts/severityscores/sofa.sql")
+lods_view <- read_file("./database/mimic-code/concepts/severityscores/lods.sql")
+saps_view <- read_file("./database/mimic-code/concepts/severityscores/saps.sql")
+apsiii_view <- read_file("./database/mimic-code/concepts/severityscores/apsiii.sql")
+oasis_view <- read_file("./database/mimic-code/concepts/severityscores/oasis.sql")
+
+#SOFA needs echo data 
+echodata_view <- read_file("./database/mimic-code/concepts/echo-data.sql")
+
+dbGetQuery(con, echodata_view)
+dbGetQuery(con, sofa_view)
+
+#LODS
+dbGetQuery(con, lods_view)
+
+#SAPS needs ventilated first day
+ventfirstday_view <- read_file("./database/mimic-code/concepts/firstday/ventilation-first-day.sql")
+dbGetQuery(con, ventfirstday_view)
+dbGetQuery(con, saps_view)
+
+# APSIII  
+dbGetQuery(con, apsiii_view)
+
+# OASIS  
+dbGetQuery(con, oasis_view)
+```
+
+As before, read all the data from the generated materialized views into tibbles:
+
+``` r
+#SOFA
+sofa_query <- "SELECT *
+              FROM sofa i;"
+sofa_data <- as.tibble(dbGetQuery(con, sofa_query))
+
+#LODS
+lods_query <- "SELECT *
+              FROM lods i;"
+lods_data <- as.tibble(dbGetQuery(con, lods_query))
+
+#SAPS
+saps_query <- "SELECT *
+              FROM saps i;"
+saps_data <- as.tibble(dbGetQuery(con, saps_query))
+
+# APSIII  
+apsiii_query <- "SELECT *
+              FROM apsiii i;"
+apsiii_data <- as.tibble(dbGetQuery(con, apsiii_query))
+
+#OASIS
+oasis_query <- "SELECT *
+              FROM oasis i;"
+oasis_data <- as.tibble(dbGetQuery(con, oasis_query))
+```
+
+Plot curves for all other scores
+
+``` r
+# I should create a nested df where I can map the inner join and generaye multiple plots in the same code chunk
+
+admissions %>% 
+  inner_join(., patients, by = "subject_id") %>% 
+  filter(has_chartevents_data == 1) %>% 
+  inner_join(., sofa_data, by = "hadm_id") %>% 
+  mutate(target = if_else(deathtime %in% NA, 0, 1),
+         predictor = sofa) %>%
+  select(subject_id.x, target, predictor) %>% 
+  group_by(predictor) %>% 
+  summarize(deaths = sum(target),
+            n = n()) %>% 
+  mutate(frac_deaths = deaths/n) %>% 
+  ggplot(aes(x = predictor, y = frac_deaths)) +
+  geom_point(aes(color = n)) + 
+  theme_bw()
+```
+
+![](sapsii_files/figure-markdown_github/unnamed-chunk-9-1.png)
