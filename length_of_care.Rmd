@@ -13,8 +13,7 @@ library(lubridate)
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-
-```{r}
+```{r, message = FALSE}
 admissions <- 
   read.csv("./database/admissions.csv") %>% 
   janitor::clean_names()
@@ -22,14 +21,30 @@ names(admissions)
 ```
 
 
+```{r, output = FALSE}
+n_admits = admissions %>% 
+  nrow()
+
+n_discharge = admissions %>% 
+  filter(is.na(deathtime)) %>% 
+  nrow()
+
+round((1 - (n_discharge/n_admits)) * 100, digits = 2)
+```
+
+**Out of `r admissions %>% nrow()` patient admissions, `r admissions %>%  filter(is.na(deathtime)) %>%  nrow()` patients were ultimately discharged. The remaining `r round((1 - (n_discharge/n_admits)) * 100, digits = 2)`% were recorded deaths.**
+
+
 ```{r}
 ## Top 10 causes of recorded mortalities
-top_causes_of_deaths = admissions %>% 
+admissions %>% 
   filter(deathtime != "NA") %>%
   count(diagnosis) %>% 
-  top_n(10)
+  top_n(10) %>% 
+  arrange(desc(n))
+```
 
-
+```{r}
 ## Look at sepsis diagnoses
 sepsis = admissions %>% 
   filter(diagnosis == "SEPSIS") %>% 
@@ -41,9 +56,10 @@ sepsis = admissions %>%
 
 
 ## Look at top 10 causes of mortalities
-mortalities = admissions %>% 
+top_10_causes = admissions %>% 
   filter(diagnosis == c("ABDOMINAL PAIN", "ALTERED MENTAL STATUS", "CARDIAC ARREST", "CONGESTIVE HEART FAILURE", "HEAD BLEED", "HYPOTENSION", "INTACRANIAL HEMORRHAGE", "PNEUMONIA", "SEPSIS", "STROKE;TELEMETRY;TRANSIENT ISCHEMIC ATTACK"))
 ```
+
 
 
 ```{r}

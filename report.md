@@ -1,0 +1,22 @@
+Report
+================
+Samantha Brown
+12/2/2018
+
+Group members: Samantha Brown (UNI: slb2240), Laura Cosgrove (UNI: lec2197), and Francis Z. Fang (UNI: zf2211).
+
+The written report (e.g. R Markdown and MD files) produced by your team are central to this project. This will detail how you completed your project, and should cover data collection and cleaning, exploratory analyses, alternative strategies, descriptions of approaches, and a discussion of results. We anticipate that your project will change somewhat over time; these changes and the reasons for them should be documented! You should write one report document per group, and be sure to include all group member names in the document.
+
+Your R Markdown should include the following topics. Depending on your project type the amount of discussion you devote to each of them will vary:
+
+-   Motivation: Provide an overview of the project goals and motivation.
+-   Related work: Anything that inspired you, such as a paper, a web site, or something we discussed in class.
+-   Initial questions: What questions are you trying to answer? How did these questions evolve over the course of the project? What new questions did you consider in the course of your analysis?
+-   Data: Source, scraping method, cleaning, etc.
+-   Exploratory analysis: Visualizations, summaries, and exploratory statistical analyses. Justify the steps you took, and show any major changes to your ideas.
+-   Additional analysis: If you undertake formal statistical analyses, describe these in detail
+-   Discussion: What were your findings? Are they what you expect? What insights into the data can you make?
+
+As this will be your only chance to describe your project in detail, make sure that your report is a standalone document that fully describes your process and results. We also expect you to write high-quality code that is understandable to an outside reader. Coding collaboratively and actively reviewing code within the team will help with this!
+
+Your report should be developed in a dedicated GitHub repository. Data should not be included in the repo; make the data accessible somewhere online (e.g. google drive or a downloadable link) and, in the report, include instructions on where to access the data. If we cannot access your work or links because these directions are not followed correctly, we will not grade your work.
