@@ -45,7 +45,7 @@ The raw admissions dataset consists of `r nrow(admissions)` observations of `r n
 
 * Row ID
 * Subject ID
-* HADM ID
+* HADM ID (hospital admission ID)
 * Admit time
 * Discharge time
 * Death time
@@ -73,6 +73,25 @@ n_discharge = admissions %>%
 ```
 
 Out of `r admissions %>% nrow()` patient admissions, `r admissions %>%  filter(is.na(deathtime)) %>%  nrow()` patients were ultimately discharged. The remaining `r round((1 - (n_discharge/n_admits)) * 100, digits = 2)`% were recorded as deaths.
+
+```{r}
+## Top 10 causes of recorded mortalities
+admissions %>% 
+  filter(deathtime > 0) %>%
+  count(diagnosis) %>% 
+  top_n(10) %>% 
+  arrange(desc(n))
+```
+
+
+```{r}
+difference = admissions %>% 
+  mutate(length_of_stay =  lubridate::as.duration(admittime %--% dischtime),
+         mortality = ifelse(is.na(deathtime), 1, 0))
+
+summary(difference$length_of_stay)
+```
+
 
 ## Additional Analysis
 

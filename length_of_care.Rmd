@@ -54,7 +54,18 @@ marital_status = admissions %>%
   arrange(desc(percent))
 ```
 
-`r marital_status[1,3]`% of the critical care patients were married, while `r marital_status[2, 3]`% of patients were single.
+`r marital_status[1,3]`% of the critical care patients were married, while `r marital_status[2, 3]`% of patients were single. The remaining `r round(100 - (marital_status[1,3] + marital_status[2, 3]), digits = 2)`% were either widowed, divorced, separated, had a life partner, or marital status was unknown.
+
+```{r}
+## Distribution of insurance type
+admissions %>% 
+  group_by(insurance) %>% 
+  count() %>% 
+  mutate(percent_of_patients = round(n/nrow(admissions)*100, digits = 2)) %>% 
+  arrange(desc(percent_of_patients)) %>% 
+  select(-n)
+```
+
 
 
 ```{r}
@@ -79,7 +90,7 @@ sepsis = admissions %>%
 
 ## Look at top 10 causes of mortalities
 top_10_causes = admissions %>% 
-  filter(diagnosis == c("ABDOMINAL PAIN", "ALTERED MENTAL STATUS", "CARDIAC ARREST", "CONGESTIVE HEART FAILURE", "HEAD BLEED", "HYPOTENSION", "INTACRANIAL HEMORRHAGE", "PNEUMONIA", "SEPSIS", "STROKE;TELEMETRY;TRANSIENT ISCHEMIC ATTACK"))
+  filter(diagnosis == c("SEPSIS", "PNEUMONIA", "INTRACRANIAL HEMORRHAGE", "CONGESTIVE HEART FAILURE", "ALTERED MENTAL STATUS", "CARDIAC ARREST", "ABDOMINAL PAIN", "S/P FALL", "HYPOTENSION", "SUBARACHNOID HEMORRHAGE"))
 ```
 
 
@@ -129,14 +140,21 @@ admissions_data <- read_csv("./database/data/admissions.csv") %>%
 
 ```
 
-## Length of Stay Regression
 ```{r}
 difference = admissions_data %>% 
   mutate(length_of_stay =  lubridate::as.duration(admittime %--% dischtime),
-        mortality = ifelse(is.na(deathtime), 1, 0))
+         length_in_days = as.numeric(length_of_stay)/(60*60*24),
+         mortality = ifelse(is.na(deathtime), 1, 0))
 
-admissions %>% distinct(admission_type)
+summary(difference$length_of_stay)
+summary(difference$length_in_days)
 
+```
+
+
+
+## Length of Stay Regression
+```{r}
 icu_data = read_csv("./database/data/icu_detail.csv")
 
 library(broom)
@@ -162,11 +180,6 @@ summary(fit6)
 
 fit7 = update(length_of_care, . ~ . +diagnosis)
 summary(fit1)
-
-
-
-
-
 
 summary(length_of_care)
 
