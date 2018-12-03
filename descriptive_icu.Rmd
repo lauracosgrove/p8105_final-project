@@ -104,6 +104,6 @@ write_csv(icu_detail_data, path = "./database/icu_detail.csv")
 icu_detail_data
 ```
 
-The ICU detail query extracts both hospital level length of stay as well as ICU-level length of stay.
+The ICU detail query extracts both hospital level length of stay as well as ICU-level length of stay, in terms of days.
 
 
