@@ -298,6 +298,9 @@ broom::tidy(living_mlr_nona)
 
 
 
+
+
+
 ```{r eval=FALSE}
 # K-fold cross-validation
 library(DAAG)
@@ -308,7 +311,7 @@ cv.lm(df = admissions_death, living_mlr, m = 5) # 5 fold cross-validation
 ```{r}
 step <- step(living_mlr)
 broom::tidy(step)
-step$anova
+
 
 ```
 
@@ -407,4 +410,59 @@ names(fda$results)
 ```
 There are `r length(fda$results)` observations in the `event` dataset under `drug`, they are: `r names(fda$results)`.
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+### Visulization
+Let's take a look at the combination of MIMIC data and ICU together(for we want to know the ICU time since it is more critical for mortality)
+
+```{r}
+icu <- 
+  read_csv("./database/data/icu_detail.csv") %>% 
+  janitor::clean_names()
+
+# See what is the types of columns in icu dataset
+output = vector("list", length = 19)
+
+for (i in 1:19) {
+  output[[i]] = class(icu[[i]])
+}
+```
+
+
+
+
+Let's combine these two dataset so we can visualize it correctly
+
+```{r}
+
+total_patient <-
+  merge(admissions_death, icu, by="hadm_id") %>% 
+  as.tibble()
+
+```
+
+
+
+
+Let's see some plots from these two datasets
+```{r}
+plot(admissions_death)
+plot(icu)
+```
 
