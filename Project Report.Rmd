@@ -1,0 +1,80 @@
+---
+title: "Project Report"
+author: "Francis"
+date: "12/4/2018"
+output: html_document
+---
+Group Members:
+Francis Fang zf2211
+Laura
+Samantha
+
+
+
+
+### Motivation
+
+As some of us worked in health related facilities, we found that there are a lot of patients suffered with pain and life loss. we would like to analysis data collected in hospital to find the inner connection between mortality and other factors, in order to help health related facilities, like CDC and hospital to better control different factors to better help patients.
+
+
+
+
+
+
+### Related work
+
+
+
+
+
+
+
+
+### Initial questions
+
+Are there inner relations between mortality and other factors? Since we have a lot of factors found in our data collected, which of them are more critical and pay more attention?
+
+To be specific, since this is a highly diversified society, some factors more political, like ethnicity, language, 
+
+
+
+
+
+
+
+### Data
+
+
+
+
+
+
+
+
+
+### Exploratory analysis
+
+
+
+
+
+
+
+
+
+
+
+### Additional analysis
+
+
+
+
+
+
+
+
+
+
+
+
+### Discussion

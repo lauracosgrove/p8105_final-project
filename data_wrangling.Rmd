@@ -191,11 +191,17 @@ broom::tidy(living_lm12)
 
 ```{r eval=FALSE}
 #MLR
-
 living_mlr <- 
   glm(living ~ admission_type + admission_location + insurance + language + religion + marital_status + ethnicity + hospital_expire_flag + has_chartevents_data + hospitaltime + edtime, data = admissions_death)
-summary(living_mlr)
+broom::glance(living_mlr)
 
+
+
+
+
+
+
+# Do more regression analysis
 
 coefficients(living_mlr)
 confint(living_mlr)
@@ -203,13 +209,92 @@ fitted(living_mlr)
 residuals(living_mlr)
 anova(living_mlr)
 vcov(living_mlr)
-influence(living_mlr)
 
-mutate(admissions_death, fitted = fitted(living_mlr)) %>%
-  ggplot(., aes(y = , x = )) + 
-  geom_point() + 
-  geom_line(aes(y = fitted), color = "red") + theme_bw()
+
 ```
+
+
+```{r}
+###backward elimination
+#Backward elimination: take out non-significant variables ’one at a time’ starting with the highest p-value
+step1 <- update(living_mlr, . ~. -admission_type)
+broom::glance(step1)
+# remove
+
+step2 <- update(living_mlr, . ~. -admission_type-admission_location)
+broom::glance(step2)
+#keep
+
+step3 <- update(living_mlr, . ~. -admission_type-insurance)
+broom::glance(step3)
+#keep
+
+step4 <- update(living_mlr, . ~. -admission_type-language)
+broom::glance(step4)
+#remove
+
+step5 <- update(living_mlr, . ~. -admission_type-language-religion)
+broom::glance(step5)
+#keep
+
+step6 <- update(living_mlr, . ~. -admission_type-language-marital_status)
+broom::glance(step6)
+#keep
+
+step7 <- update(living_mlr, . ~. -admission_type-language-ethnicity)
+broom::glance(step7)
+#keep
+
+step8 <- update(living_mlr, . ~. -admission_type-language-hospital_expire_flag)
+broom::glance(step8)
+#keep
+
+step9 <- update(living_mlr, . ~. -admission_type-language-has_chartevents_data)
+broom::glance(step9)
+#keep
+
+step10 <- update(living_mlr, . ~.  -admission_type-language-hospitaltime)
+broom::glance(step10)
+#keep
+
+step11 <- update(living_mlr, . ~. -admission_type-language-edtime)
+broom::glance(step11)
+#keep
+
+```
+
+So we got this regression model:
+
+
+
+\item $\hat{Living}$ = \item $\hat{\beta_0}$ + \item $\hat{\beta_1}$ Admission.Location + \item $\hat{\beta_2}$ Insurance + \item $\hat{\beta_3}$ Insurance + \item $\hat{\beta_4}$ Religion + \item $\hat{\beta_5}$ Marital.Status + \item $\hat{\beta_6}$ Ethnicity + \item $\hat{\beta_7}$ Hospital.Expire.Flag + \item $\hat{\beta_8}$ Has.ChartEvents.Data + \item $\hat{\beta_9}$ Hospital.Time + \item $\hat{\beta_10}$ Edtime 
+
+
+
+
+
+
+
+
+
+Maybe we need this step:
+```{r}
+# Remove NA lines
+admissions_death_nona <- 
+  admissions_death %>% 
+  select(admission_type, admission_location, insurance, religion, marital_status, ethnicity, hospitaltime, edtime) %>% 
+  na.omit() 
+
+#MLR with no NAs
+living_mlr_nona <- 
+  glm(living ~ admission_type + admission_location + insurance + language + religion + marital_status + ethnicity + hospital_expire_flag + has_chartevents_data + hospitaltime + edtime, data = admissions_death_nona)
+summary(living_mlr_nona)
+broom::glance(living_mlr_nona)
+broom::tidy(living_mlr_nona)
+```
+
+
+
 
 
 
@@ -230,7 +315,7 @@ step$anova
 
 
 
-```{r eval=FALSE}
+```{r }
 # All Subsets Regression
 library(leaps)
 attach(admissions_death)
