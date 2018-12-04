@@ -1382,7 +1382,42 @@ total_patient <-
 #mutate icu time
 total_patient <- 
   mutate(total_patient, icutime = outtime - intime)
+
+skimr::skim(total_patient) %>% 
+  skimr::skim()
 ```
+
+    ## Skim summary statistics
+    ##  n obs: 339 
+    ##  n variables: 6 
+    ## 
+    ## ── Variable type:character ─────────────────────────────────────────────────────────────────────────────────────
+    ##   variable missing complete   n min max empty n_unique
+    ##  formatted       0      339 339   1  13     0      138
+    ##      level       3      336 339   4   5     0        3
+    ##       stat       0      339 339   1   8     0       17
+    ##       type       0      339 339   7   9     0        5
+    ##   variable       0      339 339   3  22     0       41
+    ## 
+    ## ── Variable type:numeric ───────────────────────────────────────────────────────────────────────────────────────
+    ##  variable missing complete   n    mean      sd       p0 p25      p50   p75
+    ##     value      13      326 339 5.3e+08 1.7e+09 -2504940   1 16716.54 53219
+    ##     p100     hist
+    ##  7.6e+09 ▇▁▁▁▁▁▁▁
+
+``` r
+head(total_patient) %>% 
+  knitr::kable()
+```
+
+|  hadm\_id|  row\_id|  subject\_id.x| admittime.x         | dischtime.x         | deathtime | admission\_type.x | admission\_location       | discharge\_location | insurance | language | religion          | marital\_status | ethnicity.x            | edregtime           | edouttime           | diagnosis               |  hospital\_expire\_flag.x|  has\_chartevents\_data| living | hospitaltime | edtime     |  subject\_id.y|  icustay\_id| gender | dod                 | admittime.y         | dischtime.y         |  los\_hospital|  admission\_age| ethnicity.y            | admission\_type.y |  hospital\_expire\_flag.y|  hospstay\_seq| first\_hosp\_stay | intime              | outtime             |  los\_icu|  icustay\_seq| first\_icu\_stay | icutime     |
+|---------:|--------:|--------------:|:--------------------|:--------------------|:----------|:------------------|:--------------------------|:--------------------|:----------|:---------|:------------------|:----------------|:-----------------------|:--------------------|:--------------------|:------------------------|-------------------------:|-----------------------:|:-------|:-------------|:-----------|--------------:|------------:|:-------|:--------------------|:--------------------|:--------------------|--------------:|---------------:|:-----------------------|:------------------|-------------------------:|--------------:|:------------------|:--------------------|:--------------------|---------:|-------------:|:-----------------|:------------|
+|    100001|    45749|          58526| 2117-09-11 11:46:00 | 2117-09-17 16:45:00 | NA        | EMERGENCY         | CLINIC REFERRAL/PREMATURE | HOME                | Private   | ENGL     | PROTESTANT QUAKER | DIVORCED        | WHITE                  | 2117-09-11 08:59:00 | 2117-09-11 12:35:00 | DIABETIC KETOACIDOSIS   |                         0|                       1| TRUE   | 8939 mins    | 12960 secs |          58526|       275225| F      | NA                  | 2117-09-11 04:00:00 | 2117-09-17 04:00:00 |         6.2076|         35.4765| WHITE                  | EMERGENCY         |                         0|              1| TRUE              | 2117-09-11 04:00:00 | 2117-09-15 04:00:00 |    4.2567|             1| TRUE             | 345600 secs |
+|    100003|    44463|          54610| 2150-04-17 15:34:00 | 2150-04-21 17:30:00 | NA        | EMERGENCY         | EMERGENCY ROOM ADMIT      | HOME                | Private   | ENGL     | NOT SPECIFIED     | SINGLE          | WHITE                  | 2150-04-17 13:10:00 | 2150-04-17 17:47:00 | UPPER GI BLEED          |                         0|                       1| TRUE   | 5876 mins    | 16620 secs |          54610|       209281| M      | 2150-12-28 05:00:00 | 2150-04-17 04:00:00 | 2150-04-21 04:00:00 |         4.0806|         59.9127| WHITE                  | EMERGENCY         |                         0|              1| TRUE              | 2150-04-17 04:00:00 | 2150-04-19 04:00:00 |    1.9425|             1| TRUE             | 172800 secs |
+|    100006|    12108|           9895| 2108-04-06 15:49:00 | 2108-04-18 17:18:00 | NA        | EMERGENCY         | EMERGENCY ROOM ADMIT      | HOME                | Private   | NA       | NOT SPECIFIED     | SINGLE          | BLACK/AFRICAN AMERICAN | 2108-04-06 11:39:00 | 2108-04-06 17:56:00 | COPD FLARE              |                         0|                       1| TRUE   | 17369 mins   | 22620 secs |           9895|       291788| F      | 2109-10-24 04:00:00 | 2108-04-06 04:00:00 | 2108-04-18 04:00:00 |        12.0618|         48.9173| BLACK/AFRICAN AMERICAN | EMERGENCY         |                         0|              1| TRUE              | 2108-04-06 04:00:00 | 2108-04-11 04:00:00 |    4.9776|             1| TRUE             | 432000 secs |
+|    100007|    28086|          23018| 2145-03-31 05:33:00 | 2145-04-07 12:40:00 | NA        | EMERGENCY         | EMERGENCY ROOM ADMIT      | HOME                | Private   | NA       | JEWISH            | MARRIED         | WHITE                  | 2145-03-30 20:43:00 | 2145-03-31 06:08:00 | BOWEL OBSTRUCTION       |                         0|                       1| TRUE   | 10507 mins   | 33900 secs |          23018|       217937| F      | NA                  | 2145-03-31 04:00:00 | 2145-04-07 04:00:00 |         7.2965|         73.8229| WHITE                  | EMERGENCY         |                         0|              1| TRUE              | 2145-03-31 04:00:00 | 2145-04-04 04:00:00 |    4.0998|             1| TRUE             | 345600 secs |
+|    100009|      671|            533| 2162-05-16 15:56:00 | 2162-05-21 13:37:00 | NA        | EMERGENCY         | TRANSFER FROM HOSP/EXTRAM | HOME HEALTH CARE    | Private   | NA       | CATHOLIC          | MARRIED         | WHITE                  | NA                  | NA                  | CORONARY ARTERY DISEASE |                         0|                       1| TRUE   | 7061 mins    | NA         |            533|       253656| M      | NA                  | 2162-05-16 04:00:00 | 2162-05-21 04:00:00 |         4.9035|         60.7971| WHITE                  | EMERGENCY         |                         0|              1| TRUE              | 2162-05-17 04:00:00 | 2162-05-19 04:00:00 |    2.4908|             1| TRUE             | 172800 secs |
+|    100010|    44865|          55853| 2109-12-10 07:15:00 | 2109-12-14 16:45:00 | NA        | ELECTIVE          | PHYS REFERRAL/NORMAL DELI | HOME                | Private   | ENGL     | EPISCOPALIAN      | MARRIED         | WHITE                  | NA                  | NA                  | RENAL MASS LEFT/SDA     |                         0|                       1| TRUE   | 6330 mins    | NA         |          55853|       271147| F      | NA                  | 2109-12-10 05:00:00 | 2109-12-14 05:00:00 |         4.3958|         54.5208| WHITE                  | ELECTIVE          |                         0|              1| TRUE              | 2109-12-10 05:00:00 | 2109-12-12 05:00:00 |    1.5940|             1| TRUE             | 172800 secs |
 
 Let's see some plots from these two datasets Let's focus on the `hospitaltime` and `icutime`
 

@@ -397,6 +397,14 @@ total_patient <-
 #mutate icu time
 total_patient <- 
   mutate(total_patient, icutime = outtime - intime)
+
+skimr::skim(total_patient) %>% 
+  skimr::skim()
+
+head(total_patient) %>% 
+  knitr::kable()
+
+
 ```
 
 
