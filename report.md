@@ -18,9 +18,9 @@ Related work includes a 2015 NIH research publication titled *"Mortality predict
 Data Collection
 ---------------
 
-**Include instructions for where to access the data (through somewhere online like a google drive or downloadable link)**
-
 MIMIC is an openly accessible critical care database created by the MIT Lab for Computational Physiology. It comprises deidentified health-related data associated with over forty thousand patients who stayed in critical care units of the Beth Israel Deaconess Medical Center between 2001 and 2012. It includes the following information: demographics, vital sign measurements made at the bedside (~1 data point per hour), laboratory test results, procedures, medications, caregiver notes, imaging reports, and mortality (both in and out of hospital). After completing the CITI “Data or Specimens Only Research” training course, PhysioNet granted us access to the MIMIC datasets.
+
+The next step was to follow the
 
 Initial Questions
 -----------------
