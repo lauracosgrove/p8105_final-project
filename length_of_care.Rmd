@@ -143,11 +143,19 @@ admissions_data <- read_csv("./database/data/admissions.csv") %>%
 ```{r}
 difference = admissions_data %>% 
   mutate(length_of_stay =  lubridate::as.duration(admittime %--% dischtime),
-         length_in_days = as.numeric(length_of_stay)/(60*60*24),
          mortality = ifelse(is.na(deathtime), 1, 0))
 
 summary(difference$length_of_stay)
-summary(difference$length_in_days)
+
+stay_in_days = difference %>% 
+  mutate(length_of_stay = as.numeric(length_of_stay)/(60*60*24))
+
+
+max(difference$length_of_stay)
+
+
+max_length_in_days = max(as.numeric(difference$length_of_stay)/(60*60*24))
+-1*min(as.numeric(difference$length_of_stay))/(60*60*24)
 
 ```
 
@@ -160,29 +168,34 @@ icu_data = read_csv("./database/data/icu_detail.csv")
 library(broom)
 length_of_care = lm(length_of_stay ~ admission_type + insurance + marital_status + religion + ethnicity + mortality, data = difference)
 
-fit1 = update(length_of_care, . ~ . -admission_type)
-summary(fit1)
+## Why such a high p-value?
+lm(mortality ~ length_of_stay, data = difference) %>% summary()
 
-fit2 = update(length_of_care, . ~ . -insurance)
-summary(fit2)
+##fit1 = update(length_of_care, . ~ . -admission_type)
+##summary(fit1)
 
-fit3 = update(length_of_care, . ~ . -marital_status)
-summary(fit3)
+##fit2 = update(length_of_care, . ~ . -insurance)
+##summary(fit2)
 
-fit4 = update(length_of_care, . ~ . -religion)
-summary(fit4)
+##fit3 = update(length_of_care, . ~ . -marital_status)
+##summary(fit3)
 
-fit5 = update(length_of_care, . ~ . -ethnicity)
-summary(fit1)
+##fit4 = update(length_of_care, . ~ . -religion)
+##summary(fit4)
 
-fit6 = update(length_of_care, . ~ . -mortality)
-summary(fit6)
+##fit5 = update(length_of_care, . ~ . -ethnicity)
+##summary(fit1)
 
-fit7 = update(length_of_care, . ~ . +diagnosis)
-summary(fit1)
+##fit6 = update(length_of_care, . ~ . -mortality)
+##summary(fit6)
 
-summary(length_of_care)
+##fit7 = update(length_of_care, . ~ . +diagnosis)
+##summary(fit1)
+
 
 summary(step(length_of_care, direction = "backward"))
+
+stay_vs_mortality = lm(length_of_stay ~ mortality, data = difference)
+anova(stay_vs_mortality)
 ```
 
