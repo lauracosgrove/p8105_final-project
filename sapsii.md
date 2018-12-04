@@ -181,6 +181,8 @@ admissions %>%
 
 Repeat for other severity scores:
 
+(Note: must run document once before knitting, but eval is set to false so the views aren't re-loaded every time you knit.)
+
 ``` r
 sofa_view <- read_file("./database/mimic-code/concepts/severityscores/sofa.sql")
 lods_view <- read_file("./database/mimic-code/concepts/severityscores/lods.sql")
@@ -241,7 +243,7 @@ oasis_data <- as.tibble(dbGetQuery(con, oasis_query))
 Plot curves for all other scores
 
 ``` r
-# I should create a nested df where I can map the inner join and generaye multiple plots in the same code chunk
+# I should create a nested df where I can map the inner join and generate multiple plots in the same code chunk
 
 admissions %>% 
   inner_join(., patients, by = "subject_id") %>% 
@@ -280,16 +282,16 @@ all_scores %>%
 ```
 
     ##           sapsii      saps      sofa      lods    apsiii     oasis
-    ## sapsii 1.0000000 0.4010758 0.2783896 0.3565768 0.3857193 0.3868378
-    ## saps   0.4010758 1.0000000 0.2097454 0.3023607 0.3534092 0.3647637
-    ## sofa   0.2783896 0.2097454 1.0000000 0.3652635 0.4195739 0.1785834
-    ## lods   0.3565768 0.3023607 0.3652635 1.0000000 0.3788145 0.2732510
-    ## apsiii 0.3857193 0.3534092 0.4195739 0.3788145 1.0000000 0.2824288
-    ## oasis  0.3868378 0.3647637 0.1785834 0.2732510 0.2824288 1.0000000
+    ## sapsii 1.0000000 0.4010758 0.2783896 0.3565768 0.3857192 0.3868378
+    ## saps   0.4010758 1.0000000 0.2097454 0.3023607 0.3534089 0.3647637
+    ## sofa   0.2783896 0.2097454 1.0000000 0.3652635 0.4195737 0.1785834
+    ## lods   0.3565768 0.3023607 0.3652635 1.0000000 0.3788148 0.2732510
+    ## apsiii 0.3857192 0.3534089 0.4195737 0.3788148 1.0000000 0.2824301
+    ## oasis  0.3868378 0.3647637 0.1785834 0.2732510 0.2824301 1.0000000
 
 ``` r
-#Gather
 all_scores %>% 
+  distinct(hadm_id, .keep_all = TRUE) %>% 
   gather(key = score, value, sapsii, saps, sofa, lods, apsiii, oasis) %>% 
   group_by(score, value) %>% 
   summarize(deaths = sum(target), 
@@ -300,4 +302,6 @@ all_scores %>%
   facet_grid(~score)
 ```
 
-![](sapsii_files/figure-markdown_github/unnamed-chunk-9-2.png)
+![](sapsii_files/figure-markdown_github/plot-1.png)
+
+### Individual mortality prediction

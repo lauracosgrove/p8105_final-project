@@ -1,22 +1,111 @@
-Report
+Influential Factors in Critical Care Patients
 ================
-Samantha Brown
+Samantha Brown, Laura Cosgrove, Francis Z. Fang
 12/2/2018
 
 Group members: Samantha Brown (UNI: slb2240), Laura Cosgrove (UNI: lec2197), and Francis Z. Fang (UNI: zf2211).
 
-The written report (e.g. R Markdown and MD files) produced by your team are central to this project. This will detail how you completed your project, and should cover data collection and cleaning, exploratory analyses, alternative strategies, descriptions of approaches, and a discussion of results. We anticipate that your project will change somewhat over time; these changes and the reasons for them should be documented! You should write one report document per group, and be sure to include all group member names in the document.
+### Introduction
 
-Your R Markdown should include the following topics. Depending on your project type the amount of discussion you devote to each of them will vary:
+Critical care involves the specialized treatment of patients whose conditions pose life-threatening risks and require around-the-clock care. Critical care treatment typically takes place in an intensive care unit (ICU) of a hospital. Due to the nature of critical care, many patients eventually recover, but some die. For the purpose of this project, we seek to explore factors that influence critical care patients.
 
--   Motivation: Provide an overview of the project goals and motivation.
--   Related work: Anything that inspired you, such as a paper, a web site, or something we discussed in class.
--   Initial questions: What questions are you trying to answer? How did these questions evolve over the course of the project? What new questions did you consider in the course of your analysis?
--   Data: Source, scraping method, cleaning, etc.
--   Exploratory analysis: Visualizations, summaries, and exploratory statistical analyses. Justify the steps you took, and show any major changes to your ideas.
--   Additional analysis: If you undertake formal statistical analyses, describe these in detail
--   Discussion: What were your findings? Are they what you expect? What insights into the data can you make?
+### Motivation and Related Work
 
-As this will be your only chance to describe your project in detail, make sure that your report is a standalone document that fully describes your process and results. We also expect you to write high-quality code that is understandable to an outside reader. Coding collaboratively and actively reviewing code within the team will help with this!
+Previous research has focused on the physiologic- and disease-driven factors that influence critical care. In this report, we consider whether demographic characteristics of patients in critical care influence outcomes such as mortality and length of hospital stay.
 
-Your report should be developed in a dedicated GitHub repository. Data should not be included in the repo; make the data accessible somewhere online (e.g. google drive or a downloadable link) and, in the report, include instructions on where to access the data. If we cannot access your work or links because these directions are not followed correctly, we will not grade your work.
+Related work includes a 2015 NIH research publication titled *"Mortality prediction in the ICU: can we do better? Results from the Super ICU Learner Algorithm (SICULA) project, a population-based study"*, which considers whether a machine learning technique can help predict mortality for patients in critical care.
+
+Data Collection
+---------------
+
+**Include instructions for where to access the data (through somewhere online like a google drive or downloadable link)**
+
+MIMIC is an openly accessible critical care database created by the MIT Lab for Computational Physiology. It comprises deidentified health-related data associated with over forty thousand patients who stayed in critical care units of the Beth Israel Deaconess Medical Center between 2001 and 2012. It includes the following information: demographics, vital sign measurements made at the bedside (~1 data point per hour), laboratory test results, procedures, medications, caregiver notes, imaging reports, and mortality (both in and out of hospital). After completing the CITI “Data or Specimens Only Research” training course, PhysioNet granted us access to the MIMIC datasets.
+
+Initial Questions
+-----------------
+
+Exploratory Analysis
+--------------------
+
+``` r
+admissions <- 
+  read_csv("./database/data/admissions.csv") %>% 
+  janitor::clean_names() %>% 
+  mutate(diagnosis = factor(diagnosis))
+```
+
+The raw admissions dataset consists of 58976 observations of 19 variables:
+
+-   Row ID
+-   Subject ID
+-   HADM ID (hospital admission ID)
+-   Admit time
+-   Discharge time
+-   Death time
+-   Admission type
+-   Admission location
+-   Discharge location
+-   Insurance
+-   Language
+-   Religion
+-   Marital status
+-   Ethnicity
+-   ED REG time
+-   ED OUT time
+-   Diagnosis
+-   Hospital expire flag
+-   Has chart events
+
+``` r
+## Distribution of insurance type
+admissions %>% 
+  group_by(insurance) %>% 
+  count() %>% 
+  mutate(percent_of_patients = round(n/nrow(admissions)*100, digits = 2)) %>% 
+  arrange(desc(percent_of_patients)) %>% 
+  select(-n)
+```
+
+    ## # A tibble: 5 x 2
+    ## # Groups:   insurance [5]
+    ##   insurance  percent_of_patients
+    ##   <chr>                    <dbl>
+    ## 1 Medicare                 47.8 
+    ## 2 Private                  38.3 
+    ## 3 Medicaid                  9.81
+    ## 4 Government                3.02
+    ## 5 Self Pay                  1.04
+
+41.1% of the critical care patients were married, 22.47% of patients were single, 12.23 were widowed and 5.45 were divorced. The remaining 18.75% were either separated, with a life partner, or marital status was unknown.
+
+For the scope of this project, we are especially interested in focusing on patient mortalities and length of hospital stay. The depth of our initial analysis is concentrated here.
+
+Out of the 58976 patient admissions, 90.07% patients were ultimately discharged. The remaining 9.93% were recorded as patient deaths.
+
+**Let's explain the process of making simpler diagnostic groups** Then include top 10 diagnoses associated with death.
+
+``` r
+icu_data = read_csv("./database/data/icu_detail.csv") %>% 
+  filter(!(los_hospital < 0), !(los_icu < 0))
+
+ggplot(icu_data, aes(x = los_icu, y = los_hospital)) +
+  geom_point() +
+  labs(
+    x = "Length of Stay in ICU, in days", 
+    y = "Total Length of Stay in Hospital, in days" 
+  )
+```
+
+![](report_files/figure-markdown_github/unnamed-chunk-5-1.png)
+
+Additional Analysis
+-------------------
+
+Discussion
+----------
+
+We were very ambitious and there were some limitations to using such an ambitious dataset. For example, ...
+
+Conclusion
+----------

@@ -105,8 +105,7 @@ FROM sapsii i
 ```
 
 
-
-ROC curve for saps ii score:
+### Visualize how fractions of death increase 
 
 ```{r}
 admissions <- read_csv("./database/data/ADMISSIONS.csv.gz") %>% 
@@ -140,6 +139,7 @@ admissions %>%
 
 Repeat for other severity scores:
 
+(Note: must run document once before knitting, but eval is set to false so the views aren't re-loaded every time you knit.)
 ```{r, eval = FALSE}
 sofa_view <- read_file("./database/mimic-code/concepts/severityscores/sofa.sql")
 lods_view <- read_file("./database/mimic-code/concepts/severityscores/lods.sql")
@@ -201,7 +201,7 @@ oasis_data <- as.tibble(dbGetQuery(con, oasis_query))
 Plot curves for all other scores
 
 ```{r}
-# I should create a nested df where I can map the inner join and generaye multiple plots in the same code chunk
+# I should create a nested df where I can map the inner join and generate multiple plots in the same code chunk
 
 admissions %>% 
   inner_join(., patients, by = "subject_id") %>% 
@@ -234,8 +234,11 @@ all_scores %>%
   select(sapsii:oasis) %>% 
   cor()
 
-#Gather
+```
+
+```{r plot, fig.width= 12 , fig.asp = 0.4}
 all_scores %>% 
+  distinct(hadm_id, .keep_all = TRUE) %>% 
   gather(key = score, value, sapsii, saps, sofa, lods, apsiii, oasis) %>% 
   group_by(score, value) %>% 
   summarize(deaths = sum(target), 
@@ -245,6 +248,12 @@ all_scores %>%
   geom_point(aes(color = n)) +
   facet_grid(~score)
 
-
 ```
 
+## Individual mortality prediction
+
+It's fine just as a quick gut check to see how fraction of deaths increase over the distributions of the various severity scores. But how do the scores perform based on their original authored likelihoods?
+
+### SAPS II
+
+We'll start with the SAPS II score. 

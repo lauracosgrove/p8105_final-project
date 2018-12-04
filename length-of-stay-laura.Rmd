@@ -2,7 +2,7 @@
 title: "Minor improvement in generating LOS"
 author: "Laura Cosgrove"
 date: "11/20/2018"
-output: html_document
+output: github_document
 ---
 
 ```{r setup, include = FALSE}

@@ -81,7 +81,7 @@ ORDER BY ie.subject_id, adm.admittime, ie.intime;
 Set evaluation to false so that you don't requery your database every time you knit.
 
 ``` r
-icu_detail_view <- read_file("./database/mimic-code/concepts/demographics/icustay-detail.sql")
+icu_detail_view <- read_file("../database/mimic-code/concepts/demographics/icustay-detail.sql")
 
 
 #Generate materialized views
@@ -94,7 +94,7 @@ dbGetQuery(con, icu_detail_view)
 icu_detail_query <- "SELECT *
               FROM icustay_detail i;"
 icu_detail_data <- as.tibble(dbGetQuery(con, icu_detail_query))
-write_csv(icu_detail_data, path = "./database/icu_detail.csv")
+write_csv(icu_detail_data, path = "../database/icu_detail.csv")
 icu_detail_data
 ```
 
@@ -117,4 +117,4 @@ icu_detail_data
     ## #   hospstay_seq <dbl>, first_hosp_stay <lgl>, intime <dttm>,
     ## #   outtime <dttm>, los_icu <dbl>, icustay_seq <dbl>, first_icu_stay <lgl>
 
-The ICU detail query extracts both hospital level length of stay as well as ICU-level length of stay.
+The ICU detail query extracts both hospital level length of stay as well as ICU-level length of stay, in terms of days.
