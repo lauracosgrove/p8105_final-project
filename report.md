@@ -57,61 +57,47 @@ The raw admissions dataset consists of 58976 observations of 19 variables:
 -   Hospital expire flag
 -   Has chart events
 
-Out of the 58976 patient admissions, 90.07% patients were ultimately discharged. The remaining 9.93% were recorded as patient deaths.
+``` r
+## Distribution of insurance type
+admissions %>% 
+  group_by(insurance) %>% 
+  count() %>% 
+  mutate(percent_of_patients = round(n/nrow(admissions)*100, digits = 2)) %>% 
+  arrange(desc(percent_of_patients)) %>% 
+  select(-n)
+```
+
+    ## # A tibble: 5 x 2
+    ## # Groups:   insurance [5]
+    ##   insurance  percent_of_patients
+    ##   <chr>                    <dbl>
+    ## 1 Medicare                 47.8 
+    ## 2 Private                  38.3 
+    ## 3 Medicaid                  9.81
+    ## 4 Government                3.02
+    ## 5 Self Pay                  1.04
+
+41.1% of the critical care patients were married, 22.47% of patients were single, 12.23 were widowed and 5.45 were divorced. The remaining 18.75% were either separated, with a life partner, or marital status was unknown.
 
 For the scope of this project, we are especially interested in focusing on patient mortalities and length of hospital stay. The depth of our initial analysis is concentrated here.
 
-The 10 most frequent diagnoses associated with patient mortalities are shown below:
+Out of the 58976 patient admissions, 90.07% patients were ultimately discharged. The remaining 9.93% were recorded as patient deaths.
+
+**Let's explain the process of making simpler diagnostic groups** Then include top 10 diagnoses associated with death.
 
 ``` r
-admissions %>% 
-  filter(deathtime > 0) %>%
-  count(diagnosis) %>% 
-  top_n(10) %>% 
-  arrange(desc(n))
+icu_data = read_csv("./database/data/icu_detail.csv") %>% 
+  filter(!(los_hospital < 0), !(los_icu < 0))
+
+ggplot(icu_data, aes(x = los_icu, y = los_hospital)) +
+  geom_point() +
+  labs(
+    x = "Length of Stay in ICU, in days", 
+    y = "Total Length of Stay in Hospital, in days" 
+  )
 ```
 
-    ## Selecting by n
-
-    ## # A tibble: 10 x 2
-    ##    diagnosis                    n
-    ##    <fct>                    <int>
-    ##  1 SEPSIS                     267
-    ##  2 PNEUMONIA                  264
-    ##  3 INTRACRANIAL HEMORRHAGE    231
-    ##  4 CONGESTIVE HEART FAILURE   126
-    ##  5 ALTERED MENTAL STATUS       88
-    ##  6 CARDIAC ARREST              81
-    ##  7 ABDOMINAL PAIN              80
-    ##  8 S/P FALL                    78
-    ##  9 HYPOTENSION                 74
-    ## 10 SUBARACHNOID HEMORRHAGE     71
-
-``` r
-library(lubridate)
-```
-
-    ## 
-    ## Attaching package: 'lubridate'
-
-    ## The following object is masked from 'package:base':
-    ## 
-    ##     date
-
-``` r
-difference = admissions %>% 
-  mutate(length_of_stay =  lubridate::as.duration(admittime %--% dischtime),
-         mortality = ifelse(is.na(deathtime), 1, 0))
-
-summary(difference$length_of_stay)
-```
-
-    ##                              Min.                           1st Qu. 
-    ##           "81660s (~22.68 hours)"            "323460s (~3.74 days)" 
-    ##                            Median                              Mean 
-    ##            "558750s (~6.47 days)" "875570.349294628s (~1.45 weeks)" 
-    ##                           3rd Qu.                              Max. 
-    ##          "1019100s (~1.69 weeks)"        "25458660s (~42.09 weeks)"
+![](report_files/figure-markdown_github/unnamed-chunk-5-1.png)
 
 Additional Analysis
 -------------------

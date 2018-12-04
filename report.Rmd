@@ -51,7 +51,7 @@ The raw admissions dataset consists of `r nrow(admissions)` observations of `r n
 * HADM ID (hospital admission ID)
 * Admit time
 * Discharge time
-* Death time
+* Death time 
 * Admission type
 * Admission location
 * Discharge location
@@ -66,6 +66,35 @@ The raw admissions dataset consists of `r nrow(admissions)` observations of `r n
 * Hospital expire flag
 * Has chart events
 
+
+```{r}
+## Distribution of insurance type
+admissions %>% 
+  group_by(insurance) %>% 
+  count() %>% 
+  mutate(percent_of_patients = round(n/nrow(admissions)*100, digits = 2)) %>% 
+  arrange(desc(percent_of_patients)) %>% 
+  select(-n)
+```
+
+
+```{r, include = FALSE}
+## Marital Status
+marital_status = admissions %>% 
+  group_by(marital_status) %>% 
+  count() %>% 
+  mutate(percent = n/nrow(admissions)*100) %>% 
+  arrange(desc(percent))
+```
+
+`r round(marital_status[1,3], digits = 2)`% of the critical care patients were married, `r round(marital_status[2, 3], digits = 2)`% of patients were single, `r round(marital_status[4,3], digits = 2)` were widowed and `r round(marital_status[5,3], digits = 2)` were divorced. The remaining `r round(100 - (marital_status[1,3] + marital_status[2, 3] + marital_status[4,3] + marital_status[5,3]), digits = 2)`% were either separated, with a life partner, or marital status was unknown.
+
+
+
+
+
+For the scope of this project, we are especially interested in focusing on patient mortalities and length of hospital stay. The depth of our initial analysis is concentrated here.
+
 ```{r, include = FALSE}
 n_admits = admissions %>% 
   nrow()
@@ -77,25 +106,20 @@ n_discharge = admissions %>%
 
 Out of the `r admissions %>% nrow()` patient admissions, `r round((admissions %>%  filter(is.na(deathtime)) %>%  nrow())/(admissions %>% nrow())*100, digits = 2)`% patients were ultimately discharged. The remaining `r round((1 - (n_discharge/n_admits)) * 100, digits = 2)`% were recorded as patient deaths.
 
-For the scope of this project, we are especially interested in focusing on patient mortalities and length of hospital stay. The depth of our initial analysis is concentrated here.
-
-The 10 most frequent diagnoses associated with patient mortalities are shown below:
-```{r, warning = FALSE}
-admissions %>% 
-  filter(deathtime > 0) %>%
-  count(diagnosis) %>% 
-  top_n(10) %>% 
-  arrange(desc(n))
-```
+**Let's explain the process of making simpler diagnostic groups** Then include top 10 diagnoses associated with death.
 
 
-```{r}
-library(lubridate)
-difference = admissions %>% 
-  mutate(length_of_stay =  lubridate::as.duration(admittime %--% dischtime),
-         mortality = ifelse(is.na(deathtime), 1, 0))
 
-summary(difference$length_of_stay)
+```{r, message = FALSE}
+icu_data = read_csv("./database/data/icu_detail.csv") %>% 
+  filter(!(los_hospital < 0), !(los_icu < 0))
+
+ggplot(icu_data, aes(x = los_icu, y = los_hospital)) +
+  geom_point() +
+  labs(
+    x = "Length of Stay in ICU, in days", 
+    y = "Total Length of Stay in Hospital, in days" 
+  )
 ```
 
 
