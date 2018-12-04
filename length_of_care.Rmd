@@ -54,7 +54,18 @@ marital_status = admissions %>%
   arrange(desc(percent))
 ```
 
-`r marital_status[1,3]`% of the critical care patients were married, while `r marital_status[2, 3]`% of patients were single.
+`r marital_status[1,3]`% of the critical care patients were married, while `r marital_status[2, 3]`% of patients were single. The remaining `r round(100 - (marital_status[1,3] + marital_status[2, 3]), digits = 2)`% were either widowed, divorced, separated, had a life partner, or marital status was unknown.
+
+```{r}
+## Distribution of insurance type
+admissions %>% 
+  group_by(insurance) %>% 
+  count() %>% 
+  mutate(percent_of_patients = round(n/nrow(admissions)*100, digits = 2)) %>% 
+  arrange(desc(percent_of_patients)) %>% 
+  select(-n)
+```
+
 
 
 ```{r}
@@ -79,7 +90,7 @@ sepsis = admissions %>%
 
 ## Look at top 10 causes of mortalities
 top_10_causes = admissions %>% 
-  filter(diagnosis == c("ABDOMINAL PAIN", "ALTERED MENTAL STATUS", "CARDIAC ARREST", "CONGESTIVE HEART FAILURE", "HEAD BLEED", "HYPOTENSION", "INTACRANIAL HEMORRHAGE", "PNEUMONIA", "SEPSIS", "STROKE;TELEMETRY;TRANSIENT ISCHEMIC ATTACK"))
+  filter(diagnosis == c("SEPSIS", "PNEUMONIA", "INTRACRANIAL HEMORRHAGE", "CONGESTIVE HEART FAILURE", "ALTERED MENTAL STATUS", "CARDIAC ARREST", "ABDOMINAL PAIN", "S/P FALL", "HYPOTENSION", "SUBARACHNOID HEMORRHAGE"))
 ```
 
 
@@ -129,46 +140,165 @@ admissions_data <- read_csv("./database/data/admissions.csv") %>%
 
 ```
 
-## Length of Stay Regression
 ```{r}
 difference = admissions_data %>% 
   mutate(length_of_stay =  lubridate::as.duration(admittime %--% dischtime),
-        mortality = ifelse(is.na(deathtime), 1, 0))
+         mortality = ifelse(is.na(deathtime), 1, 0))
 
-admissions %>% distinct(admission_type)
+summary(difference$length_of_stay)
 
+stay_in_days = difference %>% 
+  mutate(length_of_stay = as.numeric(length_of_stay)/(60*60*24))
+
+
+max(difference$length_of_stay)
+
+
+max_length_in_days = max(as.numeric(difference$length_of_stay)/(60*60*24))
+-1*min(as.numeric(difference$length_of_stay))/(60*60*24)
+
+```
+
+
+```{r}
+## Merge ICU data with admissions dataset 
+## Now we have length of hospital stay and length of ICU stay
 icu_data = read_csv("./database/data/icu_detail.csv")
 
+icu_data = icu_data %>% 
+  select(hadm_id, los_icu, los_hospital, icustay_seq, first_icu_stay)
+
+merged_data = left_join(difference, icu_data, by = "hadm_id")
+
+class(merged_data$los_icu)
+class(merged_data$length_of_stay)
+```
+
+
+```{r}
+ggplot(merged_data, aes(x = los_icu, y = log(as.numeric(length_of_stay)))) +
+  geom_point() +
+  labs(
+    x = "Length of Stay in ICU",
+    y = "Length of Hospital Stay"
+  )
+
+## Plot using all ICU data -- lengths on same scale
+## Good plot!!! 
+ggplot(icu_data, aes(x = los_icu, y = los_hospital)) +
+  geom_point() +
+  labs(
+    x = "Length of Stay in ICU, in days", 
+    y = "Total Length of Stay in Hospital, in days" 
+  )
+
+## Is the relationship between ICU stay and hospital stay different with newborns removed? No
+##icu_no_babies = icu_data %>% 
+ ## filter(admission_type != "NEWBORN")
+
+##ggplot(icu_no_babies, aes(x = los_icu, y = los_hospital)) +
+  ##geom_point()
+
+
+merged_data = merged_data %>% 
+  mutate(length_proportion = (los_icu / los_hospital)) %>% 
+  filter(!(length_proportion == "NA"))
+
+icu_data %>% 
+  ggplot(aes(x = los_hospital)) +
+  geom_histogram() 
+
+icu_data %>% 
+  filter(los_hospital > 100) %>% 
+  arrange(desc(los_hospital))
+
+
+## How many proportions are greater than 1? (Too many)
+## Limitation
+icu_data %>% 
+  mutate(prop_icu = los_icu/los_hospital) %>% 
+  arrange(desc(prop_icu)) %>% 
+  mutate(prop_true = ifelse(prop_icu > 1, 1, 0)) %>% 
+  count(prop_true) %>% 
+  filter(prop_true == 1)
+
+
+## We ran into a challenge that some proportions of length of stay in ICU to length of stay in hospital (which includes stay in ICU) are greater than 1. This suggests possible flaws in the data. While we acknowledge that these flaws exist, for the purpose of this project we will filter out the proportions greater than 1 and analyze this subset of the dataset. 
+
+## Filter out proportions greater than 1
+true_prop = icu_data %>% 
+  mutate(prop_icu = los_icu/los_hospital) %>% 
+  filter(!(prop_icu > 1), !(prop_icu < 0))
+
+filtered_admissions = admissions %>% 
+  mutate(mortality = ifelse(is.na(deathtime), "No Mortality", "Mortality")) %>% 
+  select(hadm_id, admission_type, diagnosis, religion, ethnicity, marital_status, insurance, mortality)
+
+filtered_prop = left_join(true_prop, filtered_admissions, by = "hadm_id")
+  
+  
+summary(filtered_prop$los_hospital)
+summary(filtered_prop$los_icu)
+
+## Proportion of time in ICU by admission type
+## INCLUDE!!! 
+ggplot(filtered_prop, aes(x = admission_type, y = prop_icu)) +
+  geom_boxplot() +
+  facet_grid(~mortality) +
+  labs(
+    x = "Admission Type", 
+    y = "Proportion of Stay in ICU", 
+    title = "Proportion of Time in ICU by Admission Type"
+  )
+
+## Proportion of time in ICU by insurance type
+## Not significant
+ggplot(filtered_prop, aes(x = insurance, y = prop_icu)) +
+  geom_boxplot()
+
+ggplot(filtered_prop, aes(x = insurance, y = prop_icu)) +
+  geom_boxplot() 
+
+length_of_care = lm(length_of_stay ~ admission_type + insurance + marital_status + religion + ethnicity + mortality + los_icu, data = merged_data)
+
+AIC(length_of_care)
+
+step(length_of_care, direction = "backward")
+
+anova(lm(lm(length_of_stay ~ admission_type + insurance + marital_status + religion + ethnicity + + mortality + los_icu, data = merged_data)))
+```
+
+
+## Length of Stay Regression
+```{r}
 library(broom)
+
 length_of_care = lm(length_of_stay ~ admission_type + insurance + marital_status + religion + ethnicity + mortality, data = difference)
 
-fit1 = update(length_of_care, . ~ . -admission_type)
-summary(fit1)
+## Why such a high p-value?
+lm(mortality ~ length_of_stay, data = difference) %>% summary()
 
-fit2 = update(length_of_care, . ~ . -insurance)
-summary(fit2)
+##fit1 = update(length_of_care, . ~ . -admission_type)
+##summary(fit1)
 
-fit3 = update(length_of_care, . ~ . -marital_status)
-summary(fit3)
+##fit2 = update(length_of_care, . ~ . -insurance)
+##summary(fit2)
 
-fit4 = update(length_of_care, . ~ . -religion)
-summary(fit4)
+##fit3 = update(length_of_care, . ~ . -marital_status)
+##summary(fit3)
 
-fit5 = update(length_of_care, . ~ . -ethnicity)
-summary(fit1)
+##fit4 = update(length_of_care, . ~ . -religion)
+##summary(fit4)
 
-fit6 = update(length_of_care, . ~ . -mortality)
-summary(fit6)
+##fit5 = update(length_of_care, . ~ . -ethnicity)
+##summary(fit1)
 
-fit7 = update(length_of_care, . ~ . +diagnosis)
-summary(fit1)
+##fit6 = update(length_of_care, . ~ . -mortality)
+##summary(fit6)
 
+##fit7 = update(length_of_care, . ~ . +diagnosis)
+##summary(fit1)
 
-
-
-
-
-summary(length_of_care)
 
 summary(step(length_of_care, direction = "backward"))
 ```

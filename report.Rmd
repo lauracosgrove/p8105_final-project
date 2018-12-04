@@ -1,6 +1,6 @@
 ---
 title: "Influential Factors in Critical Care Patients"
-author: "Samantha Brown"
+author: "Samantha Brown, Laura Cosgrove, Francis Z. Fang"
 date: "12/2/2018"
 output: github_document
 ---
@@ -18,9 +18,10 @@ Critical care involves the specialized treatment of patients whose conditions po
 
 ### Motivation and Related Work
 
-Previous research has focused on the physiologic- and disease-driven factors that influence critical care. In this report, we consider whether demographic characteristics of patients in critical care influence outcomes such as mortality and length of hospital stay.  
+Previous research has focused on the physiologic- and disease-driven factors that influence critical care. In this report, we consider whether demographic characteristics of patients in critical care influence outcomes such as mortality and length of hospital stay. 
 
-Related work?
+Related work includes a 2015 NIH research publication titled _"Mortality prediction in the ICU: can we do better? Results from the Super ICU Learner Algorithm (SICULA) project, a population-based study"_, which considers whether a machine learning technique can help predict mortality for patients in critical care.
+
 
 
 ## Data Collection
@@ -30,6 +31,8 @@ MIMIC is an openly accessible critical care database created by the MIT Lab for 
 The next step was to follow the 
 
 ## Initial Questions
+
+
 
 ## Exploratory Analysis
 
@@ -45,7 +48,7 @@ The raw admissions dataset consists of `r nrow(admissions)` observations of `r n
 
 * Row ID
 * Subject ID
-* HADM ID
+* HADM ID (hospital admission ID)
 * Admit time
 * Discharge time
 * Death time
@@ -72,11 +75,35 @@ n_discharge = admissions %>%
   nrow()
 ```
 
-Out of `r admissions %>% nrow()` patient admissions, `r admissions %>%  filter(is.na(deathtime)) %>%  nrow()` patients were ultimately discharged. The remaining `r round((1 - (n_discharge/n_admits)) * 100, digits = 2)`% were recorded as deaths.
+Out of the `r admissions %>% nrow()` patient admissions, `r round((admissions %>%  filter(is.na(deathtime)) %>%  nrow())/(admissions %>% nrow())*100, digits = 2)`% patients were ultimately discharged. The remaining `r round((1 - (n_discharge/n_admits)) * 100, digits = 2)`% were recorded as patient deaths.
+
+For the scope of this project, we are especially interested in focusing on patient mortalities and length of hospital stay. The depth of our initial analysis is concentrated here.
+
+The 10 most frequent diagnoses associated with patient mortalities are shown below:
+```{r, warning = FALSE}
+admissions %>% 
+  filter(deathtime > 0) %>%
+  count(diagnosis) %>% 
+  top_n(10) %>% 
+  arrange(desc(n))
+```
+
+
+```{r}
+library(lubridate)
+difference = admissions %>% 
+  mutate(length_of_stay =  lubridate::as.duration(admittime %--% dischtime),
+         mortality = ifelse(is.na(deathtime), 1, 0))
+
+summary(difference$length_of_stay)
+```
+
 
 ## Additional Analysis
 
 ## Discussion
+
+We were very ambitious and there were some limitations to using such an ambitious dataset. For example, ...
 
 ## Conclusion
 
