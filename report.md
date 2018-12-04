@@ -1,6 +1,6 @@
 Influential Factors in Critical Care Patients
 ================
-Samantha Brown
+Samantha Brown, Laura Cosgrove, Francis Z. Fang
 12/2/2018
 
 Group members: Samantha Brown (UNI: slb2240), Laura Cosgrove (UNI: lec2197), and Francis Z. Fang (UNI: zf2211).

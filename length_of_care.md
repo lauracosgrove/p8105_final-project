@@ -218,10 +218,9 @@ max_length_in_days = max(as.numeric(difference$length_of_stay)/(60*60*24))
 
     ## [1] 0.9451389
 
-Length of Stay Regression
--------------------------
-
 ``` r
+## Merge ICU data with admissions dataset 
+## Now we have length of hospital stay and length of ICU stay
 icu_data = read_csv("./database/data/icu_detail.csv")
 ```
 
@@ -249,8 +248,176 @@ icu_data = read_csv("./database/data/icu_detail.csv")
     ## )
 
 ``` r
-library(broom)
-length_of_care = lm(length_of_stay ~ admission_type + insurance + marital_status + religion + ethnicity + mortality, data = difference)
+icu_data = icu_data %>% 
+  select(hadm_id, los_icu, los_hospital, icustay_seq, first_icu_stay)
+
+merged_data = left_join(difference, icu_data, by = "hadm_id")
+
+class(merged_data$los_icu)
+```
+
+    ## [1] "numeric"
+
+``` r
+class(merged_data$length_of_stay)
+```
+
+    ## [1] "Duration"
+    ## attr(,"package")
+    ## [1] "lubridate"
+
+``` r
+ggplot(merged_data, aes(x = los_icu, y = log(as.numeric(length_of_stay)))) +
+  geom_point() +
+  labs(
+    x = "Length of Stay in ICU",
+    y = "Length of Hospital Stay"
+  )
+```
+
+    ## Warning in log(as.numeric(length_of_stay)): NaNs produced
+
+    ## Warning in log(as.numeric(length_of_stay)): NaNs produced
+
+    ## Warning: Removed 1734 rows containing missing values (geom_point).
+
+![](length_of_care_files/figure-markdown_github/unnamed-chunk-12-1.png)
+
+``` r
+## Plot using all ICU data -- lengths on same scale
+## Good plot!!! 
+ggplot(icu_data, aes(x = los_icu, y = los_hospital)) +
+  geom_point() +
+  labs(
+    x = "Length of Stay in ICU, in days", 
+    y = "Total Length of Stay in Hospital, in days" 
+  )
+```
+
+    ## Warning: Removed 10 rows containing missing values (geom_point).
+
+![](length_of_care_files/figure-markdown_github/unnamed-chunk-12-2.png)
+
+``` r
+## Is the relationship between ICU stay and hospital stay different with newborns removed? No
+##icu_no_babies = icu_data %>% 
+ ## filter(admission_type != "NEWBORN")
+
+##ggplot(icu_no_babies, aes(x = los_icu, y = los_hospital)) +
+  ##geom_point()
+
+
+merged_data = merged_data %>% 
+  mutate(length_proportion = (los_icu / los_hospital)) %>% 
+  filter(!(length_proportion == "NA"))
+
+icu_data %>% 
+  ggplot(aes(x = los_hospital)) +
+  geom_histogram() 
+```
+
+    ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
+
+![](length_of_care_files/figure-markdown_github/unnamed-chunk-12-3.png)
+
+``` r
+icu_data %>% 
+  filter(los_hospital > 100) %>% 
+  arrange(desc(los_hospital))
+```
+
+    ## # A tibble: 244 x 5
+    ##    hadm_id los_icu los_hospital icustay_seq first_icu_stay
+    ##      <int>   <dbl>        <dbl>       <int> <lgl>         
+    ##  1  168201   87.6          295.           1 TRUE          
+    ##  2  168201  173.           295.           2 FALSE         
+    ##  3  115396    1.68         206.           1 TRUE          
+    ##  4  115396    4.47         206.           2 FALSE         
+    ##  5  115396    7.33         206.           3 FALSE         
+    ##  6  115396    5.87         206.           4 FALSE         
+    ##  7  147501   20.8          203.           1 TRUE          
+    ##  8  157559   13.8          191.           1 TRUE          
+    ##  9  157559   84.0          191.           2 FALSE         
+    ## 10  157559    8.15         191.           3 FALSE         
+    ## # … with 234 more rows
+
+``` r
+## How many proportions are greater than 1? (Too many)
+## Limitation
+icu_data %>% 
+  mutate(prop_icu = los_icu/los_hospital) %>% 
+  arrange(desc(prop_icu)) %>% 
+  mutate(prop_true = ifelse(prop_icu > 1, 1, 0)) %>% 
+  count(prop_true) %>% 
+  filter(prop_true == 1)
+```
+
+    ## # A tibble: 1 x 2
+    ##   prop_true     n
+    ##       <dbl> <int>
+    ## 1         1  7466
+
+``` r
+## We ran into a challenge that some proportions of length of stay in ICU to length of stay in hospital (which includes stay in ICU) are greater than 1. This suggests possible flaws in the data. While we acknowledge that these flaws exist, for the purpose of this project we will filter out the proportions greater than 1 and analyze this subset of the dataset. 
+
+## Filter out proportions greater than 1
+true_prop = icu_data %>% 
+  mutate(prop_icu = los_icu/los_hospital) %>% 
+  filter(!(prop_icu > 1), !(prop_icu < 0))
+
+filtered_admissions = admissions %>% 
+  mutate(mortality = ifelse(is.na(deathtime), "No Mortality", "Mortality")) %>% 
+  select(hadm_id, admission_type, diagnosis, religion, ethnicity, marital_status, insurance, mortality)
+
+filtered_prop = left_join(true_prop, filtered_admissions, by = "hadm_id")
+  
+  
+summary(filtered_prop$los_hospital)
+```
+
+    ##     Min.  1st Qu.   Median     Mean  3rd Qu.     Max. 
+    ##   0.0333   4.1410   7.1069  11.2429  13.0136 294.6604
+
+``` r
+summary(filtered_prop$los_icu)
+```
+
+    ##     Min.  1st Qu.   Median     Mean  3rd Qu.     Max. 
+    ##   0.0001   1.0947   2.0146   3.9317   3.9529 173.0725
+
+``` r
+## Proportion of time in ICU by admission type
+## INCLUDE!!! 
+ggplot(filtered_prop, aes(x = admission_type, y = prop_icu)) +
+  geom_boxplot() +
+  facet_grid(~mortality) +
+  labs(
+    x = "Admission Type", 
+    y = "Proportion of Stay in ICU", 
+    title = "Proportion of Time in ICU by Admission Type"
+  )
+```
+
+![](length_of_care_files/figure-markdown_github/unnamed-chunk-12-4.png)
+
+``` r
+## Proportion of time in ICU by insurance type
+## Not significant
+ggplot(filtered_prop, aes(x = insurance, y = prop_icu)) +
+  geom_boxplot()
+```
+
+![](length_of_care_files/figure-markdown_github/unnamed-chunk-12-5.png)
+
+``` r
+ggplot(filtered_prop, aes(x = insurance, y = prop_icu)) +
+  geom_boxplot() 
+```
+
+![](length_of_care_files/figure-markdown_github/unnamed-chunk-12-6.png)
+
+``` r
+length_of_care = lm(length_of_stay ~ admission_type + insurance + marital_status + religion + ethnicity + mortality + los_icu, data = merged_data)
 ```
 
     ## Note: method with signature 'Duration#ANY' chosen for function '-',
@@ -258,6 +425,224 @@ length_of_care = lm(length_of_stay ~ admission_type + insurance + marital_status
     ##  "ANY#Duration" would also be valid
 
 ``` r
+AIC(length_of_care)
+```
+
+    ## [1] 1537208
+
+``` r
+step(length_of_care, direction = "backward")
+```
+
+    ## Start:  AIC=1393652
+    ## length_of_stay ~ admission_type + insurance + marital_status + 
+    ##     religion + ethnicity + mortality + los_icu
+    ## 
+    ##                  Df  Sum of Sq        RSS     AIC
+    ## - mortality       1 1.0593e+10 4.6543e+16 1393650
+    ## <none>                         4.6543e+16 1393652
+    ## - marital_status  6 4.1273e+13 4.6584e+16 1393685
+    ## - insurance       4 4.3534e+13 4.6586e+16 1393692
+    ## - admission_type  3 8.9068e+13 4.6632e+16 1393743
+    ## - ethnicity      40 1.8731e+14 4.6730e+16 1393776
+    ## - religion       19 2.6336e+14 4.6806e+16 1393900
+    ## - los_icu         1 1.8712e+16 6.5255e+16 1410744
+    ## 
+    ## Step:  AIC=1393650
+    ## length_of_stay ~ admission_type + insurance + marital_status + 
+    ##     religion + ethnicity + los_icu
+    ## 
+    ##                  Df  Sum of Sq        RSS     AIC
+    ## <none>                         4.6543e+16 1393650
+    ## - marital_status  6 4.1335e+13 4.6584e+16 1393683
+    ## - insurance       4 4.3659e+13 4.6586e+16 1393690
+    ## - admission_type  3 8.9093e+13 4.6632e+16 1393741
+    ## - ethnicity      40 1.8730e+14 4.6730e+16 1393774
+    ## - religion       19 2.6385e+14 4.6807e+16 1393898
+    ## - los_icu         1 1.8907e+16 6.5450e+16 1410894
+
+    ## 
+    ## Call:
+    ## lm(formula = length_of_stay ~ admission_type + insurance + marital_status + 
+    ##     religion + ethnicity + los_icu, data = merged_data)
+    ## 
+    ## Coefficients:
+    ##                                                       (Intercept)  
+    ##                                                         1162884.9  
+    ##                                           admission_typeEMERGENCY  
+    ##                                                           15889.1  
+    ##                                             admission_typeNEWBORN  
+    ##                                                         -475381.9  
+    ##                                              admission_typeURGENT  
+    ##                                                          138028.1  
+    ##                                                 insuranceMedicaid  
+    ##                                                           70325.1  
+    ##                                                 insuranceMedicare  
+    ##                                                          -12160.3  
+    ##                                                  insurancePrivate  
+    ##                                                           13071.9  
+    ##                                                 insuranceSelf Pay  
+    ##                                                         -196177.1  
+    ##                                        marital_statusLIFE PARTNER  
+    ##                                                         -274398.9  
+    ##                                             marital_statusMARRIED  
+    ##                                                          -20691.3  
+    ##                                           marital_statusSEPARATED  
+    ##                                                           84786.4  
+    ##                                              marital_statusSINGLE  
+    ##                                                             291.1  
+    ##                                   marital_statusUNKNOWN (DEFAULT)  
+    ##                                                           49399.2  
+    ##                                             marital_statusWIDOWED  
+    ##                                                          -82929.6  
+    ##                                                   religionBAPTIST  
+    ##                                                         -318048.9  
+    ##                                                  religionBUDDHIST  
+    ##                                                         -506728.3  
+    ##                                                  religionCATHOLIC  
+    ##                                                         -368804.1  
+    ##                                       religionCHRISTIAN SCIENTIST  
+    ##                                                         -332779.2  
+    ##                                              religionEPISCOPALIAN  
+    ##                                                         -402420.7  
+    ##                                            religionGREEK ORTHODOX  
+    ##                                                         -409423.8  
+    ##                                                    religionHEBREW  
+    ##                                                         -521207.9  
+    ##                                                     religionHINDU  
+    ##                                                         -671344.7  
+    ##                                         religionJEHOVAH'S WITNESS  
+    ##                                                         -233198.7  
+    ##                                                    religionJEWISH  
+    ##                                                         -436060.9  
+    ##                                                  religionLUTHERAN  
+    ##                                                         -746481.3  
+    ##                                                 religionMETHODIST  
+    ##                                                         -470550.7  
+    ##                                                    religionMUSLIM  
+    ##                                                         -205132.4  
+    ##                                             religionNOT SPECIFIED  
+    ##                                                         -451967.7  
+    ##                                                     religionOTHER  
+    ##                                                         -336806.1  
+    ##                                         religionPROTESTANT QUAKER  
+    ##                                                         -316567.1  
+    ##                                       religionROMANIAN EAST. ORTH  
+    ##                                                           48582.9  
+    ##                                    religionUNITARIAN-UNIVERSALIST  
+    ##                                                         -384982.8  
+    ##                                              religionUNOBTAINABLE  
+    ##                                                         -566303.4  
+    ## ethnicityAMERICAN INDIAN/ALASKA NATIVE FEDERALLY RECOGNIZED TRIBE  
+    ##                                                         -314394.6  
+    ##                                                    ethnicityASIAN  
+    ##                                                         -142660.6  
+    ##                                     ethnicityASIAN - ASIAN INDIAN  
+    ##                                                          133774.7  
+    ##                                        ethnicityASIAN - CAMBODIAN  
+    ##                                                         1944398.5  
+    ##                                          ethnicityASIAN - CHINESE  
+    ##                                                         -184128.2  
+    ##                                         ethnicityASIAN - FILIPINO  
+    ##                                                         -424046.9  
+    ##                                         ethnicityASIAN - JAPANESE  
+    ##                                                         -613960.7  
+    ##                                           ethnicityASIAN - KOREAN  
+    ##                                                         -396623.7  
+    ##                                            ethnicityASIAN - OTHER  
+    ##                                                          258533.3  
+    ##                                             ethnicityASIAN - THAI  
+    ##                                                         -199647.0  
+    ##                                       ethnicityASIAN - VIETNAMESE  
+    ##                                                         -243870.5  
+    ##                                            ethnicityBLACK/AFRICAN  
+    ##                                                         -505484.8  
+    ##                                   ethnicityBLACK/AFRICAN AMERICAN  
+    ##                                                         -244177.7  
+    ##                                       ethnicityBLACK/CAPE VERDEAN  
+    ##                                                         -280408.6  
+    ##                                            ethnicityBLACK/HAITIAN  
+    ##                                                         -319083.6  
+    ##                                         ethnicityCARIBBEAN ISLAND  
+    ##                                                         -495140.9  
+    ##                                       ethnicityHISPANIC OR LATINO  
+    ##                                                         -193740.8  
+    ##               ethnicityHISPANIC/LATINO - CENTRAL AMERICAN (OTHER)  
+    ##                                                         -664085.6  
+    ##                              ethnicityHISPANIC/LATINO - COLOMBIAN  
+    ##                                                         -360258.3  
+    ##                                  ethnicityHISPANIC/LATINO - CUBAN  
+    ##                                                          -58393.0  
+    ##                              ethnicityHISPANIC/LATINO - DOMINICAN  
+    ##                                                           15318.3  
+    ##                             ethnicityHISPANIC/LATINO - GUATEMALAN  
+    ##                                                         -387706.8  
+    ##                               ethnicityHISPANIC/LATINO - HONDURAN  
+    ##                                                           99428.6  
+    ##                                ethnicityHISPANIC/LATINO - MEXICAN  
+    ##                                                         -470355.8  
+    ##                           ethnicityHISPANIC/LATINO - PUERTO RICAN  
+    ##                                                         -316759.4  
+    ##                             ethnicityHISPANIC/LATINO - SALVADORAN  
+    ##                                                         -368490.7  
+    ##                                           ethnicityMIDDLE EASTERN  
+    ##                                                         -203905.9  
+    ##                                     ethnicityMULTI RACE ETHNICITY  
+    ##                                                           -9119.4  
+    ##                ethnicityNATIVE HAWAIIAN OR OTHER PACIFIC ISLANDER  
+    ##                                                         -353920.0  
+    ##                                                    ethnicityOTHER  
+    ##                                                         -170995.5  
+    ##                               ethnicityPATIENT DECLINED TO ANSWER  
+    ##                                                         -269665.1  
+    ##                                               ethnicityPORTUGUESE  
+    ##                                                          166300.1  
+    ##                                           ethnicitySOUTH AMERICAN  
+    ##                                                           77854.6  
+    ##                                         ethnicityUNABLE TO OBTAIN  
+    ##                                                         -136807.0  
+    ##                                    ethnicityUNKNOWN/NOT SPECIFIED  
+    ##                                                         -207911.3  
+    ##                                                    ethnicityWHITE  
+    ##                                                         -170935.7  
+    ##                                        ethnicityWHITE - BRAZILIAN  
+    ##                                                          112255.6  
+    ##                                 ethnicityWHITE - EASTERN EUROPEAN  
+    ##                                                          298017.2  
+    ##                                   ethnicityWHITE - OTHER EUROPEAN  
+    ##                                                         -317296.5  
+    ##                                          ethnicityWHITE - RUSSIAN  
+    ##                                                         -337469.1  
+    ##                                                           los_icu  
+    ##                                                           96599.4
+
+``` r
+anova(lm(lm(length_of_stay ~ admission_type + insurance + marital_status + religion + ethnicity + + mortality + los_icu, data = merged_data)))
+```
+
+    ## Analysis of Variance Table
+    ## 
+    ## Response: length_of_stay
+    ##                   Df     Sum Sq    Mean Sq    F value    Pr(>F)    
+    ## admission_type     3 1.1682e+14 3.8941e+13    42.2606 < 2.2e-16 ***
+    ## insurance          4 8.1805e+13 2.0451e+13    22.1944 < 2.2e-16 ***
+    ## marital_status     6 6.5937e+13 1.0989e+13    11.9261 2.004e-13 ***
+    ## religion          19 2.8827e+14 1.5172e+13    16.4653 < 2.2e-16 ***
+    ## ethnicity         40 2.5564e+14 6.3911e+12     6.9358 < 2.2e-16 ***
+    ## mortality          1 1.9549e+14 1.9549e+14   212.1582 < 2.2e-16 ***
+    ## los_icu            1 1.8712e+16 1.8712e+16 20306.8514 < 2.2e-16 ***
+    ## Residuals      50510 4.6543e+16 9.2146e+11                         
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Length of Stay Regression
+-------------------------
+
+``` r
+library(broom)
+
+length_of_care = lm(length_of_stay ~ admission_type + insurance + marital_status + religion + ethnicity + mortality, data = difference)
+
 ## Why such a high p-value?
 lm(mortality ~ length_of_stay, data = difference) %>% summary()
 ```
@@ -716,15 +1101,3 @@ summary(step(length_of_care, direction = "backward"))
     ##   (10364 observations deleted due to missingness)
     ## Multiple R-squared:  0.01037,    Adjusted R-squared:  0.008883 
     ## F-statistic: 6.968 on 73 and 48538 DF,  p-value: < 2.2e-16
-
-``` r
-stay_vs_mortality = lm(length_of_stay ~ mortality, data = difference)
-anova(stay_vs_mortality)
-```
-
-    ## Analysis of Variance Table
-    ## 
-    ## Response: length_of_stay
-    ##              Df     Sum Sq    Mean Sq F value Pr(>F)
-    ## mortality     1 2.1772e+09 2.1772e+09  0.0019 0.9654
-    ## Residuals 58974 6.8313e+16 1.1583e+12
