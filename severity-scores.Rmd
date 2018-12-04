@@ -10,6 +10,7 @@ library(ggplot2)
 library(RPostgreSQL)
 library(tidyverse)
 library(dbplyr)
+library(lubridate)
 ```
 
 
@@ -257,3 +258,35 @@ It's fine just as a quick gut check to see how fraction of deaths increase over 
 ### SAPS II
 
 We'll start with the SAPS II score. 
+
+Individual mortality prediction for the SAPS II score is defined by its authors to be: 
+
+log([pr(death)][1 - pr(death)]) = -7.7631 + 0.07237*SAPSII + 0.9971*log(1 + SAPSII)
+
+A mortality prediction algorithm is said to have adequate discrimination if it tends to assign higher severity scores to patients that died in the hospital compared to those that did not. To evaluate discrimination, we'll visualize the probability of death as predicted by the SAPSII score versus the actual proportion of patients who died with that SAPSII score.
+
+```{r}
+sapsii_data %>% 
+  mutate(prob_death = exp(-7.7631 + 0.07237*sapsii + 0.9971*log(1 + sapsii))/(1 + exp(-7.7631 + 0.07237*sapsii + 0.9971*log(1 + sapsii)))) %>% 
+  inner_join(admissions, by = "hadm_id") %>% 
+  mutate(mortality = if_else(deathtime %in% NA, 0, 1),
+         hosp_los = admittime %--% dischtime) %>% 
+  select(hadm_id, sapsii, prob_death, hosp_los, mortality, starts_with("admission"), diagnosis) %>% 
+  group_by(sapsii) %>% 
+  add_tally(mortality) %>% 
+  rename(mortality_by_group = n) %>% 
+  add_tally() %>% 
+  mutate(prop_death = mortality_by_group/n) %>% 
+  select(sapsii, prob_death, prop_death) %>% 
+  ggplot(aes(x = prob_death, y = prop_death)) + 
+  geom_point() +
+  geom_abline(slope = 1, intercept = 0) +
+  labs(x = "Probability of Death ")
+  
+  
+
+
+  
+```
+
+
