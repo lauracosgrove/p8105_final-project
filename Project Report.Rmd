@@ -34,7 +34,11 @@ As some of us worked in health related facilities, we found that there are a lot
 
 Are there inner relations between mortality and other factors? Since we have a lot of factors found in our data collected, which of them are more critical and pay more attention?
 
-To be specific, since this is a highly diversified society, some factors more political, like ethnicity, language, 
+To be specific, since this is a highly diversified society, some factors more political, like ethnicity, language, religion will influence on outcome, rather than only medical factors. Let's do some more exhaustive work and find more inclusive results.
+
+I tried to read the database of openFDA, found it is .json format. So we googled and found the API to read the database, and it worked! 
+
+At first, I focus on the admissions.csv from MIMIC because I think it includes so many factors, which are large enough to find something. So we found the paper which called 'Data Descriptor- MIMIC-III, a freely accessible critical care database.pdf' Then we found using the method from the paper, the diagnosis is too much, too hard to use itself to analyze. So we found the sapsii.csv, which used the more detailed scores system to judge the patient, for better analysis its diagnosis.
 
 
 
