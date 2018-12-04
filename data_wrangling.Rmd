@@ -211,10 +211,6 @@ anova(living_mlr)
 vcov(living_mlr)
 
 
-```
-
-
-```{r}
 ###backward elimination
 #Backward elimination: take out non-significant variables ’one at a time’ starting with the highest p-value
 step1 <- update(living_mlr, . ~. -admission_type)
@@ -277,91 +273,34 @@ So we got this regression model:
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
 Maybe we need this step:
 ```{r}
 # Remove NA lines
-admissions_death_nona <- 
-  admissions_death %>% 
-  select(admission_type, admission_location, insurance, religion, marital_status, ethnicity, hospitaltime, edtime) %>% 
-  na.omit() 
+#admissions_death_nona <- 
+#  admissions_death %>% 
+#  select(admission_type, admission_location, insurance, religion, marital_status, ethnicity, hospitaltime, edtime) %>% 
+#  na.omit() 
 
 #MLR with no NAs
-living_mlr_nona <- 
-  glm(living ~ admission_type + admission_location + insurance + language + religion + marital_status + ethnicity + hospital_expire_flag + has_chartevents_data + hospitaltime + edtime, data = admissions_death_nona)
-summary(living_mlr_nona)
-broom::glance(living_mlr_nona)
-broom::tidy(living_mlr_nona)
+#living_mlr_nona <- 
+#  glm(living ~ admission_type + admission_location + insurance + language + religion + marital_status + ethnicity + hospital_expire_flag + has_chartevents_data + hospitaltime + edtime, data = admissions_death_nona)
+#summary(living_mlr_nona)
+#broom::glance(living_mlr_nona)
+#broom::tidy(living_mlr_nona)
 ```
-
-
-
-
-
-
-
-
-
-```{r eval=FALSE}
-# K-fold cross-validation
-library(DAAG)
-cv.lm(df = admissions_death, living_mlr, m = 5) # 5 fold cross-validation
-
-
-
-```{r}
-step <- step(living_mlr)
-broom::tidy(step)
-
-
-```
-
-
-
-
-```{r }
-# All Subsets Regression
-library(leaps)
-attach(admissions_death)
-leaps <- 
-  regsubsets(living ~ hospitaltime + admission_type + admission_location + insurance + language + religion + marital_status + ethnicity + edtime + hospital_expire_flag + has_chartevents_data + insurance, data = admissions_death, nbest = 10)
-# view results 
-summary(leaps)
-# plot a table of models showing variables in each model.
-# models are ordered by the selection statistic.
-plot(leaps,scale = "r2")
-# plot statistic by subset size 
-library(car)
-subsets(leaps, statistic = "rsq")
-```
-
-
-
-```{r }
-# Calculate Relative Importance for Each Predictor
-library(relaimpo)
-calc.relimp(admissions_death, type=c("lmg","last","first","pratt"),
-   rela=TRUE)
-```
-
-
-```{r eval=FALSE}
-# Bootstrap Measures of Relative Importance (1000 samples) 
-boot <- boot.relimp(admissions_death, b = 1000, type = c("lmg", 
-  "last", "first", "pratt"), rank = TRUE, 
-  diff = TRUE, rela = TRUE)
-booteval.relimp(boot) # print result
-plot(booteval.relimp(boot,sort=TRUE)) # plot result
-```
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -455,14 +394,25 @@ total_patient <-
   merge(admissions_death, icu, by="hadm_id") %>% 
   as.tibble()
 
+#mutate icu time
+total_patient <- 
+  mutate(total_patient, icutime = outtime - intime)
 ```
 
 
 
 
 Let's see some plots from these two datasets
-```{r}
-plot(admissions_death)
-plot(icu)
+Let's focus on the `hospitaltime` and `icutime`
+
+
+```{r eval=FALSE}
+mlr_time <- 
+  glm(living ~ hospitaltime + icutime, data = total_patient)
+plot(mlr_time)
+
+plot(total_patient)
+
+
 ```
 
