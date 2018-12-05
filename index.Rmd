@@ -1,7 +1,0 @@
----
-title: "Holy cow!"
----
-
-### P8105 Data Science I Final Project -- Samantha Brown, Laura Cosgrove, Francis Z. Fang
-
-This is the landing site for our final project website. 

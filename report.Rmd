@@ -1,7 +1,11 @@
 ---
 title: "Influential Factors in Critical Care Patients"
+<<<<<<< HEAD
 author: "Samantha Brown, Laura Cosgrove, Francis Z. Fang zf2211"
 date: "12/2/2018"
+=======
+author: "Samantha Brown, Laura Cosgrove, Francis Z. Fang"
+>>>>>>> d3625fde509679bcba160253d7f32d1923723d62
 output: github_document
 ---
 
@@ -18,46 +22,24 @@ Critical care involves the specialized treatment of patients whose conditions po
 
 ### Motivation and Related Work
 
-Previous research has focused on the physiologic- and disease-driven factors that influence critical care. In this report, we consider whether demographic characteristics of patients in critical care influence outcomes such as mortality and length of hospital stay. 
+Previous research has focused on the physiological- and disease-driven factors that influence critical care. In this report, we consider whether demographic characteristics of patients in critical care influence outcomes such as mortality and length of hospital stay. 
 
-Related work includes a 2015 NIH research publication titled _"Mortality prediction in the ICU: can we do better? Results from the Super ICU Learner Algorithm (SICULA) project, a population-based study"_, which considers whether a machine learning technique can help predict mortality for patients in critical care.
-
-As some of us worked in health related facilities, we found that there are a lot of patients suffered with pain and life loss. we would like to analysis data collected in hospital to find the inner connection between mortality and other factors, in order to help health related facilities, like CDC and hospital to better control different factors to better help patients.
+Related work includes MIT Computational Lab's 2015 research publication titled _"Mortality prediction in the ICU: can we do better? Results from the Super ICU Learner Algorithm (SICULA) project, a population-based study"_, which considers whether a machine learning technique can help predict mortality for patients in critical care. This publication considers MIMIC, an openly accessible critical care database created by the MIT Lab for Computational Physiology. With the goal of engaging in open research by reproducing an analysis, this project works to understand and analyze the MIMIC database. MIMIC will be described further in the Data Collection section of the report.
 
 ## Data Collection
 
-MIMIC is an openly accessible critical care database created by the MIT Lab for Computational Physiology. It comprises deidentified health-related data associated with over forty thousand patients who stayed in critical care units of the Beth Israel Deaconess Medical Center between 2001 and 2012. It includes the following information: demographics, vital sign measurements made at the bedside (~1 data point per hour), laboratory test results, procedures, medications, caregiver notes, imaging reports, and mortality (both in and out of hospital). After completing the CITI “Data or Specimens Only Research” training course, PhysioNet granted us access to the MIMIC datasets.
+The MIMIC database comprises deidentified health-related data associated with over forty thousand patients who stayed in critical care units of the Beth Israel Deaconess Medical Center between 2001 and 2012. It includes the following information: demographics, vital sign measurements made at the bedside (~1 data point per hour), laboratory test results, procedures, medications, caregiver notes, imaging reports, and mortality (both in and out of hospital). After completing the CITI “Data or Specimens Only Research” training course, PhysioNet granted us access to the MIMIC database.
 
-The next step was to follow the 
+The next step was to follow the MIMIC website's open tutorial to install MIMIC in a local Postgres database. We referenced the public Github MIMIC-code repository for MIT Lab for Computational Physiology (https://github.com/MIT-LCP/mimic-code/tree/master/buildmimic) as a guide. The MIT researchers who built the MIMIC database also built this repository with the goal of sharing how they performed the technical analysis described in their published literature. Given the time constraints of this project, we were limited to how much we could understand how to make use of the MIMIC data on our own. Therefore, MIT's Lab for Computational Physiology Github repository served as the most productive and efficient way for us to understand and analyze the MIMIC database.
+
 
 
 
 ## Initial Questions
 
-Are there inner relations between mortality and other factors? Since we have a lot of factors found in our data collected, which of them are more critical and pay more attention?
+Factors in mortality
 
-To be specific, since this is a highly diversified society, some factors more political, like ethnicity, language, religion will influence on outcome, rather than only medical factors. Let's do some more exhaustive work and find more inclusive results.
-
-I tried to read the database of openFDA, found it is .json format. So we googled and found the API to read the database, and it worked! 
-
-At first, I focus on the admissions.csv from MIMIC because I think it includes so many factors, which are large enough to find something. So we found the paper which called 'Data Descriptor- MIMIC-III, a freely accessible critical care database.pdf' Then we found using the method from the paper, the diagnosis is too much, too hard to use itself to analyze. So we found the sapsii.csv, which used the more detailed scores system to judge the patient, for better analyse its diagnosis.
-
-
-## Data
-
-This project used a series of research which whole name is MIMIC-III (Medical Information Mart for Intensive Care III). This dataset is notable for three factors:
-
-
-* it is freely available to researchers worldwide
-
-
-* it encompasses a diverse and very large population of ICU patients
-
-
-* it contains high temporal resolution data including lab results, electronic documentation, and bedside monitor trends and waveforms.
-
-
-
+if insurance coverage could play a part in mortality, beyond basic diagnostic factors
 
 ## Exploratory Analysis
 
@@ -69,7 +51,7 @@ admissions <-
 ```
 
 
-The core admissions dataset consists of `r nrow(admissions)` observations of the following `r ncol(admissions)` variables:
+The raw admissions dataset consists of `r nrow(admissions)` observations of the following `r ncol(admissions)` variables:
 
 * Row ID
 * Subject ID
@@ -144,8 +126,6 @@ ethnicity_df = admissions %>%
   mutate(percent = n/nrow(admissions)*100) %>% 
   arrange(desc(percent))
 ```
-
-* I need help with sorting out the ethnicity please!!
 
 ```{r, include = FALSE}
 ## Language
@@ -235,10 +215,6 @@ head(admissions)
 
 
 ## Additional Analysis
-
-I dig deep into the dataset, we tried to build different models to find the best one. In research, we found a obstacle to analyse this dataset: the observations is too large (over 50000 by now). Since I am lack of this kind of experience, I tried different methods. The stepwise method does not work, so use backward elimination instead. 
-
-
 
 ## Discussion
 

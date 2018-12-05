@@ -10,31 +10,28 @@ Critical care involves the specialized treatment of patients whose conditions po
 
 ### Motivation and Related Work
 
-Previous research has focused on the physiologic- and disease-driven factors that influence critical care. In this report, we consider whether demographic characteristics of patients in critical care influence outcomes such as mortality and length of hospital stay.
+Previous research has focused on the physiological- and disease-driven factors that influence critical care. In this report, we consider whether demographic characteristics of patients in critical care influence outcomes such as mortality and length of hospital stay.
 
-Related work includes a 2015 NIH research publication titled *"Mortality prediction in the ICU: can we do better? Results from the Super ICU Learner Algorithm (SICULA) project, a population-based study"*, which considers whether a machine learning technique can help predict mortality for patients in critical care.
+Related work includes MIT Computational Lab's 2015 research publication titled *"Mortality prediction in the ICU: can we do better? Results from the Super ICU Learner Algorithm (SICULA) project, a population-based study"*, which considers whether a machine learning technique can help predict mortality for patients in critical care. This publication considers MIMIC, an openly accessible critical care database created by the MIT Lab for Computational Physiology. With the goal of engaging in open research by reproducing an analysis, this project works to understand and analyze the MIMIC database. MIMIC will be described further in the Data Collection section of the report.
 
 Data Collection
 ---------------
 
-MIMIC is an openly accessible critical care database created by the MIT Lab for Computational Physiology. It comprises deidentified health-related data associated with over forty thousand patients who stayed in critical care units of the Beth Israel Deaconess Medical Center between 2001 and 2012. It includes the following information: demographics, vital sign measurements made at the bedside (~1 data point per hour), laboratory test results, procedures, medications, caregiver notes, imaging reports, and mortality (both in and out of hospital). After completing the CITI “Data or Specimens Only Research” training course, PhysioNet granted us access to the MIMIC datasets.
+The MIMIC database comprises deidentified health-related data associated with over forty thousand patients who stayed in critical care units of the Beth Israel Deaconess Medical Center between 2001 and 2012. It includes the following information: demographics, vital sign measurements made at the bedside (~1 data point per hour), laboratory test results, procedures, medications, caregiver notes, imaging reports, and mortality (both in and out of hospital). After completing the CITI “Data or Specimens Only Research” training course, PhysioNet granted us access to the MIMIC database.
 
-The next step was to follow the
+The next step was to follow the MIMIC website's open tutorial to install MIMIC in a local Postgres database. We referenced the public Github MIMIC-code repository for MIT Lab for Computational Physiology (<https://github.com/MIT-LCP/mimic-code/tree/master/buildmimic>) as a guide. The MIT researchers who built the MIMIC database also built this repository with the goal of sharing how they performed the technical analysis described in their published literature. Given the time constraints of this project, we were limited to how much we could understand how to make use of the MIMIC data on our own. Therefore, MIT's Lab for Computational Physiology Github repository served as the most productive and efficient way for us to understand and analyze the MIMIC database.
 
 Initial Questions
 -----------------
 
+Factors in mortality
+
+if insurance coverage could play a part in mortality, beyond basic diagnostic factors
+
 Exploratory Analysis
 --------------------
 
-``` r
-admissions <- 
-  read_csv("./database/data/admissions.csv") %>% 
-  janitor::clean_names() %>% 
-  mutate(diagnosis = factor(diagnosis))
-```
-
-The raw admissions dataset consists of 58976 observations of 19 variables:
+The raw admissions dataset consists of 58976 observations of the following 19 variables:
 
 -   Row ID
 -   Subject ID
@@ -56,33 +53,19 @@ The raw admissions dataset consists of 58976 observations of 19 variables:
 -   Hospital expire flag
 -   Has chart events
 
-``` r
-## Distribution of insurance type
-admissions %>% 
-  group_by(insurance) %>% 
-  count() %>% 
-  mutate(percent_of_patients = round(n/nrow(admissions)*100, digits = 2)) %>% 
-  arrange(desc(percent_of_patients)) %>% 
-  select(-n)
-```
+*Initial exploration*
 
-    ## # A tibble: 5 x 2
-    ## # Groups:   insurance [5]
-    ##   insurance  percent_of_patients
-    ##   <chr>                    <dbl>
-    ## 1 Medicare                 47.8 
-    ## 2 Private                  38.3 
-    ## 3 Medicaid                  9.81
-    ## 4 Government                3.02
-    ## 5 Self Pay                  1.04
+-   71.34% of patients admitted were classified as emergencies, while 13.33% were newborns and 71.34% were elective. The remaining 2.26% were classified as urgent.
 
-41.1% of the critical care patients were married, 22.47% of patients were single, 12.23 were widowed and 5.45 were divorced. The remaining 18.75% were either separated, with a life partner, or marital status was unknown.
+-   47.84% of patients had Medicare, while 38.29% had private insurance and 9.81% had Medicaid. The remaining patients either were insured by the government or paid out of pocket.
+
+-   41.1% of the critical care patients were married, 22.47% of patients were single, 12.23% were widowed and 5.45% were divorced. The remaining 18.75% were either separated, with a life partner, or marital status was unknown.
+
+-   42.95% of the patients were missing data entries for language. Of the patients that did have language entries, 49.32% of them spoke English.
 
 For the scope of this project, we are especially interested in focusing on patient mortalities and length of hospital stay. The depth of our initial analysis is concentrated here.
 
 Out of the 58976 patient admissions, 90.07% patients were ultimately discharged. The remaining 9.93% were recorded as patient deaths.
-
-**Let's explain the process of making simpler diagnostic groups** Then include top 10 diagnoses associated with death.
 
 ``` r
 icu_data = read_csv("./database/data/icu_detail.csv") %>% 
@@ -96,7 +79,9 @@ ggplot(icu_data, aes(x = los_icu, y = los_hospital)) +
   )
 ```
 
-![](report_files/figure-markdown_github/unnamed-chunk-5-1.png)
+![](report_files/figure-markdown_github/unnamed-chunk-8-1.png)
+
+**Let's explain the process of making simpler diagnostic groups** Then include top 10 diagnoses associated with death.
 
 Additional Analysis
 -------------------

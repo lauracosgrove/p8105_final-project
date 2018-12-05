@@ -302,214 +302,706 @@ skimr::skim(admissions_death)
 
 #SLR
 
-par(mfrow = c(2,2))
 living_lm1 <- 
-  glm(living ~ admission_type, data = admissions_death) %>% 
-  plot()
-```
-
-![](data_wrangling_files/figure-markdown_github/unnamed-chunk-6-1.png)
-
-``` r
+  glm(living ~ admission_type, data = admissions_death)
 summary(living_lm1)
 ```
 
-    ## Length  Class   Mode 
-    ##      0   NULL   NULL
+    ## 
+    ## Call:
+    ## glm(formula = living ~ admission_type, data = admissions_death)
+    ## 
+    ## Deviance Residuals: 
+    ##      Min        1Q    Median        3Q       Max  
+    ## -0.97438   0.02562   0.12917   0.12917   0.12917  
+    ## 
+    ## Coefficients:
+    ##                          Estimate Std. Error t value Pr(>|t|)    
+    ## (Intercept)              0.974379   0.003589 271.455   <2e-16 ***
+    ## admission_typeEMERGENCY -0.103549   0.003904 -26.525   <2e-16 ***
+    ## admission_typeNEWBORN    0.025621   0.047057   0.544    0.586    
+    ## admission_typeURGENT    -0.095159   0.009338 -10.190   <2e-16 ***
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+    ## 
+    ## (Dispersion parameter for gaussian family taken to be 0.09906754)
+    ## 
+    ##     Null deviance: 5135.1  on 51127  degrees of freedom
+    ## Residual deviance: 5064.7  on 51124  degrees of freedom
+    ## AIC: 26895
+    ## 
+    ## Number of Fisher Scoring iterations: 2
 
 ``` r
 broom::glance(living_lm1)
 ```
 
-    ## # A tibble: 0 x 0
+    ## # A tibble: 1 x 7
+    ##   null.deviance df.null  logLik    AIC    BIC deviance df.residual
+    ##           <dbl>   <int>   <dbl>  <dbl>  <dbl>    <dbl>       <int>
+    ## 1         5135.   51127 -13443. 26895. 26940.    5065.       51124
 
 ``` r
 broom::tidy(living_lm1)
 ```
 
-    ## # A tibble: 0 x 0
+    ## # A tibble: 4 x 5
+    ##   term                    estimate std.error statistic   p.value
+    ##   <chr>                      <dbl>     <dbl>     <dbl>     <dbl>
+    ## 1 (Intercept)               0.974    0.00359   271.    0.       
+    ## 2 admission_typeEMERGENCY  -0.104    0.00390   -26.5   5.52e-154
+    ## 3 admission_typeNEWBORN     0.0256   0.0471      0.544 5.86e-  1
+    ## 4 admission_typeURGENT     -0.0952   0.00934   -10.2   2.31e- 24
 
 ``` r
 living_lm2 <- 
-  glm(living ~ admission_location, data = admissions_death) %>% 
-  plot()
-```
-
-    ## Warning in sqrt(crit * p * (1 - hh)/hh): NaNs produced
-
-    ## Warning in sqrt(crit * p * (1 - hh)/hh): NaNs produced
-
-![](data_wrangling_files/figure-markdown_github/unnamed-chunk-6-2.png)
-
-``` r
+  glm(living ~ admission_location, data = admissions_death)
 summary(living_lm1)
 ```
 
-    ## Length  Class   Mode 
-    ##      0   NULL   NULL
+    ## 
+    ## Call:
+    ## glm(formula = living ~ admission_type, data = admissions_death)
+    ## 
+    ## Deviance Residuals: 
+    ##      Min        1Q    Median        3Q       Max  
+    ## -0.97438   0.02562   0.12917   0.12917   0.12917  
+    ## 
+    ## Coefficients:
+    ##                          Estimate Std. Error t value Pr(>|t|)    
+    ## (Intercept)              0.974379   0.003589 271.455   <2e-16 ***
+    ## admission_typeEMERGENCY -0.103549   0.003904 -26.525   <2e-16 ***
+    ## admission_typeNEWBORN    0.025621   0.047057   0.544    0.586    
+    ## admission_typeURGENT    -0.095159   0.009338 -10.190   <2e-16 ***
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+    ## 
+    ## (Dispersion parameter for gaussian family taken to be 0.09906754)
+    ## 
+    ##     Null deviance: 5135.1  on 51127  degrees of freedom
+    ## Residual deviance: 5064.7  on 51124  degrees of freedom
+    ## AIC: 26895
+    ## 
+    ## Number of Fisher Scoring iterations: 2
 
 ``` r
 broom::glance(living_lm2)
 ```
 
-    ## # A tibble: 0 x 0
+    ## # A tibble: 1 x 7
+    ##   null.deviance df.null  logLik    AIC    BIC deviance df.residual
+    ##           <dbl>   <int>   <dbl>  <dbl>  <dbl>    <dbl>       <int>
+    ## 1         5135.   51127 -13454. 26927. 27016.    5067.       51119
 
 ``` r
 broom::tidy(living_lm2)
 ```
 
-    ## # A tibble: 0 x 0
+    ## # A tibble: 9 x 5
+    ##   term                             estimate std.error statistic    p.value
+    ##   <chr>                               <dbl>     <dbl>     <dbl>      <dbl>
+    ## 1 (Intercept)                        0.8        0.141    5.68      1.34e-8
+    ## 2 admission_locationCLINIC REFERR…   0.0907     0.141    0.644     5.20e-1
+    ## 3 admission_locationEMERGENCY ROO…   0.0641     0.141    0.455     6.49e-1
+    ## 4 admission_locationHMO REFERRAL/…   0.200      0.345    0.580     5.62e-1
+    ## 5 admission_locationPHYS REFERRAL…   0.159      0.141    1.13      2.60e-1
+    ## 6 admission_locationTRANSFER FROM…   0.0655     0.141    0.465     6.42e-1
+    ## 7 admission_locationTRANSFER FROM…  -0.0676     0.146   -0.464     6.43e-1
+    ## 8 admission_locationTRANSFER FROM…   0.0125     0.142    0.0880    9.30e-1
+    ## 9 admission_locationTRSF WITHIN T…   0.200      0.199    1.00      3.15e-1
 
 ``` r
 living_lm3 <- 
-  glm(living ~ insurance, data = admissions_death) %>% 
-  plot()
-```
-
-![](data_wrangling_files/figure-markdown_github/unnamed-chunk-6-3.png)
-
-``` r
+  glm(living ~ insurance, data = admissions_death)
 summary(living_lm3)
 ```
 
-    ## Length  Class   Mode 
-    ##      0   NULL   NULL
+    ## 
+    ## Call:
+    ## glm(formula = living ~ insurance, data = admissions_death)
+    ## 
+    ## Deviance Residuals: 
+    ##      Min        1Q    Median        3Q       Max  
+    ## -0.93585   0.08088   0.08249   0.13848   0.16376  
+    ## 
+    ## Coefficients:
+    ##                    Estimate Std. Error t value Pr(>|t|)    
+    ## (Intercept)        0.935852   0.008425 111.084  < 2e-16 ***
+    ## insuranceMedicaid -0.018342   0.009637  -1.903   0.0570 .  
+    ## insuranceMedicare -0.074337   0.008632  -8.612  < 2e-16 ***
+    ## insurancePrivate  -0.016732   0.008778  -1.906   0.0566 .  
+    ## insuranceSelf Pay -0.099615   0.015635  -6.371 1.89e-10 ***
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+    ## 
+    ## (Dispersion parameter for gaussian family taken to be 0.0995792)
+    ## 
+    ##     Null deviance: 5135.1  on 51127  degrees of freedom
+    ## Residual deviance: 5090.8  on 51123  degrees of freedom
+    ## AIC: 27160
+    ## 
+    ## Number of Fisher Scoring iterations: 2
 
 ``` r
 broom::glance(living_lm3)
 ```
 
-    ## # A tibble: 0 x 0
+    ## # A tibble: 1 x 7
+    ##   null.deviance df.null  logLik    AIC    BIC deviance df.residual
+    ##           <dbl>   <int>   <dbl>  <dbl>  <dbl>    <dbl>       <int>
+    ## 1         5135.   51127 -13574. 27160. 27213.    5091.       51123
 
 ``` r
 broom::tidy(living_lm3)
 ```
 
-    ## # A tibble: 0 x 0
+    ## # A tibble: 5 x 5
+    ##   term              estimate std.error statistic  p.value
+    ##   <chr>                <dbl>     <dbl>     <dbl>    <dbl>
+    ## 1 (Intercept)         0.936    0.00842    111.   0.      
+    ## 2 insuranceMedicaid  -0.0183   0.00964     -1.90 5.70e- 2
+    ## 3 insuranceMedicare  -0.0743   0.00863     -8.61 7.38e-18
+    ## 4 insurancePrivate   -0.0167   0.00878     -1.91 5.66e- 2
+    ## 5 insuranceSelf Pay  -0.0996   0.0156      -6.37 1.89e-10
 
 ``` r
 living_lm4 <- 
-  glm(living ~ language, data = na.omit(select(admissions_death, living, language))) %>% 
-  plot()
-```
-
-    ## Warning: not plotting observations with leverage one:
-    ##   266, 776, 2885, 4400, 4417, 7656, 19568, 20593, 25126
-
-    ## Warning: not plotting observations with leverage one:
-    ##   266, 776, 2885, 4400, 4417, 7656, 19568, 20593, 25126
-
-    ## Warning in sqrt(crit * p * (1 - hh)/hh): NaNs produced
-
-    ## Warning in sqrt(crit * p * (1 - hh)/hh): NaNs produced
-
-![](data_wrangling_files/figure-markdown_github/unnamed-chunk-6-4.png)
-
-``` r
+  glm(living ~ language, data = na.omit(select(admissions_death, living, language)))
 summary(living_lm4)
 ```
 
-    ## Length  Class   Mode 
-    ##      0   NULL   NULL
+    ## 
+    ## Call:
+    ## glm(formula = living ~ language, data = na.omit(select(admissions_death, 
+    ##     living, language)))
+    ## 
+    ## Deviance Residuals: 
+    ##      Min        1Q    Median        3Q       Max  
+    ## -0.95745   0.08662   0.08662   0.08662   0.66667  
+    ## 
+    ## Coefficients:
+    ##                Estimate Std. Error t value Pr(>|t|)    
+    ## (Intercept)   1.000e+00  2.031e-01   4.924 8.51e-07 ***
+    ## language* FU  3.627e-12  3.517e-01   0.000  1.00000    
+    ## language** T  3.713e-12  3.517e-01   0.000  1.00000    
+    ## language**SH  3.621e-12  2.872e-01   0.000  1.00000    
+    ## language**TO -6.667e-01  2.622e-01  -2.543  0.01100 *  
+    ## language*AMH -5.000e-01  2.872e-01  -1.741  0.08169 .  
+    ## language*ARA  3.528e-12  3.517e-01   0.000  1.00000    
+    ## language*ARM -4.444e-01  2.245e-01  -1.980  0.04775 *  
+    ## language*BEN -1.429e-01  2.303e-01  -0.620  0.53500    
+    ## language*BOS  3.754e-12  3.517e-01   0.000  1.00000    
+    ## language*BUL  3.599e-12  2.403e-01   0.000  1.00000    
+    ## language*BUR -2.500e-01  2.487e-01  -1.005  0.31482    
+    ## language*CAN  3.621e-12  2.872e-01   0.000  1.00000    
+    ## language*CDI -2.500e-01  2.487e-01  -1.005  0.31482    
+    ## language*CHI  3.666e-12  2.303e-01   0.000  1.00000    
+    ## language*CRE  3.816e-12  3.517e-01   0.000  1.00000    
+    ## language*DEA  3.691e-12  3.517e-01   0.000  1.00000    
+    ## language*DUT  3.734e-12  2.872e-01   0.000  1.00000    
+    ## language*FAR  3.801e-12  3.517e-01   0.000  1.00000    
+    ## language*FIL  3.779e-12  3.517e-01   0.000  1.00000    
+    ## language*FUL -5.000e-01  2.872e-01  -1.741  0.08169 .  
+    ## language*GUJ -1.429e-01  2.303e-01  -0.620  0.53500    
+    ## language*HUN -1.429e-01  2.303e-01  -0.620  0.53500    
+    ## language*IBO  3.496e-12  2.487e-01   0.000  1.00000    
+    ## language*KHM  3.579e-12  2.872e-01   0.000  1.00000    
+    ## language*LEB  3.715e-12  2.872e-01   0.000  1.00000    
+    ## language*LIT  3.663e-12  3.517e-01   0.000  1.00000    
+    ## language*MAN  3.532e-12  2.622e-01   0.000  1.00000    
+    ## language*MOR  3.589e-12  2.872e-01   0.000  1.00000    
+    ## language*NEP  3.550e-12  3.517e-01   0.000  1.00000    
+    ## language*PER  3.806e-12  3.517e-01   0.000  1.00000    
+    ## language*PHI  3.586e-12  3.517e-01   0.000  1.00000    
+    ## language*PUN  3.808e-12  3.517e-01   0.000  1.00000    
+    ## language*ROM -1.000e+00  3.517e-01  -2.843  0.00447 ** 
+    ## language*RUS -1.000e+00  3.517e-01  -2.843  0.00447 ** 
+    ## language*SPA  3.708e-12  3.517e-01   0.000  1.00000    
+    ## language*TAM  3.602e-12  3.517e-01   0.000  1.00000    
+    ## language*TEL -3.333e-01  2.622e-01  -1.271  0.20358    
+    ## language*TOI  3.635e-12  2.872e-01   0.000  1.00000    
+    ## language*TOY -5.000e-01  2.872e-01  -1.741  0.08169 .  
+    ## language*URD -5.000e-01  2.487e-01  -2.010  0.04440 *  
+    ## language*YID -2.857e-01  2.303e-01  -1.241  0.21469    
+    ## language*YOR  3.407e-12  3.517e-01   0.000  1.00000    
+    ## languageALBA -1.176e-01  2.147e-01  -0.548  0.58370    
+    ## languageAMER -9.677e-02  2.095e-01  -0.462  0.64417    
+    ## languageARAB -4.255e-02  2.074e-01  -0.205  0.83740    
+    ## languageBENG  3.769e-12  2.872e-01   0.000  1.00000    
+    ## languageCAMB -1.351e-01  2.085e-01  -0.648  0.51689    
+    ## languageCANT -1.522e-01  2.036e-01  -0.748  0.45467    
+    ## languageCAPE -8.696e-02  2.040e-01  -0.426  0.66986    
+    ## languageENGL -8.662e-02  2.031e-01  -0.427  0.66972    
+    ## languageETHI  3.781e-12  2.208e-01   0.000  1.00000    
+    ## languageFREN -2.500e-01  2.154e-01  -1.161  0.24579    
+    ## languageGERM -1.000e+00  3.517e-01  -2.843  0.00447 ** 
+    ## languageGREE -1.333e-01  2.058e-01  -0.648  0.51700    
+    ## languageHAIT -7.333e-02  2.044e-01  -0.359  0.71980    
+    ## languageHIND -1.667e-01  2.114e-01  -0.789  0.43040    
+    ## languageITAL -6.452e-02  2.047e-01  -0.315  0.75264    
+    ## languageJAPA -3.333e-01  2.622e-01  -1.271  0.20358    
+    ## languageKORE -1.304e-01  2.117e-01  -0.616  0.53785    
+    ## languageLAOT -2.857e-01  2.303e-01  -1.241  0.21469    
+    ## languageMAND -1.349e-01  2.047e-01  -0.659  0.50979    
+    ## languagePERS -6.818e-02  2.076e-01  -0.328  0.74264    
+    ## languagePOLI -8.824e-02  2.090e-01  -0.422  0.67284    
+    ## languagePORT -8.833e-02  2.037e-01  -0.434  0.66459    
+    ## languagePTUN -1.834e-01  2.034e-01  -0.902  0.36714    
+    ## languageRUSS -1.510e-01  2.033e-01  -0.743  0.45767    
+    ## languageSERB  3.851e-12  3.517e-01   0.000  1.00000    
+    ## languageSOMA -7.692e-02  2.181e-01  -0.353  0.72436    
+    ## languageSPAN -8.045e-02  2.033e-01  -0.396  0.69227    
+    ## languageTAGA -3.333e-01  2.622e-01  -1.271  0.20358    
+    ## languageTHAI  3.737e-12  2.193e-01   0.000  1.00000    
+    ## languageTURK  3.715e-12  2.872e-01   0.000  1.00000    
+    ## languageURDU  3.630e-12  2.403e-01   0.000  1.00000    
+    ## languageVIET -1.011e-01  2.053e-01  -0.492  0.62240    
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+    ## 
+    ## (Dispersion parameter for gaussian family taken to be 0.08247903)
+    ## 
+    ##     Null deviance: 2763.6  on 33341  degrees of freedom
+    ## Residual deviance: 2743.8  on 33267  degrees of freedom
+    ## AIC: 11502
+    ## 
+    ## Number of Fisher Scoring iterations: 2
 
 ``` r
 broom::glance(living_lm4)
 ```
 
-    ## # A tibble: 0 x 0
+    ## # A tibble: 1 x 7
+    ##   null.deviance df.null logLik    AIC    BIC deviance df.residual
+    ##           <dbl>   <int>  <dbl>  <dbl>  <dbl>    <dbl>       <int>
+    ## 1         2764.   33341 -5675. 11502. 12142.    2744.       33267
 
 ``` r
 broom::tidy(living_lm4)
 ```
 
-    ## # A tibble: 0 x 0
+    ## # A tibble: 75 x 5
+    ##    term           estimate std.error statistic     p.value
+    ##    <chr>             <dbl>     <dbl>     <dbl>       <dbl>
+    ##  1 (Intercept)   10.00e- 1     0.203  4.92e+ 0 0.000000851
+    ##  2 language* FU   3.63e-12     0.352  1.03e-11 1.000      
+    ##  3 language** T   3.71e-12     0.352  1.06e-11 1.000      
+    ##  4 language**SH   3.62e-12     0.287  1.26e-11 1.000      
+    ##  5 language**TO  -6.67e- 1     0.262 -2.54e+ 0 0.0110     
+    ##  6 language*AMH  -5.00e- 1     0.287 -1.74e+ 0 0.0817     
+    ##  7 language*ARA   3.53e-12     0.352  1.00e-11 1.000      
+    ##  8 language*ARM  -4.44e- 1     0.225 -1.98e+ 0 0.0478     
+    ##  9 language*BEN  -1.43e- 1     0.230 -6.20e- 1 0.535      
+    ## 10 language*BOS   3.75e-12     0.352  1.07e-11 1.000      
+    ## # ... with 65 more rows
 
 ``` r
 living_lm5 <- 
-  glm(living ~ religion, data = admissions_death) %>% 
-  plot()
-```
-
-    ## Warning: not plotting observations with leverage one:
-    ##   16992
-
-    ## Warning: not plotting observations with leverage one:
-    ##   16992
-
-![](data_wrangling_files/figure-markdown_github/unnamed-chunk-6-5.png)
-
-``` r
+  glm(living ~ religion, data = admissions_death)
 summary(living_lm5)
 ```
 
-    ## Length  Class   Mode 
-    ##      0   NULL   NULL
+    ## 
+    ## Call:
+    ## glm(formula = living ~ religion, data = admissions_death)
+    ## 
+    ## Deviance Residuals: 
+    ##      Min        1Q    Median        3Q       Max  
+    ## -0.92896   0.08981   0.10294   0.10294   0.28571  
+    ## 
+    ## Coefficients:
+    ##                                  Estimate Std. Error t value Pr(>|t|)    
+    ## (Intercept)                     0.9285714  0.0375567  24.725  < 2e-16 ***
+    ## religionBAPTIST                -0.2142857  0.0702621  -3.050  0.00229 ** 
+    ## religionBUDDHIST               -0.0177733  0.0432903  -0.411  0.68140    
+    ## religionCATHOLIC               -0.0315102  0.0376275  -0.837  0.40236    
+    ## religionCHRISTIAN SCIENTIST    -0.0216645  0.0413159  -0.524  0.60003    
+    ## religionEPISCOPALIAN           -0.0233380  0.0393720  -0.593  0.55335    
+    ## religionGREEK ORTHODOX         -0.0184059  0.0405453  -0.454  0.64986    
+    ## religionHEBREW                 -0.1785714  0.0870716  -2.051  0.04029 *  
+    ## religionHINDU                  -0.0553320  0.0529258  -1.045  0.29581    
+    ## religionJEHOVAH'S WITNESS      -0.0545557  0.0467755  -1.166  0.24349    
+    ## religionJEWISH                 -0.0660766  0.0378263  -1.747  0.08067 .  
+    ## religionLUTHERAN                0.0714286  0.3164581   0.226  0.82143    
+    ## religionMETHODIST              -0.0714286  0.1245614  -0.573  0.56635    
+    ## religionMUSLIM                  0.0003903  0.0441593   0.009  0.99295    
+    ## religionNOT SPECIFIED          -0.0183831  0.0376834  -0.488  0.62567    
+    ## religionOTHER                  -0.0165017  0.0380980  -0.433  0.66492    
+    ## religionPROTESTANT QUAKER      -0.0273875  0.0377557  -0.725  0.46822    
+    ## religionROMANIAN EAST. ORTH    -0.0903361  0.0535023  -1.688  0.09133 .  
+    ## religionUNITARIAN-UNIVERSALIST -0.0983827  0.0483939  -2.033  0.04206 *  
+    ## religionUNOBTAINABLE           -0.1234699  0.0377921  -3.267  0.00109 ** 
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+    ## 
+    ## (Dispersion parameter for gaussian family taken to be 0.09873523)
+    ## 
+    ##     Null deviance: 5055.0  on 50676  degrees of freedom
+    ## Residual deviance: 5001.6  on 50657  degrees of freedom
+    ##   (451 observations deleted due to missingness)
+    ## AIC: 26504
+    ## 
+    ## Number of Fisher Scoring iterations: 2
 
 ``` r
 broom::glance(living_lm5)
 ```
 
-    ## # A tibble: 0 x 0
+    ## # A tibble: 1 x 7
+    ##   null.deviance df.null  logLik    AIC    BIC deviance df.residual
+    ##           <dbl>   <int>   <dbl>  <dbl>  <dbl>    <dbl>       <int>
+    ## 1         5055.   50676 -13231. 26504. 26689.    5002.       50657
 
 ``` r
 broom::tidy(living_lm5)
 ```
 
-    ## # A tibble: 0 x 0
+    ## # A tibble: 20 x 5
+    ##    term                            estimate std.error statistic   p.value
+    ##    <chr>                              <dbl>     <dbl>     <dbl>     <dbl>
+    ##  1 (Intercept)                     0.929       0.0376  24.7     3.65e-134
+    ##  2 religionBAPTIST                -0.214       0.0703  -3.05    2.29e-  3
+    ##  3 religionBUDDHIST               -0.0178      0.0433  -0.411   6.81e-  1
+    ##  4 religionCATHOLIC               -0.0315      0.0376  -0.837   4.02e-  1
+    ##  5 religionCHRISTIAN SCIENTIST    -0.0217      0.0413  -0.524   6.00e-  1
+    ##  6 religionEPISCOPALIAN           -0.0233      0.0394  -0.593   5.53e-  1
+    ##  7 religionGREEK ORTHODOX         -0.0184      0.0405  -0.454   6.50e-  1
+    ##  8 religionHEBREW                 -0.179       0.0871  -2.05    4.03e-  2
+    ##  9 religionHINDU                  -0.0553      0.0529  -1.05    2.96e-  1
+    ## 10 religionJEHOVAH'S WITNESS      -0.0546      0.0468  -1.17    2.43e-  1
+    ## 11 religionJEWISH                 -0.0661      0.0378  -1.75    8.07e-  2
+    ## 12 religionLUTHERAN                0.0714      0.316    0.226   8.21e-  1
+    ## 13 religionMETHODIST              -0.0714      0.125   -0.573   5.66e-  1
+    ## 14 religionMUSLIM                  0.000390    0.0442   0.00884 9.93e-  1
+    ## 15 religionNOT SPECIFIED          -0.0184      0.0377  -0.488   6.26e-  1
+    ## 16 religionOTHER                  -0.0165      0.0381  -0.433   6.65e-  1
+    ## 17 religionPROTESTANT QUAKER      -0.0274      0.0378  -0.725   4.68e-  1
+    ## 18 religionROMANIAN EAST. ORTH    -0.0903      0.0535  -1.69    9.13e-  2
+    ## 19 religionUNITARIAN-UNIVERSALIST -0.0984      0.0484  -2.03    4.21e-  2
+    ## 20 religionUNOBTAINABLE           -0.123       0.0378  -3.27    1.09e-  3
 
 ``` r
 living_lm6 <- 
-  glm(living ~ marital_status, data = admissions_death) %>% 
-  plot()
-```
-
-![](data_wrangling_files/figure-markdown_github/unnamed-chunk-6-6.png)
-
-``` r
+  glm(living ~ marital_status, data = admissions_death)
 summary(living_lm6)
 ```
 
-    ## Length  Class   Mode 
-    ##      0   NULL   NULL
+    ## 
+    ## Call:
+    ## glm(formula = living ~ marital_status, data = admissions_death)
+    ## 
+    ## Deviance Residuals: 
+    ##      Min        1Q    Median        3Q       Max  
+    ## -0.91578   0.08422   0.10774   0.10774   0.18950  
+    ## 
+    ## Coefficients:
+    ##                                  Estimate Std. Error t value Pr(>|t|)    
+    ## (Intercept)                      0.900654   0.005443 165.460  < 2e-16 ***
+    ## marital_statusLIFE PARTNER       0.099346   0.079827   1.245   0.2133    
+    ## marital_statusMARRIED           -0.008398   0.005793  -1.450   0.1471    
+    ## marital_statusSEPARATED          0.004775   0.014009   0.341   0.7332    
+    ## marital_statusSINGLE             0.015125   0.006081   2.487   0.0129 *  
+    ## marital_statusUNKNOWN (DEFAULT) -0.090158   0.017522  -5.146 2.68e-07 ***
+    ## marital_statusWIDOWED           -0.046803   0.006545  -7.151 8.73e-13 ***
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+    ## 
+    ## (Dispersion parameter for gaussian family taken to be 0.09514164)
+    ## 
+    ##     Null deviance: 4636.5  on 48522  degrees of freedom
+    ## Residual deviance: 4615.9  on 48516  degrees of freedom
+    ##   (2605 observations deleted due to missingness)
+    ## AIC: 23566
+    ## 
+    ## Number of Fisher Scoring iterations: 2
 
 ``` r
 broom::glance(living_lm6)
 ```
 
-    ## # A tibble: 0 x 0
+    ## # A tibble: 1 x 7
+    ##   null.deviance df.null  logLik    AIC    BIC deviance df.residual
+    ##           <dbl>   <int>   <dbl>  <dbl>  <dbl>    <dbl>       <int>
+    ## 1         4636.   48522 -11775. 23566. 23637.    4616.       48516
 
 ``` r
 broom::tidy(living_lm6)
 ```
 
-    ## # A tibble: 0 x 0
+    ## # A tibble: 7 x 5
+    ##   term                            estimate std.error statistic  p.value
+    ##   <chr>                              <dbl>     <dbl>     <dbl>    <dbl>
+    ## 1 (Intercept)                      0.901     0.00544   165.    0.      
+    ## 2 marital_statusLIFE PARTNER       0.0993    0.0798      1.24  2.13e- 1
+    ## 3 marital_statusMARRIED           -0.00840   0.00579    -1.45  1.47e- 1
+    ## 4 marital_statusSEPARATED          0.00478   0.0140      0.341 7.33e- 1
+    ## 5 marital_statusSINGLE             0.0151    0.00608     2.49  1.29e- 2
+    ## 6 marital_statusUNKNOWN (DEFAULT) -0.0902    0.0175     -5.15  2.68e- 7
+    ## 7 marital_statusWIDOWED           -0.0468    0.00654    -7.15  8.73e-13
 
 ``` r
 living_lm7 <- 
-  glm(living ~ ethnicity, data = admissions_death) %>% 
-  plot()
-```
-
-![](data_wrangling_files/figure-markdown_github/unnamed-chunk-6-7.png)
-
-``` r
+  glm(living ~ ethnicity, data = admissions_death)
 summary(living_lm7)
 ```
 
-    ## Length  Class   Mode 
-    ##      0   NULL   NULL
+    ## 
+    ## Call:
+    ## glm(formula = living ~ ethnicity, data = admissions_death)
+    ## 
+    ## Deviance Residuals: 
+    ##      Min        1Q    Median        3Q       Max  
+    ## -0.98214   0.09111   0.11068   0.11068   0.33333  
+    ## 
+    ## Coefficients:
+    ##                                                                     Estimate
+    ## (Intercept)                                                        9.167e-01
+    ## ethnicityAMERICAN INDIAN/ALASKA NATIVE FEDERALLY RECOGNIZED TRIBE -2.500e-01
+    ## ethnicityASIAN                                                    -4.798e-02
+    ## ethnicityASIAN - ASIAN INDIAN                                      4.630e-02
+    ## ethnicityASIAN - CAMBODIAN                                        -1.520e-01
+    ## ethnicityASIAN - CHINESE                                          -2.964e-02
+    ## ethnicityASIAN - FILIPINO                                          3.586e-13
+    ## ethnicityASIAN - JAPANESE                                         -2.500e-01
+    ## ethnicityASIAN - KOREAN                                            9.215e-13
+    ## ethnicityASIAN - OTHER                                            -8.333e-02
+    ## ethnicityASIAN - THAI                                              8.333e-02
+    ## ethnicityASIAN - VIETNAMESE                                       -4.433e-02
+    ## ethnicityBLACK/AFRICAN                                             8.333e-03
+    ## ethnicityBLACK/AFRICAN AMERICAN                                   -2.150e-03
+    ## ethnicityBLACK/CAPE VERDEAN                                        1.476e-02
+    ## ethnicityBLACK/HAITIAN                                             2.211e-02
+    ## ethnicityCARIBBEAN ISLAND                                          8.333e-02
+    ## ethnicityHISPANIC OR LATINO                                        6.468e-03
+    ## ethnicityHISPANIC/LATINO - CENTRAL AMERICAN (OTHER)                8.333e-02
+    ## ethnicityHISPANIC/LATINO - COLOMBIAN                               8.333e-02
+    ## ethnicityHISPANIC/LATINO - CUBAN                                   8.333e-02
+    ## ethnicityHISPANIC/LATINO - DOMINICAN                               4.437e-02
+    ## ethnicityHISPANIC/LATINO - GUATEMALAN                              5.769e-02
+    ## ethnicityHISPANIC/LATINO - HONDURAN                                8.333e-02
+    ## ethnicityHISPANIC/LATINO - MEXICAN                                 8.333e-02
+    ## ethnicityHISPANIC/LATINO - PUERTO RICAN                            3.024e-02
+    ## ethnicityHISPANIC/LATINO - SALVADORAN                              8.333e-02
+    ## ethnicityMIDDLE EASTERN                                            3.333e-02
+    ## ethnicityMULTI RACE ETHNICITY                                     -3.205e-03
+    ## ethnicityNATIVE HAWAIIAN OR OTHER PACIFIC ISLANDER                -1.833e-01
+    ## ethnicityOTHER                                                    -1.885e-02
+    ## ethnicityPATIENT DECLINED TO ANSWER                               -7.778e-03
+    ## ethnicityPORTUGUESE                                                3.161e-02
+    ## ethnicitySOUTH AMERICAN                                            8.333e-02
+    ## ethnicityUNABLE TO OBTAIN                                         -1.190e-01
+    ## ethnicityUNKNOWN/NOT SPECIFIED                                    -9.610e-02
+    ## ethnicityWHITE                                                    -2.735e-02
+    ## ethnicityWHITE - BRAZILIAN                                         6.548e-02
+    ## ethnicityWHITE - EASTERN EUROPEAN                                  3.727e-13
+    ## ethnicityWHITE - OTHER EUROPEAN                                    4.386e-03
+    ## ethnicityWHITE - RUSSIAN                                          -5.081e-02
+    ##                                                                   Std. Error
+    ## (Intercept)                                                        6.449e-02
+    ## ethnicityAMERICAN INDIAN/ALASKA NATIVE FEDERALLY RECOGNIZED TRIBE  1.935e-01
+    ## ethnicityASIAN                                                     6.546e-02
+    ## ethnicityASIAN - ASIAN INDIAN                                      7.342e-02
+    ## ethnicityASIAN - CAMBODIAN                                         1.001e-01
+    ## ethnicityASIAN - CHINESE                                           6.765e-02
+    ## ethnicityASIAN - FILIPINO                                          9.120e-02
+    ## ethnicityASIAN - JAPANESE                                          1.442e-01
+    ## ethnicityASIAN - KOREAN                                            1.117e-01
+    ## ethnicityASIAN - OTHER                                             1.117e-01
+    ## ethnicityASIAN - THAI                                              1.706e-01
+    ## ethnicityASIAN - VIETNAMESE                                        7.926e-02
+    ## ethnicityBLACK/AFRICAN                                             8.157e-02
+    ## ethnicityBLACK/AFRICAN AMERICAN                                    6.466e-02
+    ## ethnicityBLACK/CAPE VERDEAN                                        6.877e-02
+    ## ethnicityBLACK/HAITIAN                                             7.195e-02
+    ## ethnicityCARIBBEAN ISLAND                                          1.235e-01
+    ## ethnicityHISPANIC OR LATINO                                        6.507e-02
+    ## ethnicityHISPANIC/LATINO - CENTRAL AMERICAN (OTHER)                1.150e-01
+    ## ethnicityHISPANIC/LATINO - COLOMBIAN                               1.235e-01
+    ## ethnicityHISPANIC/LATINO - CUBAN                                   9.120e-02
+    ## ethnicityHISPANIC/LATINO - DOMINICAN                               7.386e-02
+    ## ethnicityHISPANIC/LATINO - GUATEMALAN                              8.196e-02
+    ## ethnicityHISPANIC/LATINO - HONDURAN                                1.706e-01
+    ## ethnicityHISPANIC/LATINO - MEXICAN                                 1.150e-01
+    ## ethnicityHISPANIC/LATINO - PUERTO RICAN                            6.782e-02
+    ## ethnicityHISPANIC/LATINO - SALVADORAN                              9.850e-02
+    ## ethnicityMIDDLE EASTERN                                            8.157e-02
+    ## ethnicityMULTI RACE ETHNICITY                                      7.154e-02
+    ## ethnicityNATIVE HAWAIIAN OR OTHER PACIFIC ISLANDER                 1.040e-01
+    ## ethnicityOTHER                                                     6.516e-02
+    ## ethnicityPATIENT DECLINED TO ANSWER                                6.618e-02
+    ## ethnicityPORTUGUESE                                                7.668e-02
+    ## ethnicitySOUTH AMERICAN                                            1.357e-01
+    ## ethnicityUNABLE TO OBTAIN                                          6.547e-02
+    ## ethnicityUNKNOWN/NOT SPECIFIED                                     6.468e-02
+    ## ethnicityWHITE                                                     6.451e-02
+    ## ethnicityWHITE - BRAZILIAN                                         7.708e-02
+    ## ethnicityWHITE - EASTERN EUROPEAN                                  9.120e-02
+    ## ethnicityWHITE - OTHER EUROPEAN                                    7.397e-02
+    ## ethnicityWHITE - RUSSIAN                                           6.904e-02
+    ##                                                                   t value
+    ## (Intercept)                                                        14.215
+    ## ethnicityAMERICAN INDIAN/ALASKA NATIVE FEDERALLY RECOGNIZED TRIBE  -1.292
+    ## ethnicityASIAN                                                     -0.733
+    ## ethnicityASIAN - ASIAN INDIAN                                       0.631
+    ## ethnicityASIAN - CAMBODIAN                                         -1.517
+    ## ethnicityASIAN - CHINESE                                           -0.438
+    ## ethnicityASIAN - FILIPINO                                           0.000
+    ## ethnicityASIAN - JAPANESE                                          -1.734
+    ## ethnicityASIAN - KOREAN                                             0.000
+    ## ethnicityASIAN - OTHER                                             -0.746
+    ## ethnicityASIAN - THAI                                               0.488
+    ## ethnicityASIAN - VIETNAMESE                                        -0.559
+    ## ethnicityBLACK/AFRICAN                                              0.102
+    ## ethnicityBLACK/AFRICAN AMERICAN                                    -0.033
+    ## ethnicityBLACK/CAPE VERDEAN                                         0.215
+    ## ethnicityBLACK/HAITIAN                                              0.307
+    ## ethnicityCARIBBEAN ISLAND                                           0.675
+    ## ethnicityHISPANIC OR LATINO                                         0.099
+    ## ethnicityHISPANIC/LATINO - CENTRAL AMERICAN (OTHER)                 0.724
+    ## ethnicityHISPANIC/LATINO - COLOMBIAN                                0.675
+    ## ethnicityHISPANIC/LATINO - CUBAN                                    0.914
+    ## ethnicityHISPANIC/LATINO - DOMINICAN                                0.601
+    ## ethnicityHISPANIC/LATINO - GUATEMALAN                               0.704
+    ## ethnicityHISPANIC/LATINO - HONDURAN                                 0.488
+    ## ethnicityHISPANIC/LATINO - MEXICAN                                  0.724
+    ## ethnicityHISPANIC/LATINO - PUERTO RICAN                             0.446
+    ## ethnicityHISPANIC/LATINO - SALVADORAN                               0.846
+    ## ethnicityMIDDLE EASTERN                                             0.409
+    ## ethnicityMULTI RACE ETHNICITY                                      -0.045
+    ## ethnicityNATIVE HAWAIIAN OR OTHER PACIFIC ISLANDER                 -1.763
+    ## ethnicityOTHER                                                     -0.289
+    ## ethnicityPATIENT DECLINED TO ANSWER                                -0.118
+    ## ethnicityPORTUGUESE                                                 0.412
+    ## ethnicitySOUTH AMERICAN                                             0.614
+    ## ethnicityUNABLE TO OBTAIN                                          -1.817
+    ## ethnicityUNKNOWN/NOT SPECIFIED                                     -1.486
+    ## ethnicityWHITE                                                     -0.424
+    ## ethnicityWHITE - BRAZILIAN                                          0.850
+    ## ethnicityWHITE - EASTERN EUROPEAN                                   0.000
+    ## ethnicityWHITE - OTHER EUROPEAN                                     0.059
+    ## ethnicityWHITE - RUSSIAN                                           -0.736
+    ##                                                                   Pr(>|t|)
+    ## (Intercept)                                                         <2e-16
+    ## ethnicityAMERICAN INDIAN/ALASKA NATIVE FEDERALLY RECOGNIZED TRIBE   0.1963
+    ## ethnicityASIAN                                                      0.4636
+    ## ethnicityASIAN - ASIAN INDIAN                                       0.5283
+    ## ethnicityASIAN - CAMBODIAN                                          0.1292
+    ## ethnicityASIAN - CHINESE                                            0.6613
+    ## ethnicityASIAN - FILIPINO                                           1.0000
+    ## ethnicityASIAN - JAPANESE                                           0.0830
+    ## ethnicityASIAN - KOREAN                                             1.0000
+    ## ethnicityASIAN - OTHER                                              0.4556
+    ## ethnicityASIAN - THAI                                               0.6252
+    ## ethnicityASIAN - VIETNAMESE                                         0.5760
+    ## ethnicityBLACK/AFRICAN                                              0.9186
+    ## ethnicityBLACK/AFRICAN AMERICAN                                     0.9735
+    ## ethnicityBLACK/CAPE VERDEAN                                         0.8300
+    ## ethnicityBLACK/HAITIAN                                              0.7586
+    ## ethnicityCARIBBEAN ISLAND                                           0.4998
+    ## ethnicityHISPANIC OR LATINO                                         0.9208
+    ## ethnicityHISPANIC/LATINO - CENTRAL AMERICAN (OTHER)                 0.4688
+    ## ethnicityHISPANIC/LATINO - COLOMBIAN                                0.4998
+    ## ethnicityHISPANIC/LATINO - CUBAN                                    0.3608
+    ## ethnicityHISPANIC/LATINO - DOMINICAN                                0.5480
+    ## ethnicityHISPANIC/LATINO - GUATEMALAN                               0.4815
+    ## ethnicityHISPANIC/LATINO - HONDURAN                                 0.6252
+    ## ethnicityHISPANIC/LATINO - MEXICAN                                  0.4688
+    ## ethnicityHISPANIC/LATINO - PUERTO RICAN                             0.6557
+    ## ethnicityHISPANIC/LATINO - SALVADORAN                               0.3976
+    ## ethnicityMIDDLE EASTERN                                             0.6828
+    ## ethnicityMULTI RACE ETHNICITY                                       0.9643
+    ## ethnicityNATIVE HAWAIIAN OR OTHER PACIFIC ISLANDER                  0.0779
+    ## ethnicityOTHER                                                      0.7724
+    ## ethnicityPATIENT DECLINED TO ANSWER                                 0.9064
+    ## ethnicityPORTUGUESE                                                 0.6802
+    ## ethnicitySOUTH AMERICAN                                             0.5392
+    ## ethnicityUNABLE TO OBTAIN                                           0.0692
+    ## ethnicityUNKNOWN/NOT SPECIFIED                                      0.1373
+    ## ethnicityWHITE                                                      0.6716
+    ## ethnicityWHITE - BRAZILIAN                                          0.3956
+    ## ethnicityWHITE - EASTERN EUROPEAN                                   1.0000
+    ## ethnicityWHITE - OTHER EUROPEAN                                     0.9527
+    ## ethnicityWHITE - RUSSIAN                                            0.4618
+    ##                                                                      
+    ## (Intercept)                                                       ***
+    ## ethnicityAMERICAN INDIAN/ALASKA NATIVE FEDERALLY RECOGNIZED TRIBE    
+    ## ethnicityASIAN                                                       
+    ## ethnicityASIAN - ASIAN INDIAN                                        
+    ## ethnicityASIAN - CAMBODIAN                                           
+    ## ethnicityASIAN - CHINESE                                             
+    ## ethnicityASIAN - FILIPINO                                            
+    ## ethnicityASIAN - JAPANESE                                         .  
+    ## ethnicityASIAN - KOREAN                                              
+    ## ethnicityASIAN - OTHER                                               
+    ## ethnicityASIAN - THAI                                                
+    ## ethnicityASIAN - VIETNAMESE                                          
+    ## ethnicityBLACK/AFRICAN                                               
+    ## ethnicityBLACK/AFRICAN AMERICAN                                      
+    ## ethnicityBLACK/CAPE VERDEAN                                          
+    ## ethnicityBLACK/HAITIAN                                               
+    ## ethnicityCARIBBEAN ISLAND                                            
+    ## ethnicityHISPANIC OR LATINO                                          
+    ## ethnicityHISPANIC/LATINO - CENTRAL AMERICAN (OTHER)                  
+    ## ethnicityHISPANIC/LATINO - COLOMBIAN                                 
+    ## ethnicityHISPANIC/LATINO - CUBAN                                     
+    ## ethnicityHISPANIC/LATINO - DOMINICAN                                 
+    ## ethnicityHISPANIC/LATINO - GUATEMALAN                                
+    ## ethnicityHISPANIC/LATINO - HONDURAN                                  
+    ## ethnicityHISPANIC/LATINO - MEXICAN                                   
+    ## ethnicityHISPANIC/LATINO - PUERTO RICAN                              
+    ## ethnicityHISPANIC/LATINO - SALVADORAN                                
+    ## ethnicityMIDDLE EASTERN                                              
+    ## ethnicityMULTI RACE ETHNICITY                                        
+    ## ethnicityNATIVE HAWAIIAN OR OTHER PACIFIC ISLANDER                .  
+    ## ethnicityOTHER                                                       
+    ## ethnicityPATIENT DECLINED TO ANSWER                                  
+    ## ethnicityPORTUGUESE                                                  
+    ## ethnicitySOUTH AMERICAN                                              
+    ## ethnicityUNABLE TO OBTAIN                                         .  
+    ## ethnicityUNKNOWN/NOT SPECIFIED                                       
+    ## ethnicityWHITE                                                       
+    ## ethnicityWHITE - BRAZILIAN                                           
+    ## ethnicityWHITE - EASTERN EUROPEAN                                    
+    ## ethnicityWHITE - OTHER EUROPEAN                                      
+    ## ethnicityWHITE - RUSSIAN                                             
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+    ## 
+    ## (Dispersion parameter for gaussian family taken to be 0.09980305)
+    ## 
+    ##     Null deviance: 5135.1  on 51127  degrees of freedom
+    ## Residual deviance: 5098.6  on 51087  degrees of freedom
+    ## AIC: 27311
+    ## 
+    ## Number of Fisher Scoring iterations: 2
 
 ``` r
 broom::glance(living_lm7)
 ```
 
-    ## # A tibble: 0 x 0
+    ## # A tibble: 1 x 7
+    ##   null.deviance df.null  logLik    AIC    BIC deviance df.residual
+    ##           <dbl>   <int>   <dbl>  <dbl>  <dbl>    <dbl>       <int>
+    ## 1         5135.   51127 -13613. 27311. 27682.    5099.       51087
 
 ``` r
 broom::tidy(living_lm7)
 ```
 
-    ## # A tibble: 0 x 0
+    ## # A tibble: 41 x 5
+    ##    term                             estimate std.error statistic   p.value
+    ##    <chr>                               <dbl>     <dbl>     <dbl>     <dbl>
+    ##  1 (Intercept)                      9.17e- 1    0.0645  1.42e+ 1  9.05e-46
+    ##  2 ethnicityAMERICAN INDIAN/ALASK… -2.50e- 1    0.193  -1.29e+ 0  1.96e- 1
+    ##  3 ethnicityASIAN                  -4.80e- 2    0.0655 -7.33e- 1  4.64e- 1
+    ##  4 ethnicityASIAN - ASIAN INDIAN    4.63e- 2    0.0734  6.31e- 1  5.28e- 1
+    ##  5 ethnicityASIAN - CAMBODIAN      -1.52e- 1    0.100  -1.52e+ 0  1.29e- 1
+    ##  6 ethnicityASIAN - CHINESE        -2.96e- 2    0.0676 -4.38e- 1  6.61e- 1
+    ##  7 ethnicityASIAN - FILIPINO        3.59e-13    0.0912  3.93e-12 10.00e- 1
+    ##  8 ethnicityASIAN - JAPANESE       -2.50e- 1    0.144  -1.73e+ 0  8.30e- 2
+    ##  9 ethnicityASIAN - KOREAN          9.22e-13    0.112   8.25e-12 10.00e- 1
+    ## 10 ethnicityASIAN - OTHER          -8.33e- 2    0.112  -7.46e- 1  4.56e- 1
+    ## # ... with 31 more rows
 
 ``` r
 #living_lm8 <-   Too many diagnosis 
@@ -517,111 +1009,196 @@ broom::tidy(living_lm7)
 #summary(living_lm8)
 
 living_lm9 <- 
-  glm(living ~ hospital_expire_flag, data = admissions_death) %>% 
-  plot()
-```
-
-![](data_wrangling_files/figure-markdown_github/unnamed-chunk-6-8.png)
-
-``` r
+  glm(living ~ hospital_expire_flag, data = admissions_death)
 summary(living_lm9)
 ```
 
-    ## Length  Class   Mode 
-    ##      0   NULL   NULL
+    ## 
+    ## Call:
+    ## glm(formula = living ~ hospital_expire_flag, data = admissions_death)
+    ## 
+    ## Deviance Residuals: 
+    ##       Min         1Q     Median         3Q        Max  
+    ## 3.994e-13  7.255e-13  7.255e-13  7.255e-13  7.255e-13  
+    ## 
+    ## Coefficients:
+    ##                        Estimate Std. Error    t value Pr(>|t|)    
+    ## (Intercept)           1.000e+00  3.270e-15  3.058e+14   <2e-16 ***
+    ## hospital_expire_flag -1.000e+00  9.717e-15 -1.029e+14   <2e-16 ***
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+    ## 
+    ## (Dispersion parameter for gaussian family taken to be 4.848551e-25)
+    ## 
+    ##     Null deviance: 5.1351e+03  on 51127  degrees of freedom
+    ## Residual deviance: 2.4789e-20  on 51126  degrees of freedom
+    ## AIC: -2717351
+    ## 
+    ## Number of Fisher Scoring iterations: 1
 
 ``` r
 broom::glance(living_lm9)
 ```
 
-    ## # A tibble: 0 x 0
+    ## # A tibble: 1 x 7
+    ##   null.deviance df.null   logLik       AIC       BIC deviance df.residual
+    ##           <dbl>   <int>    <dbl>     <dbl>     <dbl>    <dbl>       <int>
+    ## 1         5135.   51127 1358678. -2717351. -2717324. 2.48e-20       51126
 
 ``` r
 broom::tidy(living_lm9)
 ```
 
-    ## # A tibble: 0 x 0
+    ## # A tibble: 2 x 5
+    ##   term                 estimate std.error statistic p.value
+    ##   <chr>                   <dbl>     <dbl>     <dbl>   <dbl>
+    ## 1 (Intercept)             1.000  3.27e-15   3.06e14       0
+    ## 2 hospital_expire_flag   -1.000  9.72e-15  -1.03e14       0
 
 ``` r
 living_lm10 <- 
-  glm(living ~ has_chartevents_data, data = admissions_death) %>% 
-  plot()
-```
-
-![](data_wrangling_files/figure-markdown_github/unnamed-chunk-6-9.png)
-
-``` r
+  glm(living ~ has_chartevents_data, data = admissions_death)
 summary(living_lm10)
 ```
 
-    ## Length  Class   Mode 
-    ##      0   NULL   NULL
+    ## 
+    ## Call:
+    ## glm(formula = living ~ has_chartevents_data, data = admissions_death)
+    ## 
+    ## Deviance Residuals: 
+    ##     Min       1Q   Median       3Q      Max  
+    ## -0.9830   0.1161   0.1161   0.1161   0.1161  
+    ## 
+    ## Coefficients:
+    ##                       Estimate Std. Error t value Pr(>|t|)    
+    ## (Intercept)           0.983028   0.008246  119.21   <2e-16 ***
+    ## has_chartevents_data -0.099149   0.008368  -11.85   <2e-16 ***
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+    ## 
+    ## (Dispersion parameter for gaussian family taken to be 0.1001647)
+    ## 
+    ##     Null deviance: 5135.1  on 51127  degrees of freedom
+    ## Residual deviance: 5121.0  on 51126  degrees of freedom
+    ## AIC: 27457
+    ## 
+    ## Number of Fisher Scoring iterations: 2
 
 ``` r
 broom::glance(living_lm10)
 ```
 
-    ## # A tibble: 0 x 0
+    ## # A tibble: 1 x 7
+    ##   null.deviance df.null  logLik    AIC    BIC deviance df.residual
+    ##           <dbl>   <int>   <dbl>  <dbl>  <dbl>    <dbl>       <int>
+    ## 1         5135.   51127 -13725. 27457. 27483.    5121.       51126
 
 ``` r
 broom::tidy(living_lm10)
 ```
 
-    ## # A tibble: 0 x 0
+    ## # A tibble: 2 x 5
+    ##   term                 estimate std.error statistic  p.value
+    ##   <chr>                   <dbl>     <dbl>     <dbl>    <dbl>
+    ## 1 (Intercept)            0.983    0.00825     119.  0.      
+    ## 2 has_chartevents_data  -0.0991   0.00837     -11.8 2.40e-32
 
 ``` r
 living_lm11 <- 
-  glm(living ~ hospitaltime, data = admissions_death) %>% 
-  plot()
-```
-
-![](data_wrangling_files/figure-markdown_github/unnamed-chunk-6-10.png)
-
-``` r
+  glm(living ~ hospitaltime, data = admissions_death)
 summary(living_lm11)
 ```
 
-    ## Length  Class   Mode 
-    ##      0   NULL   NULL
+    ## 
+    ## Call:
+    ## glm(formula = living ~ hospitaltime, data = admissions_death)
+    ## 
+    ## Deviance Residuals: 
+    ##     Min       1Q   Median       3Q      Max  
+    ## -0.8890   0.1118   0.1124   0.1135   0.1734  
+    ## 
+    ## Coefficients:
+    ##                Estimate Std. Error t value Pr(>|t|)    
+    ## (Intercept)   8.888e-01  1.896e-03 468.684   <2e-16 ***
+    ## hospitaltime -1.468e-07  8.930e-08  -1.644      0.1    
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+    ## 
+    ## (Dispersion parameter for gaussian family taken to be 0.1004345)
+    ## 
+    ##     Null deviance: 5135.1  on 51127  degrees of freedom
+    ## Residual deviance: 5134.8  on 51126  degrees of freedom
+    ## AIC: 27594
+    ## 
+    ## Number of Fisher Scoring iterations: 2
 
 ``` r
 broom::glance(living_lm11)
 ```
 
-    ## # A tibble: 0 x 0
+    ## # A tibble: 1 x 7
+    ##   null.deviance df.null  logLik    AIC    BIC deviance df.residual
+    ##           <dbl>   <int>   <dbl>  <dbl>  <dbl>    <dbl>       <int>
+    ## 1         5135.   51127 -13794. 27594. 27621.    5135.       51126
 
 ``` r
 broom::tidy(living_lm11)
 ```
 
-    ## # A tibble: 0 x 0
+    ## # A tibble: 2 x 5
+    ##   term             estimate    std.error statistic p.value
+    ##   <chr>               <dbl>        <dbl>     <dbl>   <dbl>
+    ## 1 (Intercept)   0.889       0.00190         469.     0    
+    ## 2 hospitaltime -0.000000147 0.0000000893     -1.64   0.100
 
 ``` r
 living_lm12 <- 
-  glm(living ~ edtime, data = na.omit(select(admissions_death, living, edtime))) %>% 
-  plot()
-```
-
-![](data_wrangling_files/figure-markdown_github/unnamed-chunk-6-11.png)
-
-``` r
+  glm(living ~ edtime, data = na.omit(select(admissions_death, living, edtime)))
 summary(living_lm12)
 ```
 
-    ## Length  Class   Mode 
-    ##      0   NULL   NULL
+    ## 
+    ## Call:
+    ## glm(formula = living ~ edtime, data = na.omit(select(admissions_death, 
+    ##     living, edtime)))
+    ## 
+    ## Deviance Residuals: 
+    ##     Min       1Q   Median       3Q      Max  
+    ## -0.9222   0.1275   0.1327   0.1355   0.2149  
+    ## 
+    ## Coefficients:
+    ##              Estimate Std. Error t value Pr(>|t|)    
+    ## (Intercept) 8.588e-01  2.751e-03 312.167  < 2e-16 ***
+    ## edtime      4.286e-07  9.493e-08   4.515 6.34e-06 ***
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+    ## 
+    ## (Dispersion parameter for gaussian family taken to be 0.1147309)
+    ## 
+    ##     Null deviance: 3544.5  on 30875  degrees of freedom
+    ## Residual deviance: 3542.2  on 30874  degrees of freedom
+    ## AIC: 20775
+    ## 
+    ## Number of Fisher Scoring iterations: 2
 
 ``` r
 broom::glance(living_lm12)
 ```
 
-    ## # A tibble: 0 x 0
+    ## # A tibble: 1 x 7
+    ##   null.deviance df.null  logLik    AIC    BIC deviance df.residual
+    ##           <dbl>   <int>   <dbl>  <dbl>  <dbl>    <dbl>       <int>
+    ## 1         3545.   30875 -10384. 20775. 20800.    3542.       30874
 
 ``` r
 broom::tidy(living_lm12)
 ```
 
-    ## # A tibble: 0 x 0
+    ## # A tibble: 2 x 5
+    ##   term           estimate    std.error statistic    p.value
+    ##   <chr>             <dbl>        <dbl>     <dbl>      <dbl>
+    ## 1 (Intercept) 0.859       0.00275         312.   0         
+    ## 2 edtime      0.000000429 0.0000000949      4.52 0.00000634
 
 ``` r
 #MLR
@@ -692,7 +1269,7 @@ broom::glance(step11)
 #keep
 ```
 
-### So we got this regression model:
+So we got this regression model:
 
 $\\hat{Living}$ = $\\hat{\\beta\_0}$ + $\\hat{\\beta\_1}$ Admission.Location + $\\hat{\\beta\_2}$ Insurance + $\\hat{\\beta\_3}$ Insurance + $\\hat{\\beta\_4}$ Religion + $\\hat{\\beta\_5}$ Marital.Status + $\\hat{\\beta\_6}$ Ethnicity + $\\hat{\\beta\_7}$ Hospital.Expire.Flag + $\\hat{\\beta\_8}$ Has.ChartEvents.Data + $\\hat{\\beta\_9}$ Hospital.Time + $\\hat{\\beta\_10}$ Edtime
 
@@ -807,350 +1384,26 @@ total_patient <-
   mutate(total_patient, icutime = outtime - intime)
 
 skimr::skim(total_patient) %>% 
-  knitr::kable()
+  skimr::skim()
 ```
 
-| variable                 | type      | stat      | level |          value| formatted     |
-|:-------------------------|:----------|:----------|:------|--------------:|:--------------|
-| hadm\_id                 | numeric   | missing   | .all  |   0.000000e+00| 0             |
-| hadm\_id                 | numeric   | complete  | .all  |   5.321900e+04| 53219         |
-| hadm\_id                 | numeric   | n         | .all  |   5.321900e+04| 53219         |
-| hadm\_id                 | numeric   | mean      | .all  |   1.499624e+05| 149962.39     |
-| hadm\_id                 | numeric   | sd        | .all  |   2.893430e+04| 28934.3       |
-| hadm\_id                 | numeric   | p0        | .all  |   1.000010e+05| 1e+05         |
-| hadm\_id                 | numeric   | p25       | .all  |   1.248880e+05| 124888        |
-| hadm\_id                 | numeric   | p50       | .all  |   1.499790e+05| 149979        |
-| hadm\_id                 | numeric   | p75       | .all  |   1.750600e+05| 175060        |
-| hadm\_id                 | numeric   | p100      | .all  |   1.999990e+05| 2e+05         |
-| hadm\_id                 | numeric   | hist      | .all  |             NA| ▇▇▇▇▇▇▇▇      |
-| row\_id                  | numeric   | missing   | .all  |   0.000000e+00| 0             |
-| row\_id                  | numeric   | complete  | .all  |   5.321900e+04| 53219         |
-| row\_id                  | numeric   | n         | .all  |   5.321900e+04| 53219         |
-| row\_id                  | numeric   | mean      | .all  |   3.115956e+04| 31159.56      |
-| row\_id                  | numeric   | sd        | .all  |   1.720859e+04| 17208.59      |
-| row\_id                  | numeric   | p0        | .all  |   2.000000e+00| 2             |
-| row\_id                  | numeric   | p25       | .all  |   1.622450e+04| 16224.5       |
-| row\_id                  | numeric   | p50       | .all  |   3.251400e+04| 32514         |
-| row\_id                  | numeric   | p75       | .all  |   4.624850e+04| 46248.5       |
-| row\_id                  | numeric   | p100      | .all  |   5.897600e+04| 58976         |
-| row\_id                  | numeric   | hist      | .all  |             NA| ▆▆▆▆▇▇▇▇      |
-| subject\_id.x            | numeric   | missing   | .all  |   0.000000e+00| 0             |
-| subject\_id.x            | numeric   | complete  | .all  |   5.321900e+04| 53219         |
-| subject\_id.x            | numeric   | n         | .all  |   5.321900e+04| 53219         |
-| subject\_id.x            | numeric   | mean      | .all  |   3.665625e+04| 36656.25      |
-| subject\_id.x            | numeric   | sd        | .all  |   2.898717e+04| 28987.17      |
-| subject\_id.x            | numeric   | p0        | .all  |   3.000000e+00| 3             |
-| subject\_id.x            | numeric   | p25       | .all  |   1.322750e+04| 13227.5       |
-| subject\_id.x            | numeric   | p50       | .all  |   2.658200e+04| 26582         |
-| subject\_id.x            | numeric   | p75       | .all  |   5.988950e+04| 59889.5       |
-| subject\_id.x            | numeric   | p100      | .all  |   9.999900e+04| 99999         |
-| subject\_id.x            | numeric   | hist      | .all  |             NA| ▇▇▅▂▃▂▂▃      |
-| admittime.x              | POSIXct   | missing   | .all  |   0.000000e+00| 0             |
-| admittime.x              | POSIXct   | complete  | .all  |   5.321900e+04| 53219         |
-| admittime.x              | POSIXct   | n         | .all  |   5.321900e+04| 53219         |
-| admittime.x              | POSIXct   | min       | .all  |   4.116082e+09| 2100-06-07    |
-| admittime.x              | POSIXct   | max       | .all  |   7.593412e+09| 2210-08-17    |
-| admittime.x              | POSIXct   | median    | .all  |   5.714706e+09| 2151-02-03    |
-| admittime.x              | POSIXct   | n\_unique | .all  |   4.933100e+04| 49331         |
-| dischtime.x              | POSIXct   | missing   | .all  |   0.000000e+00| 0             |
-| dischtime.x              | POSIXct   | complete  | .all  |   5.321900e+04| 53219         |
-| dischtime.x              | POSIXct   | n         | .all  |   5.321900e+04| 53219         |
-| dischtime.x              | POSIXct   | min       | .all  |   4.116244e+09| 2100-06-09    |
-| dischtime.x              | POSIXct   | max       | .all  |   7.594026e+09| 2210-08-24    |
-| dischtime.x              | POSIXct   | median    | .all  |   5.716205e+09| 2151-02-20    |
-| dischtime.x              | POSIXct   | n\_unique | .all  |   4.937500e+04| 49375         |
-| deathtime                | POSIXct   | missing   | .all  |   4.668600e+04| 46686         |
-| deathtime                | POSIXct   | complete  | .all  |   6.533000e+03| 6533          |
-| deathtime                | POSIXct   | n         | .all  |   5.321900e+04| 53219         |
-| deathtime                | POSIXct   | min       | .all  |   4.117076e+09| 2100-06-19    |
-| deathtime                | POSIXct   | max       | .all  |   7.513559e+09| 2208-02-05    |
-| deathtime                | POSIXct   | median    | .all  |   5.699749e+09| 2150-08-14    |
-| deathtime                | POSIXct   | n\_unique | .all  |   5.732000e+03| 5732          |
-| admission\_type.x        | character | missing   | .all  |   0.000000e+00| 0             |
-| admission\_type.x        | character | complete  | .all  |   5.321900e+04| 53219         |
-| admission\_type.x        | character | n         | .all  |   5.321900e+04| 53219         |
-| admission\_type.x        | character | min       | .all  |   6.000000e+00| 6             |
-| admission\_type.x        | character | max       | .all  |   9.000000e+00| 9             |
-| admission\_type.x        | character | empty     | .all  |   0.000000e+00| 0             |
-| admission\_type.x        | character | n\_unique | .all  |   4.000000e+00| 4             |
-| admission\_location      | character | missing   | .all  |   0.000000e+00| 0             |
-| admission\_location      | character | complete  | .all  |   5.321900e+04| 53219         |
-| admission\_location      | character | n         | .all  |   5.321900e+04| 53219         |
-| admission\_location      | character | min       | .all  |   1.700000e+01| 17            |
-| admission\_location      | character | max       | .all  |   2.500000e+01| 25            |
-| admission\_location      | character | empty     | .all  |   0.000000e+00| 0             |
-| admission\_location      | character | n\_unique | .all  |   9.000000e+00| 9             |
-| discharge\_location      | character | missing   | .all  |   0.000000e+00| 0             |
-| discharge\_location      | character | complete  | .all  |   5.321900e+04| 53219         |
-| discharge\_location      | character | n         | .all  |   5.321900e+04| 53219         |
-| discharge\_location      | character | min       | .all  |   3.000000e+00| 3             |
-| discharge\_location      | character | max       | .all  |   2.500000e+01| 25            |
-| discharge\_location      | character | empty     | .all  |   0.000000e+00| 0             |
-| discharge\_location      | character | n\_unique | .all  |   1.700000e+01| 17            |
-| insurance                | character | missing   | .all  |   0.000000e+00| 0             |
-| insurance                | character | complete  | .all  |   5.321900e+04| 53219         |
-| insurance                | character | n         | .all  |   5.321900e+04| 53219         |
-| insurance                | character | min       | .all  |   7.000000e+00| 7             |
-| insurance                | character | max       | .all  |   1.000000e+01| 10            |
-| insurance                | character | empty     | .all  |   0.000000e+00| 0             |
-| insurance                | character | n\_unique | .all  |   5.000000e+00| 5             |
-| language                 | character | missing   | .all  |   1.826400e+04| 18264         |
-| language                 | character | complete  | .all  |   3.495500e+04| 34955         |
-| language                 | character | n         | .all  |   5.321900e+04| 53219         |
-| language                 | character | min       | .all  |   4.000000e+00| 4             |
-| language                 | character | max       | .all  |   4.000000e+00| 4             |
-| language                 | character | empty     | .all  |   0.000000e+00| 0             |
-| language                 | character | n\_unique | .all  |   7.500000e+01| 75            |
-| religion                 | character | missing   | .all  |   4.690000e+02| 469           |
-| religion                 | character | complete  | .all  |   5.275000e+04| 52750         |
-| religion                 | character | n         | .all  |   5.321900e+04| 53219         |
-| religion                 | character | min       | .all  |   5.000000e+00| 5             |
-| religion                 | character | max       | .all  |   2.200000e+01| 22            |
-| religion                 | character | empty     | .all  |   0.000000e+00| 0             |
-| religion                 | character | n\_unique | .all  |   2.000000e+01| 20            |
-| marital\_status          | character | missing   | .all  |   2.688000e+03| 2688          |
-| marital\_status          | character | complete  | .all  |   5.053100e+04| 50531         |
-| marital\_status          | character | n         | .all  |   5.321900e+04| 53219         |
-| marital\_status          | character | min       | .all  |   6.000000e+00| 6             |
-| marital\_status          | character | max       | .all  |   1.700000e+01| 17            |
-| marital\_status          | character | empty     | .all  |   0.000000e+00| 0             |
-| marital\_status          | character | n\_unique | .all  |   7.000000e+00| 7             |
-| ethnicity.x              | character | missing   | .all  |   0.000000e+00| 0             |
-| ethnicity.x              | character | complete  | .all  |   5.321900e+04| 53219         |
-| ethnicity.x              | character | n         | .all  |   5.321900e+04| 53219         |
-| ethnicity.x              | character | min       | .all  |   5.000000e+00| 5             |
-| ethnicity.x              | character | max       | .all  |   5.600000e+01| 56            |
-| ethnicity.x              | character | empty     | .all  |   0.000000e+00| 0             |
-| ethnicity.x              | character | n\_unique | .all  |   4.100000e+01| 41            |
-| edregtime                | POSIXct   | missing   | .all  |   2.073600e+04| 20736         |
-| edregtime                | POSIXct   | complete  | .all  |   3.248300e+04| 32483         |
-| edregtime                | POSIXct   | n         | .all  |   5.321900e+04| 53219         |
-| edregtime                | POSIXct   | min       | .all  |   4.116057e+09| 2100-06-07    |
-| edregtime                | POSIXct   | max       | .all  |   7.593387e+09| 2210-08-17    |
-| edregtime                | POSIXct   | median    | .all  |   5.710052e+09| 2150-12-11    |
-| edregtime                | POSIXct   | n\_unique | .all  |   3.036200e+04| 30362         |
-| edouttime                | POSIXct   | missing   | .all  |   2.073600e+04| 20736         |
-| edouttime                | POSIXct   | complete  | .all  |   3.248300e+04| 32483         |
-| edouttime                | POSIXct   | n         | .all  |   5.321900e+04| 53219         |
-| edouttime                | POSIXct   | min       | .all  |   4.116096e+09| 2100-06-08    |
-| edouttime                | POSIXct   | max       | .all  |   7.593417e+09| 2210-08-17    |
-| edouttime                | POSIXct   | median    | .all  |   5.710071e+09| 2150-12-11    |
-| edouttime                | POSIXct   | n\_unique | .all  |   3.035100e+04| 30351         |
-| diagnosis                | character | missing   | .all  |   0.000000e+00| 0             |
-| diagnosis                | character | complete  | .all  |   5.321900e+04| 53219         |
-| diagnosis                | character | n         | .all  |   5.321900e+04| 53219         |
-| diagnosis                | character | min       | .all  |   2.000000e+00| 2             |
-| diagnosis                | character | max       | .all  |   1.900000e+02| 190           |
-| diagnosis                | character | empty     | .all  |   0.000000e+00| 0             |
-| diagnosis                | character | n\_unique | .all  |   1.507100e+04| 15071         |
-| hospital\_expire\_flag.x | numeric   | missing   | .all  |   0.000000e+00| 0             |
-| hospital\_expire\_flag.x | numeric   | complete  | .all  |   5.321900e+04| 53219         |
-| hospital\_expire\_flag.x | numeric   | n         | .all  |   5.321900e+04| 53219         |
-| hospital\_expire\_flag.x | numeric   | mean      | .all  |   1.227569e-01| 0.12          |
-| hospital\_expire\_flag.x | numeric   | sd        | .all  |   3.281610e-01| 0.33          |
-| hospital\_expire\_flag.x | numeric   | p0        | .all  |   0.000000e+00| 0             |
-| hospital\_expire\_flag.x | numeric   | p25       | .all  |   0.000000e+00| 0             |
-| hospital\_expire\_flag.x | numeric   | p50       | .all  |   0.000000e+00| 0             |
-| hospital\_expire\_flag.x | numeric   | p75       | .all  |   0.000000e+00| 0             |
-| hospital\_expire\_flag.x | numeric   | p100      | .all  |   1.000000e+00| 1             |
-| hospital\_expire\_flag.x | numeric   | hist      | .all  |             NA| ▇▁▁▁▁▁▁▁      |
-| has\_chartevents\_data   | numeric   | missing   | .all  |   0.000000e+00| 0             |
-| has\_chartevents\_data   | numeric   | complete  | .all  |   5.321900e+04| 53219         |
-| has\_chartevents\_data   | numeric   | n         | .all  |   5.321900e+04| 53219         |
-| has\_chartevents\_data   | numeric   | mean      | .all  |   1.000000e+00| 1             |
-| has\_chartevents\_data   | numeric   | sd        | .all  |   0.000000e+00| 0             |
-| has\_chartevents\_data   | numeric   | p0        | .all  |   1.000000e+00| 1             |
-| has\_chartevents\_data   | numeric   | p25       | .all  |   1.000000e+00| 1             |
-| has\_chartevents\_data   | numeric   | p50       | .all  |   1.000000e+00| 1             |
-| has\_chartevents\_data   | numeric   | p75       | .all  |   1.000000e+00| 1             |
-| has\_chartevents\_data   | numeric   | p100      | .all  |   1.000000e+00| 1             |
-| has\_chartevents\_data   | numeric   | hist      | .all  |             NA| ▁▁▁▇▁▁▁▁      |
-| living                   | logical   | missing   | .all  |   0.000000e+00| 0             |
-| living                   | logical   | complete  | .all  |   5.321900e+04| 53219         |
-| living                   | logical   | n         | .all  |   5.321900e+04| 53219         |
-| living                   | logical   | mean      | .all  |   8.772431e-01| 0.88          |
-| living                   | logical   | count     | TRUE  |   4.668600e+04| TRU: 46686    |
-| living                   | logical   | count     | FALSE |   6.533000e+03| FAL: 6533     |
-| living                   | logical   | count     | NA    |   0.000000e+00| NA: 0         |
-| hospitaltime             | difftime  | missing   | .all  |   0.000000e+00| 0             |
-| hospitaltime             | difftime  | complete  | .all  |   5.321900e+04| 53219         |
-| hospitaltime             | difftime  | n         | .all  |   5.321900e+04| 53219         |
-| hospitaltime             | difftime  | min       | .all  |  -1.361000e+03| -1361 mins    |
-| hospitaltime             | difftime  | max       | .all  |   4.243110e+05| 424311 mins   |
-| hospitaltime             | difftime  | median    | .all  |   1.052300e+04| 10523 mins    |
-| hospitaltime             | difftime  | n\_unique | .all  |   2.410800e+04| 24108         |
-| edtime                   | difftime  | missing   | .all  |   2.073600e+04| 20736         |
-| edtime                   | difftime  | complete  | .all  |   3.248300e+04| 32483         |
-| edtime                   | difftime  | n         | .all  |   5.321900e+04| 53219         |
-| edtime                   | difftime  | min       | .all  |  -2.504940e+06| -2504940 secs |
-| edtime                   | difftime  | max       | .all  |   2.536800e+05| 253680 secs   |
-| edtime                   | difftime  | median    | .all  |   1.776000e+04| 17760 secs    |
-| edtime                   | difftime  | n\_unique | .all  |   1.463000e+03| 1463          |
-| subject\_id.y            | numeric   | missing   | .all  |   0.000000e+00| 0             |
-| subject\_id.y            | numeric   | complete  | .all  |   5.321900e+04| 53219         |
-| subject\_id.y            | numeric   | n         | .all  |   5.321900e+04| 53219         |
-| subject\_id.y            | numeric   | mean      | .all  |   3.665625e+04| 36656.25      |
-| subject\_id.y            | numeric   | sd        | .all  |   2.898717e+04| 28987.17      |
-| subject\_id.y            | numeric   | p0        | .all  |   3.000000e+00| 3             |
-| subject\_id.y            | numeric   | p25       | .all  |   1.322750e+04| 13227.5       |
-| subject\_id.y            | numeric   | p50       | .all  |   2.658200e+04| 26582         |
-| subject\_id.y            | numeric   | p75       | .all  |   5.988950e+04| 59889.5       |
-| subject\_id.y            | numeric   | p100      | .all  |   9.999900e+04| 99999         |
-| subject\_id.y            | numeric   | hist      | .all  |             NA| ▇▇▅▂▃▂▂▃      |
-| icustay\_id              | numeric   | missing   | .all  |   0.000000e+00| 0             |
-| icustay\_id              | numeric   | complete  | .all  |   5.321900e+04| 53219         |
-| icustay\_id              | numeric   | n         | .all  |   5.321900e+04| 53219         |
-| icustay\_id              | numeric   | mean      | .all  |   2.500211e+05| 250021.09     |
-| icustay\_id              | numeric   | sd        | .all  |   2.890967e+04| 28909.67      |
-| icustay\_id              | numeric   | p0        | .all  |   2.000010e+05| 2e+05         |
-| icustay\_id              | numeric   | p25       | .all  |   2.249665e+05| 224966.5      |
-| icustay\_id              | numeric   | p50       | .all  |   2.500190e+05| 250019        |
-| icustay\_id              | numeric   | p75       | .all  |   2.750700e+05| 275070        |
-| icustay\_id              | numeric   | p100      | .all  |   2.999990e+05| 3e+05         |
-| icustay\_id              | numeric   | hist      | .all  |             NA| ▇▇▇▇▇▇▇▇      |
-| gender                   | character | missing   | .all  |   0.000000e+00| 0             |
-| gender                   | character | complete  | .all  |   5.321900e+04| 53219         |
-| gender                   | character | n         | .all  |   5.321900e+04| 53219         |
-| gender                   | character | min       | .all  |   1.000000e+00| 1             |
-| gender                   | character | max       | .all  |   1.000000e+00| 1             |
-| gender                   | character | empty     | .all  |   0.000000e+00| 0             |
-| gender                   | character | n\_unique | .all  |   2.000000e+00| 2             |
-| dod                      | POSIXct   | missing   | .all  |   2.939300e+04| 29393         |
-| dod                      | POSIXct   | complete  | .all  |   2.382600e+04| 23826         |
-| dod                      | POSIXct   | n         | .all  |   5.321900e+04| 53219         |
-| dod                      | POSIXct   | min       | .all  |   4.117061e+09| 2100-06-19    |
-| dod                      | POSIXct   | max       | .all  |   7.619026e+09| 2211-06-10    |
-| dod                      | POSIXct   | median    | .all  |   5.759179e+09| 2152-07-02    |
-| dod                      | POSIXct   | n\_unique | .all  |   1.284300e+04| 12843         |
-| admittime.y              | POSIXct   | missing   | .all  |   0.000000e+00| 0             |
-| admittime.y              | POSIXct   | complete  | .all  |   5.321900e+04| 53219         |
-| admittime.y              | POSIXct   | n         | .all  |   5.321900e+04| 53219         |
-| admittime.y              | POSIXct   | min       | .all  |   4.116024e+09| 2100-06-07    |
-| admittime.y              | POSIXct   | max       | .all  |   7.593365e+09| 2210-08-17    |
-| admittime.y              | POSIXct   | median    | .all  |   5.714687e+09| 2151-02-03    |
-| admittime.y              | POSIXct   | n\_unique | .all  |   2.732500e+04| 27325         |
-| dischtime.y              | POSIXct   | missing   | .all  |   0.000000e+00| 0             |
-| dischtime.y              | POSIXct   | complete  | .all  |   5.321900e+04| 53219         |
-| dischtime.y              | POSIXct   | n         | .all  |   5.321900e+04| 53219         |
-| dischtime.y              | POSIXct   | min       | .all  |   4.116197e+09| 2100-06-09    |
-| dischtime.y              | POSIXct   | max       | .all  |   7.593970e+09| 2210-08-24    |
-| dischtime.y              | POSIXct   | median    | .all  |   5.716156e+09| 2151-02-20    |
-| dischtime.y              | POSIXct   | n\_unique | .all  |   2.693000e+04| 26930         |
-| los\_hospital            | numeric   | missing   | .all  |   0.000000e+00| 0             |
-| los\_hospital            | numeric   | complete  | .all  |   5.321900e+04| 53219         |
-| los\_hospital            | numeric   | n         | .all  |   5.321900e+04| 53219         |
-| los\_hospital            | numeric   | mean      | .all  |   1.129353e+01| 11.29         |
-| los\_hospital            | numeric   | sd        | .all  |   1.331059e+01| 13.31         |
-| los\_hospital            | numeric   | p0        | .all  |  -9.451000e-01| -0.95         |
-| los\_hospital            | numeric   | p25       | .all  |   4.191000e+00| 4.19          |
-| los\_hospital            | numeric   | p50       | .all  |   7.307600e+00| 7.31          |
-| los\_hospital            | numeric   | p75       | .all  |   1.334380e+01| 13.34         |
-| los\_hospital            | numeric   | p100      | .all  |   2.946604e+02| 294.66        |
-| los\_hospital            | numeric   | hist      | .all  |             NA| ▇▁▁▁▁▁▁▁      |
-| admission\_age           | numeric   | missing   | .all  |   0.000000e+00| 0             |
-| admission\_age           | numeric   | complete  | .all  |   5.321900e+04| 53219         |
-| admission\_age           | numeric   | n         | .all  |   5.321900e+04| 53219         |
-| admission\_age           | numeric   | mean      | .all  |   7.439396e+01| 74.39         |
-| admission\_age           | numeric   | sd        | .all  |   5.489341e+01| 54.89         |
-| admission\_age           | numeric   | p0        | .all  |   4.000000e-04| 4e-04         |
-| admission\_age           | numeric   | p25       | .all  |   5.259940e+01| 52.6          |
-| admission\_age           | numeric   | p50       | .all  |   6.565990e+01| 65.66         |
-| admission\_age           | numeric   | p75       | .all  |   7.776540e+01| 77.77         |
-| admission\_age           | numeric   | p100      | .all  |   3.115610e+02| 311.56        |
-| admission\_age           | numeric   | hist      | .all  |             NA| ▁▇▂▁▁▁▁▁      |
-| ethnicity.y              | character | missing   | .all  |   0.000000e+00| 0             |
-| ethnicity.y              | character | complete  | .all  |   5.321900e+04| 53219         |
-| ethnicity.y              | character | n         | .all  |   5.321900e+04| 53219         |
-| ethnicity.y              | character | min       | .all  |   5.000000e+00| 5             |
-| ethnicity.y              | character | max       | .all  |   5.600000e+01| 56            |
-| ethnicity.y              | character | empty     | .all  |   0.000000e+00| 0             |
-| ethnicity.y              | character | n\_unique | .all  |   4.100000e+01| 41            |
-| admission\_type.y        | character | missing   | .all  |   0.000000e+00| 0             |
-| admission\_type.y        | character | complete  | .all  |   5.321900e+04| 53219         |
-| admission\_type.y        | character | n         | .all  |   5.321900e+04| 53219         |
-| admission\_type.y        | character | min       | .all  |   6.000000e+00| 6             |
-| admission\_type.y        | character | max       | .all  |   9.000000e+00| 9             |
-| admission\_type.y        | character | empty     | .all  |   0.000000e+00| 0             |
-| admission\_type.y        | character | n\_unique | .all  |   4.000000e+00| 4             |
-| hospital\_expire\_flag.y | numeric   | missing   | .all  |   0.000000e+00| 0             |
-| hospital\_expire\_flag.y | numeric   | complete  | .all  |   5.321900e+04| 53219         |
-| hospital\_expire\_flag.y | numeric   | n         | .all  |   5.321900e+04| 53219         |
-| hospital\_expire\_flag.y | numeric   | mean      | .all  |   1.227569e-01| 0.12          |
-| hospital\_expire\_flag.y | numeric   | sd        | .all  |   3.281610e-01| 0.33          |
-| hospital\_expire\_flag.y | numeric   | p0        | .all  |   0.000000e+00| 0             |
-| hospital\_expire\_flag.y | numeric   | p25       | .all  |   0.000000e+00| 0             |
-| hospital\_expire\_flag.y | numeric   | p50       | .all  |   0.000000e+00| 0             |
-| hospital\_expire\_flag.y | numeric   | p75       | .all  |   0.000000e+00| 0             |
-| hospital\_expire\_flag.y | numeric   | p100      | .all  |   1.000000e+00| 1             |
-| hospital\_expire\_flag.y | numeric   | hist      | .all  |             NA| ▇▁▁▁▁▁▁▁      |
-| hospstay\_seq            | numeric   | missing   | .all  |   0.000000e+00| 0             |
-| hospstay\_seq            | numeric   | complete  | .all  |   5.321900e+04| 53219         |
-| hospstay\_seq            | numeric   | n         | .all  |   5.321900e+04| 53219         |
-| hospstay\_seq            | numeric   | mean      | .all  |   1.480148e+00| 1.48          |
-| hospstay\_seq            | numeric   | sd        | .all  |   1.609203e+00| 1.61          |
-| hospstay\_seq            | numeric   | p0        | .all  |   1.000000e+00| 1             |
-| hospstay\_seq            | numeric   | p25       | .all  |   1.000000e+00| 1             |
-| hospstay\_seq            | numeric   | p50       | .all  |   1.000000e+00| 1             |
-| hospstay\_seq            | numeric   | p75       | .all  |   1.000000e+00| 1             |
-| hospstay\_seq            | numeric   | p100      | .all  |   4.100000e+01| 41            |
-| hospstay\_seq            | numeric   | hist      | .all  |             NA| ▇▁▁▁▁▁▁▁      |
-| first\_hosp\_stay        | logical   | missing   | .all  |   0.000000e+00| 0             |
-| first\_hosp\_stay        | logical   | complete  | .all  |   5.321900e+04| 53219         |
-| first\_hosp\_stay        | logical   | n         | .all  |   5.321900e+04| 53219         |
-| first\_hosp\_stay        | logical   | mean      | .all  |   7.775982e-01| 0.78          |
-| first\_hosp\_stay        | logical   | count     | TRUE  |   4.138300e+04| TRU: 41383    |
-| first\_hosp\_stay        | logical   | count     | FALSE |   1.183600e+04| FAL: 11836    |
-| first\_hosp\_stay        | logical   | count     | NA    |   0.000000e+00| NA: 0         |
-| intime                   | POSIXct   | missing   | .all  |   0.000000e+00| 0             |
-| intime                   | POSIXct   | complete  | .all  |   5.321900e+04| 53219         |
-| intime                   | POSIXct   | n         | .all  |   5.321900e+04| 53219         |
-| intime                   | POSIXct   | min       | .all  |   4.116024e+09| 2100-06-07    |
-| intime                   | POSIXct   | max       | .all  |   7.593451e+09| 2210-08-18    |
-| intime                   | POSIXct   | median    | .all  |   5.714687e+09| 2151-02-03    |
-| intime                   | POSIXct   | n\_unique | .all  |   2.825600e+04| 28256         |
-| outtime                  | POSIXct   | missing   | .all  |   3.000000e+00| 3             |
-| outtime                  | POSIXct   | complete  | .all  |   5.321600e+04| 53216         |
-| outtime                  | POSIXct   | n         | .all  |   5.321900e+04| 53219         |
-| outtime                  | POSIXct   | min       | .all  |   4.116110e+09| 2100-06-08    |
-| outtime                  | POSIXct   | max       | .all  |   7.593624e+09| 2210-08-20    |
-| outtime                  | POSIXct   | median    | .all  |   5.715508e+09| 2151-02-12    |
-| outtime                  | POSIXct   | n\_unique | .all  |   2.833500e+04| 28335         |
-| los\_icu                 | numeric   | missing   | .all  |   3.000000e+00| 3             |
-| los\_icu                 | numeric   | complete  | .all  |   5.321600e+04| 53216         |
-| los\_icu                 | numeric   | n         | .all  |   5.321900e+04| 53219         |
-| los\_icu                 | numeric   | mean      | .all  |   4.210659e+00| 4.21          |
-| los\_icu                 | numeric   | sd        | .all  |   6.453207e+00| 6.45          |
-| los\_icu                 | numeric   | p0        | .all  |   1.000000e-04| 1e-04         |
-| los\_icu                 | numeric   | p25       | .all  |   1.207800e+00| 1.21          |
-| los\_icu                 | numeric   | p50       | .all  |   2.147750e+00| 2.15          |
-| los\_icu                 | numeric   | p75       | .all  |   4.213625e+00| 4.21          |
-| los\_icu                 | numeric   | p100      | .all  |   1.730725e+02| 173.07        |
-| los\_icu                 | numeric   | hist      | .all  |             NA| ▇▁▁▁▁▁▁▁      |
-| icustay\_seq             | numeric   | missing   | .all  |   0.000000e+00| 0             |
-| icustay\_seq             | numeric   | complete  | .all  |   5.321900e+04| 53219         |
-| icustay\_seq             | numeric   | n         | .all  |   5.321900e+04| 53219         |
-| icustay\_seq             | numeric   | mean      | .all  |   1.079314e+00| 1.08          |
-| icustay\_seq             | numeric   | sd        | .all  |   3.193150e-01| 0.32          |
-| icustay\_seq             | numeric   | p0        | .all  |   1.000000e+00| 1             |
-| icustay\_seq             | numeric   | p25       | .all  |   1.000000e+00| 1             |
-| icustay\_seq             | numeric   | p50       | .all  |   1.000000e+00| 1             |
-| icustay\_seq             | numeric   | p75       | .all  |   1.000000e+00| 1             |
-| icustay\_seq             | numeric   | p100      | .all  |   7.000000e+00| 7             |
-| icustay\_seq             | numeric   | hist      | .all  |             NA| ▇▁▁▁▁▁▁▁      |
-| first\_icu\_stay         | logical   | missing   | .all  |   0.000000e+00| 0             |
-| first\_icu\_stay         | logical   | complete  | .all  |   5.321900e+04| 53219         |
-| first\_icu\_stay         | logical   | n         | .all  |   5.321900e+04| 53219         |
-| first\_icu\_stay         | logical   | mean      | .all  |   9.320731e-01| 0.93          |
-| first\_icu\_stay         | logical   | count     | TRUE  |   4.960400e+04| TRU: 49604    |
-| first\_icu\_stay         | logical   | count     | FALSE |   3.615000e+03| FAL: 3615     |
-| first\_icu\_stay         | logical   | count     | NA    |   0.000000e+00| NA: 0         |
-| icutime                  | difftime  | missing   | .all  |   3.000000e+00| 3             |
-| icutime                  | difftime  | complete  | .all  |   5.321600e+04| 53216         |
-| icutime                  | difftime  | n         | .all  |   5.321900e+04| 53219         |
-| icutime                  | difftime  | min       | .all  |   0.000000e+00| 0 secs        |
-| icutime                  | difftime  | max       | .all  |   1.494720e+07| 14947200 secs |
-| icutime                  | difftime  | median    | .all  |   1.728000e+05| 172800 secs   |
-| icutime                  | difftime  | n\_unique | .all  |   2.230000e+02| 223           |
+    ## Skim summary statistics
+    ##  n obs: 339 
+    ##  n variables: 6 
+    ## 
+    ## ── Variable type:character ─────────────────────────────────────────────────────────────────────────────────────
+    ##   variable missing complete   n min max empty n_unique
+    ##  formatted       0      339 339   1  13     0      138
+    ##      level       3      336 339   4   5     0        3
+    ##       stat       0      339 339   1   8     0       17
+    ##       type       0      339 339   7   9     0        5
+    ##   variable       0      339 339   3  22     0       41
+    ## 
+    ## ── Variable type:numeric ───────────────────────────────────────────────────────────────────────────────────────
+    ##  variable missing complete   n    mean      sd       p0 p25      p50   p75
+    ##     value      13      326 339 5.3e+08 1.7e+09 -2504940   1 16716.54 53219
+    ##     p100     hist
+    ##  7.6e+09 ▇▁▁▁▁▁▁▁
 
 ``` r
 head(total_patient) %>% 
@@ -1166,17 +1419,7 @@ head(total_patient) %>%
 |    100009|      671|            533| 2162-05-16 15:56:00 | 2162-05-21 13:37:00 | NA        | EMERGENCY         | TRANSFER FROM HOSP/EXTRAM | HOME HEALTH CARE    | Private   | NA       | CATHOLIC          | MARRIED         | WHITE                  | NA                  | NA                  | CORONARY ARTERY DISEASE |                         0|                       1| TRUE   | 7061 mins    | NA         |            533|       253656| M      | NA                  | 2162-05-16 04:00:00 | 2162-05-21 04:00:00 |         4.9035|         60.7971| WHITE                  | EMERGENCY         |                         0|              1| TRUE              | 2162-05-17 04:00:00 | 2162-05-19 04:00:00 |    2.4908|             1| TRUE             | 172800 secs |
 |    100010|    44865|          55853| 2109-12-10 07:15:00 | 2109-12-14 16:45:00 | NA        | ELECTIVE          | PHYS REFERRAL/NORMAL DELI | HOME                | Private   | ENGL     | EPISCOPALIAN      | MARRIED         | WHITE                  | NA                  | NA                  | RENAL MASS LEFT/SDA     |                         0|                       1| TRUE   | 6330 mins    | NA         |          55853|       271147| F      | NA                  | 2109-12-10 05:00:00 | 2109-12-14 05:00:00 |         4.3958|         54.5208| WHITE                  | ELECTIVE          |                         0|              1| TRUE              | 2109-12-10 05:00:00 | 2109-12-12 05:00:00 |    1.5940|             1| TRUE             | 172800 secs |
 
-Let's see some plots from these two datasets
-
-``` r
-hospitaltimeplot <- ggplot(data = total_patient, aes(x = diagnosis, y = hospitaltime)) + 
-geom_histogram()
-
-icutimeplot <- ggplot(data = total_patient, aes(x = diagnosis, y = icutime)) + 
-geom_histogram()
-```
-
-Let's focus on the `hospitaltime` and `icutime`
+Let's see some plots from these two datasets Let's focus on the `hospitaltime` and `icutime`
 
 ``` r
 mlr_time <- 

@@ -48,7 +48,7 @@ At first, I focus on the admissions.csv from MIMIC because I think it includes s
 
 ### Data
 
-Since MIMIC III is a series of research which 
+
 
 
 

@@ -1,0 +1,10 @@
+name: shiny-dashboard-template
+title:
+username:
+account: mimicroc
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 605066
+bundleId: 1742877
+url: https://mimicroc.shinyapps.io/shiny-dashboard-template/
+when: 1544026599.41662
