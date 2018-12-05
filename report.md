@@ -72,9 +72,7 @@ The raw admissions dataset consists of 58976 observations of the following 19 va
 
 -   On average, patients remained in the ICU for 4.94 days and patients remained in the hospital for 11.34 days. Both length distributions are right-skewed.
 
-Next, we considered the association between length of total hospital stay and length of time in the ICU. As expected, we saw that many patients experienced
-
-The results are illustrated below
+Next, we considered the association between length of total hospital stay and length of time in the ICU. As expected, we saw a positive relationship between length of total hospital stay and length of time in the ICU. However, we were surprised to see that a portion of the patients had nearly exactly proportional length of ICU stay to length of total hospital stay. In context, this means that the entirety of these patients' hospital stays were inside the ICU. There are two notable recorded points in which length of ICU stay is less than the length of total hospital stay; this is impossible and suggest the existence of flaws in the dataset. These results are illustrated below:
 
 ![](report_files/figure-markdown_github/unnamed-chunk-9-1.png)
 
