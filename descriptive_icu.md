@@ -3,6 +3,11 @@ icu details
 Laura Cosgrove
 12/1/2018
 
+The purpose of running this database query is to gain a clean table of demographic data for all patients who were in the ICU. We are choosing SQL for this query because of the comparative simplicity of working with time data in SQL.
+
+Database
+--------
+
 ``` r
 # Load configuration settings
 dbdriver <- 'PostgreSQL'
@@ -78,10 +83,10 @@ WHERE adm.has_chartevents_data = 1
 ORDER BY ie.subject_id, adm.admittime, ie.intime;
 ```
 
-Set evaluation to false so that you don't requery your database every time you knit.
+Set evaluation to false so that you don't requery your database every time you knit. Query from saved file:
 
 ``` r
-icu_detail_view <- read_file("../database/mimic-code/concepts/demographics/icustay-detail.sql")
+icu_detail_view <- read_file("./database/mimic-code/concepts/demographics/icustay-detail.sql")
 
 
 #Generate materialized views
@@ -90,11 +95,13 @@ dbGetQuery(con, icu_detail_view)
 
     ## data frame with 0 columns and 0 rows
 
+Select data from the ICU detail:
+
 ``` r
 icu_detail_query <- "SELECT *
               FROM icustay_detail i;"
 icu_detail_data <- as.tibble(dbGetQuery(con, icu_detail_query))
-write_csv(icu_detail_data, path = "../database/icu_detail.csv")
+write_csv(icu_detail_data, path = "./database/icu_detail.csv")
 icu_detail_data
 ```
 
