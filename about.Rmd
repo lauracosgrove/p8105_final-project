@@ -1,0 +1,10 @@
+---
+title: "Influential Factors in Critical Care Patients"
+---
+
+### P8105 Data Science I Final Project -- Samantha Brown, Laura Cosgrove, Francis Z. Fang
+
+This is the website for our final project. 
+
+Instructions from Jeff:
+_If this is for a project or analysis, I recommend giving some details about the R package versions that you used to create the content._
