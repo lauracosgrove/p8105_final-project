@@ -20,7 +20,7 @@ The MIMIC database comprises deidentified health-related data associated with ov
 
 The next step was to follow the MIMIC website's open tutorial to install MIMIC in a local Postgres database. We referenced the public Github MIMIC-code repository for MIT Lab for Computational Physiology (<https://github.com/MIT-LCP/mimic-code/tree/master/buildmimic>) as a guide. The MIT researchers who built the MIMIC database also built this repository with the goal of sharing how they performed the technical analysis described in their published literature. Given the time constraints of this project, we were limited to how much we could understand how to make use of the MIMIC data on our own. Therefore, MIT's Lab for Computational Physiology Github repository served as the most productive and efficient way for us to understand and analyze the MIMIC database.
 
-From this database query, we were able to gain a clean table of demographic data for all patients who were in the ICU. Using the query, we performed exploratory analysis on the Admissions data from MIMIC. This gave us patient admit time and discharge time, along with several other demographic variables. However we wanted to dig deeper into the relationship between length of total stay in the hospital, length of stay in the ICU, and proportion of mortalities to try to predict the probability of death. This led us to focus a portion of our analysis on patient severity scores. These scores represent aggregate indices of a patient's condition when they arrive at the ICU. From the severity scores, we ran a regression to obtain the probability of patient mortality. This data collection process allowed us to perform a comprehensive analysis on the MIMIC data.
+From this database query, we were able to gain a clean table of demographic data for all patients who were in the ICU. Using the query, we performed exploratory analysis on the Admissions data from MIMIC. This gave us patient admit time and discharge time, along with several other demographic variables. However we wanted to dig deeper into the relationship between length of total stay in the hospital, length of stay in the ICU, and proportion of mortalities to try to predict the probability of death. This led us to focus a portion of our analysis on patient severity scores. These scores represent aggregate indices of a patient's condition when they arrive at the ICU. Ultimately we found that the SAPS-II severity score performs best. Using the SAPS-II scores, we ran a regression to obtain the probability of patient mortality. This data collection process allowed us to perform a comprehensive analysis on the MIMIC data.
 
 Initial Questions
 -----------------
@@ -81,6 +81,62 @@ ggplot(icu_data, aes(x = los_icu, y = los_hospital)) +
 ![](report_files/figure-markdown_github/unnamed-chunk-8-1.png)
 
 **Let's explain the process of making simpler diagnostic groups** Then include top 10 diagnoses associated with death.
+
+We just looked into relationship between different factors and `living` so we try different SLR to try to look into the relationship.
+
+And we make the time form normal since first the year was added 200.
+
+``` r
+#Create year, month, day variables
+admissions <- 
+  admissions %>% 
+  separate(admittime, into = c("admittime_year", "admittime_month", "admittime_day"), sep = "-")
+admissions <- 
+  admissions %>% 
+  separate(dischtime, into = c("dischtime_year", "dischtime_month", "dischtime_day"), sep = "-") %>% 
+  separate(dischtime_day, into = c("dischtime_day", "dischtime_time"), sep = " ")
+admissions <- 
+  admissions %>% 
+  separate(deathtime, into = c("deathtime_year", "deathtime_month", "deathtime_day"), sep = "-") %>% 
+  separate(deathtime_day, into = c("deathtime_day", "deathtime_time"), sep = " ")
+admissions <- 
+  admissions %>% 
+  separate(edregtime, into = c("edregtime_year", "edregtime_month", "edregtime_day"), sep = "-") %>% 
+  separate(edregtime_day, into = c("edregtime_day", "edregtime_time"), sep = " ")
+admissions <- 
+  admissions %>% 
+  separate(edouttime, into = c("edouttime_year", "edouttime_month", "edouttime_day"), sep = "-") %>% 
+  separate(edouttime_day, into = c("edouttime_day", "edouttime_time"), sep = " ")
+
+# Correct year to normal
+admissions <- 
+  admissions %>% 
+  mutate(admittime_year = as.numeric(admittime_year) - 200, dischtime_year = as.numeric(dischtime_year) - 200, deathtime_year = as.numeric(deathtime_year) - 200, edregtime_year = as.numeric(edregtime_year) - 200, edouttime_year = as.numeric(edouttime_year) - 200)
+# Take a look
+head(admissions)
+```
+
+    ## # A tibble: 6 x 33
+    ##   row_id subject_id hadm_id admittime_year admittime_month admittime_day
+    ##    <int>      <int>   <int>          <dbl> <chr>           <chr>        
+    ## 1     21         22  165315           1996 04              09 12:26:00  
+    ## 2     22         23  152223           1953 09              03 07:15:00  
+    ## 3     23         23  124321           1957 10              18 19:34:00  
+    ## 4     24         24  161859           1939 06              06 16:14:00  
+    ## 5     25         25  129635           1960 11              02 02:06:00  
+    ## 6     26         26  197661           1926 05              06 15:16:00  
+    ## # … with 27 more variables: dischtime_year <dbl>, dischtime_month <chr>,
+    ## #   dischtime_day <chr>, dischtime_time <chr>, deathtime_year <dbl>,
+    ## #   deathtime_month <chr>, deathtime_day <chr>, deathtime_time <chr>,
+    ## #   admission_type <chr>, admission_location <chr>,
+    ## #   discharge_location <chr>, insurance <chr>, language <chr>,
+    ## #   religion <chr>, marital_status <chr>, ethnicity <chr>,
+    ## #   edregtime_year <dbl>, edregtime_month <chr>, edregtime_day <chr>,
+    ## #   edregtime_time <chr>, edouttime_year <dbl>, edouttime_month <chr>,
+    ## #   edouttime_day <chr>, edouttime_time <chr>, diagnosis <fct>,
+    ## #   hospital_expire_flag <int>, has_chartevents_data <int>
+
+\*\* First we need to filter newborn out because the newborn is different from other diagnosis.
 
 Additional Analysis
 -------------------
