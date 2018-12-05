@@ -1,6 +1,5 @@
 Influential Factors in Critical Care Patients
 ================
-Samantha Brown, Laura Cosgrove, Francis Z. Fang
 
 Group members: Samantha Brown (UNI: slb2240), Laura Cosgrove (UNI: lec2197), and Francis Z. Fang (UNI: zf2211).
 
@@ -19,18 +18,14 @@ Data Collection
 
 The MIMIC database comprises deidentified health-related data associated with over forty thousand patients who stayed in critical care units of the Beth Israel Deaconess Medical Center between 2001 and 2012. It includes the following information: demographics, vital sign measurements made at the bedside (~1 data point per hour), laboratory test results, procedures, medications, caregiver notes, imaging reports, and mortality (both in and out of hospital). After completing the CITI “Data or Specimens Only Research” training course, PhysioNet granted us access to the MIMIC database.
 
-Initially, we performed exploratory analysis on the Admissions data file from MIMIC.
-
 The next step was to follow the MIMIC website's open tutorial to install MIMIC in a local Postgres database. We referenced the public Github MIMIC-code repository for MIT Lab for Computational Physiology (<https://github.com/MIT-LCP/mimic-code/tree/master/buildmimic>) as a guide. The MIT researchers who built the MIMIC database also built this repository with the goal of sharing how they performed the technical analysis described in their published literature. Given the time constraints of this project, we were limited to how much we could understand how to make use of the MIMIC data on our own. Therefore, MIT's Lab for Computational Physiology Github repository served as the most productive and efficient way for us to understand and analyze the MIMIC database.
 
-From this database query, we were able to gain a clean table of demographic data for all patients who were in the ICU. Using the query, we focused a portion of our analysis on patient severity scores. These scores represent aggregate indices of a patient's condition when they arrive at the ICU. From the severity scores, we ran a regression to obtain the probability of patient mortality.
+From this database query, we were able to gain a clean table of demographic data for all patients who were in the ICU. Using the query, we performed exploratory analysis on the Admissions data from MIMIC. This gave us patient admit time and discharge time, along with several other demographic variables. However we wanted to dig deeper into the relationship between length of total stay in the hospital, length of stay in the ICU, and proportion of mortalities to try to predict the probability of death. This led us to focus a portion of our analysis on patient severity scores. These scores represent aggregate indices of a patient's condition when they arrive at the ICU. From the severity scores, we ran a regression to obtain the probability of patient mortality. This data collection process allowed us to perform a comprehensive analysis on the MIMIC data.
 
 Initial Questions
 -----------------
 
-Factors in mortality
-
-if insurance coverage could play a part in mortality, beyond basic diagnostic factors
+Our analysis is centered around the question of which factors affect patient mortality. From previous research, prior to the project we understood and recognized the signficant role that physiological factors play in determining the probability of death in a patient. However, we wanted to explore the question: do demographic characteristics help to predict patient mortality? And how strong is their influence of this prediction? For example, does the health insurance coverage of a patient play a part in mortality, beyond basic diagnostic factors? Additionally, we wished to consider whether length of patient hospital stay is associated with the patient's demographic characteristics. More specifically, which demographic factors influence patient length of stay? Finally, we hoped to determine whether length of patient hospital stay is associated with patient mortality. For this question, we examined both patients' total hospital stay and patients' stay in the ICU. Our work to explore these questions is detailed in the Exploratory Analysis and Additional Analysis sections of the report.
 
 Exploratory Analysis
 --------------------
