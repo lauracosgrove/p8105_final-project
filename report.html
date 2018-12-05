@@ -246,7 +246,7 @@ $(document).ready(function () {
 </div>
 <div id="exploratory-analysis" class="section level2">
 <h2>Exploratory Analysis</h2>
-<p>The raw admissions dataset consists of 58976 observations of the following 19 variables:</p>
+<p>The core admissions dataset consists of 58976 observations of the following 19 variables:</p>
 <ul>
 <li>Row ID</li>
 <li>Subject ID</li>
@@ -292,6 +292,7 @@ ggplot(icu_data, aes(x = los_icu, y = los_hospital)) +
 </div>
 <div id="additional-analysis" class="section level2">
 <h2>Additional Analysis</h2>
+<p>I dig deep into the dataset, we tried to build different models to find the best one. In research, we found a obstacle to analyse this dataset: the observations is too large (over 50000 by now). Since I am lack of this kind of experience, I tried different methods. The stepwise method does not work, so use backward elimination instead.</p>
 </div>
 <div id="discussion" class="section level2">
 <h2>Discussion</h2>

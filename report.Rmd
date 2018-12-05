@@ -59,7 +59,6 @@ This project used a series of research which whole name is MIMIC-III (Medical In
 
 
 
-
 ## Exploratory Analysis
 
 ```{r, message = FALSE, warning = FALSE, include = FALSE}
@@ -70,7 +69,7 @@ admissions <-
 ```
 
 
-The raw admissions dataset consists of `r nrow(admissions)` observations of the following `r ncol(admissions)` variables:
+The core admissions dataset consists of `r nrow(admissions)` observations of the following `r ncol(admissions)` variables:
 
 * Row ID
 * Subject ID
@@ -194,6 +193,10 @@ ggplot(icu_data, aes(x = los_icu, y = los_hospital)) +
 
 
 ## Additional Analysis
+
+I dig deep into the dataset, we tried to build different models to find the best one. In research, we found a obstacle to analyse this dataset: the observations is too large (over 50000 by now). Since I am lack of this kind of experience, I tried different methods. The stepwise method does not work, so use backward elimination instead. 
+
+
 
 ## Discussion
 
