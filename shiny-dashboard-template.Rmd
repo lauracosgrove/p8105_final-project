@@ -14,30 +14,11 @@ library(viridis)
 library(plotly)
 library(modelr)
 
-predictor_detail_data <- read_csv("./database/predictor_detail_data.csv")
-admissions <- read_csv("./database/data/ADMISSIONS.csv.gz") %>% 
-  janitor::clean_names()
+predictor_detail_data_tidy <- read_csv("./database/predictor_detail_data_tidy.csv")
 subject_diag_cat <- read_csv("./database/subject_diag_cat.csv")
-
-#Deadliest diagnosis
-deadly_diagnoses <- subject_diag_cat %>% group_by(category) %>% add_tally %>% mutate(deadly = sum(death_bin)/n) %>% distinct(category, .keep_all = TRUE) %>% select(category, n, deadly) %>% arrange(desc(deadly)) %>% ungroup() %>%  top_n(50)
 
 common_diagnoses <- subject_diag_cat %>% group_by(category) %>% add_tally %>% select(category, n) %>% arrange(desc(n)) %>% distinct(category, .keep_all = TRUE) %>% ungroup() %>%  top_n(50)
 
-
-predictor_detail_data <- predictor_detail_data %>% 
-  distinct(icustay_id, .keep_all = TRUE) %>% 
-#Need a couple more variables
-  inner_join(admissions, by = "hadm_id") %>% 
-  inner_join(subject_diag_cat,  by = "hadm_id")  %>% 
-  select(icustay_id, death_bin.x, admission_type.x, admission_age, admission_location, insurance, religion, language, marital_status, gender, ethnicity.x, admit_diagnosis, has_chartevents_data, short_title, category, sapsii:oasis, los_hospital, los_icu) %>% 
-  rename(death_bin = death_bin.x, admission_type = admission_type.x, ethnicity = ethnicity.x, diagnosis = category) %>% 
-  mutate(admission_type = factor(admission_type), admission_age = as.integer(admission_age), insurance = factor(insurance), religion = factor(religion), marital_status = factor(marital_status), ethnicity = factor(ethnicity), diagnosis = factor(diagnosis)) 
-
-predictor_detail_data_tidy <- predictor_detail_data %>% 
-  distinct(icustay_id, .keep_all = TRUE) %>% 
-  gather(key = score, value = score_value, sapsii, sofa, lods, apsiii, oasis) %>% 
-  select(icustay_id, score, score_value, everything()) 
 ```
 
 Column {.sidebar}
