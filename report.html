@@ -9,10 +9,9 @@
 <meta name="generator" content="pandoc" />
 
 
-<meta name="author" content="Samantha Brown, Laura Cosgrove, Francis Z. Fang" />
 
 
-<title>Influential Factors in Critical Care Patients</title>
+<title></title>
 
 <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -23,9 +22,6 @@
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
 <link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
 <script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
-<link href="site_libs/font-awesome-5.0.13/css/fa-svg-with-js.css" rel="stylesheet" />
-<script src="site_libs/font-awesome-5.0.13/js/fontawesome-all.min.js"></script>
-<script src="site_libs/font-awesome-5.0.13/js/fa-v4-shims.min.js"></script>
 
 <style type="text/css">code{white-space: pre;}</style>
 <style type="text/css">
@@ -205,13 +201,13 @@ $(document).ready(function () {
 
 
 
-<h1 class="title toc-ignore">Influential Factors in Critical Care Patients</h1>
-<h4 class="author"><em>Samantha Brown, Laura Cosgrove, Francis Z. Fang</em></h4>
-<h4 class="date"><em>12/2/2018</em></h4>
 
 </div>
 
 
+<div id="influential-factors-in-critical-care-patients" class="section level1">
+<h1>Influential Factors in Critical Care Patients</h1>
+<p>Samantha Brown, Laura Cosgrove, Francis Z. Fang 12/2/2018</p>
 <p>Group members: Samantha Brown (UNI: slb2240), Laura Cosgrove (UNI: lec2197), and Francis Z. Fang (UNI: zf2211).</p>
 <div id="introduction" class="section level3">
 <h3>Introduction</h3>
@@ -232,7 +228,11 @@ $(document).ready(function () {
 </div>
 <div id="exploratory-analysis" class="section level2">
 <h2>Exploratory Analysis</h2>
-<p>The raw admissions dataset consists of 58976 observations of the following 19 variables:</p>
+<pre class="r"><code>admissions &lt;- 
+  read_csv(&quot;./database/data/admissions.csv&quot;) %&gt;% 
+  janitor::clean_names() %&gt;% 
+  mutate(diagnosis = factor(diagnosis))</code></pre>
+<p>The raw admissions dataset consists of 58976 observations of 19 variables:</p>
 <ul>
 <li>Row ID</li>
 <li>Subject ID</li>
@@ -254,16 +254,26 @@ $(document).ready(function () {
 <li>Hospital expire flag</li>
 <li>Has chart events</li>
 </ul>
-<p><em>Initial exploration</em></p>
-<ul>
-<li><p>71.34% of patients admitted were classified as emergencies, while 13.33% were newborns and 71.34% were elective. The remaining 2.26% were classified as urgent.</p></li>
-<li><p>47.84% of patients had Medicare, while 38.29% had private insurance and 9.81% had Medicaid. The remaining patients either were insured by the government or paid out of pocket.</p></li>
-<li><p>41.1% of the critical care patients were married, 22.47% of patients were single, 12.23% were widowed and 5.45% were divorced. The remaining 18.75% were either separated, with a life partner, or marital status was unknown.</p></li>
-<li><p>I need help with sorting out the ethnicity please!!</p></li>
-<li><p>42.95% of the patients were missing data entries for language. Of the patients that did have language entries, 49.32% of them spoke English.</p></li>
-</ul>
+<pre class="r"><code>## Distribution of insurance type
+admissions %&gt;% 
+  group_by(insurance) %&gt;% 
+  count() %&gt;% 
+  mutate(percent_of_patients = round(n/nrow(admissions)*100, digits = 2)) %&gt;% 
+  arrange(desc(percent_of_patients)) %&gt;% 
+  select(-n)</code></pre>
+<pre><code>## # A tibble: 5 x 2
+## # Groups:   insurance [5]
+##   insurance  percent_of_patients
+##   &lt;chr&gt;                    &lt;dbl&gt;
+## 1 Medicare                 47.8 
+## 2 Private                  38.3 
+## 3 Medicaid                  9.81
+## 4 Government                3.02
+## 5 Self Pay                  1.04</code></pre>
+<p>41.1% of the critical care patients were married, 22.47% of patients were single, 12.23 were widowed and 5.45 were divorced. The remaining 18.75% were either separated, with a life partner, or marital status was unknown.</p>
 <p>For the scope of this project, we are especially interested in focusing on patient mortalities and length of hospital stay. The depth of our initial analysis is concentrated here.</p>
 <p>Out of the 58976 patient admissions, 90.07% patients were ultimately discharged. The remaining 9.93% were recorded as patient deaths.</p>
+<p><strong>Let’s explain the process of making simpler diagnostic groups</strong> Then include top 10 diagnoses associated with death.</p>
 <pre class="r"><code>icu_data = read_csv(&quot;./database/data/icu_detail.csv&quot;) %&gt;% 
   filter(!(los_hospital &lt; 0), !(los_icu &lt; 0))
 
@@ -273,8 +283,10 @@ ggplot(icu_data, aes(x = los_icu, y = los_hospital)) +
     x = &quot;Length of Stay in ICU, in days&quot;, 
     y = &quot;Total Length of Stay in Hospital, in days&quot; 
   )</code></pre>
-<p><img src="report_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
-<p><strong>Let’s explain the process of making simpler diagnostic groups</strong> Then include top 10 diagnoses associated with death.</p>
+<div class="figure">
+<img src="report_files/figure-markdown_github/unnamed-chunk-5-1.png" />
+
+</div>
 </div>
 <div id="additional-analysis" class="section level2">
 <h2>Additional Analysis</h2>
@@ -285,6 +297,7 @@ ggplot(icu_data, aes(x = los_icu, y = los_hospital)) +
 </div>
 <div id="conclusion" class="section level2">
 <h2>Conclusion</h2>
+</div>
 </div>
 
 
