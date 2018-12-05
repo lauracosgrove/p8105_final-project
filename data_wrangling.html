@@ -1,0 +1,3820 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+<meta name="author" content="Francis" />
+
+<meta name="date" content="2018-11-10" />
+
+<title>data_wrangling</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/font-awesome-5.0.13/css/fa-svg-with-js.css" rel="stylesheet" />
+<script src="site_libs/font-awesome-5.0.13/js/fontawesome-all.min.js"></script>
+<script src="site_libs/font-awesome-5.0.13/js/fa-v4-shims.min.js"></script>
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 51px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+
+.section h2 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h3 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h4 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h5 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h6 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+
+<div class="container-fluid main-container">
+
+<!-- tabsets -->
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+</script>
+
+<!-- code folding -->
+
+
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Home</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="about.html">About</a>
+</li>
+<li>
+  <a href="http://github.com/&lt;YOUR_GH_NAME&gt;/">
+    <span class="fa fa-github fa-lg"></span>
+     
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">data_wrangling</h1>
+<h4 class="author"><em>Francis</em></h4>
+<h4 class="date"><em>11/10/2018</em></h4>
+
+</div>
+
+
+<p>After consideration, the <code>admissions.csv</code> database seems really interesting. It is useful to analyze the connection between mutiple factors and death.</p>
+<pre class="r"><code>library(tidyverse)</code></pre>
+<pre><code>## ── Attaching packages ─────────────────────────────────────────────────────────────────────── tidyverse 1.2.1 ──</code></pre>
+<pre><code>## ✔ ggplot2 3.1.0     ✔ purrr   0.2.5
+## ✔ tibble  1.4.2     ✔ dplyr   0.7.8
+## ✔ tidyr   0.8.2     ✔ stringr 1.3.1
+## ✔ readr   1.2.1     ✔ forcats 0.3.0</code></pre>
+<pre><code>## ── Conflicts ────────────────────────────────────────────────────────────────────────── tidyverse_conflicts() ──
+## ✖ dplyr::filter() masks stats::filter()
+## ✖ dplyr::lag()    masks stats::lag()</code></pre>
+<pre class="r"><code>library(devtools)
+library(readr)
+library(lubridate)</code></pre>
+<pre><code>## 
+## Attaching package: &#39;lubridate&#39;</code></pre>
+<pre><code>## The following object is masked from &#39;package:base&#39;:
+## 
+##     date</code></pre>
+<pre class="r"><code>library(broom)</code></pre>
+<div id="mimic3" class="section level1">
+<h1>MIMIC3</h1>
+<div id="import-data" class="section level3">
+<h3>Import data</h3>
+<pre class="r"><code>admissions &lt;- 
+  read_csv(&quot;./database/data/admissions.csv&quot;) %&gt;% 
+  janitor::clean_names()</code></pre>
+<pre><code>## Parsed with column specification:
+## cols(
+##   ROW_ID = col_double(),
+##   SUBJECT_ID = col_double(),
+##   HADM_ID = col_double(),
+##   ADMITTIME = col_datetime(format = &quot;&quot;),
+##   DISCHTIME = col_datetime(format = &quot;&quot;),
+##   DEATHTIME = col_datetime(format = &quot;&quot;),
+##   ADMISSION_TYPE = col_character(),
+##   ADMISSION_LOCATION = col_character(),
+##   DISCHARGE_LOCATION = col_character(),
+##   INSURANCE = col_character(),
+##   LANGUAGE = col_character(),
+##   RELIGION = col_character(),
+##   MARITAL_STATUS = col_character(),
+##   ETHNICITY = col_character(),
+##   EDREGTIME = col_datetime(format = &quot;&quot;),
+##   EDOUTTIME = col_datetime(format = &quot;&quot;),
+##   DIAGNOSIS = col_character(),
+##   HOSPITAL_EXPIRE_FLAG = col_double(),
+##   HAS_CHARTEVENTS_DATA = col_double()
+## )</code></pre>
+<pre class="r"><code>names(admissions)</code></pre>
+<pre><code>##  [1] &quot;row_id&quot;               &quot;subject_id&quot;           &quot;hadm_id&quot;             
+##  [4] &quot;admittime&quot;            &quot;dischtime&quot;            &quot;deathtime&quot;           
+##  [7] &quot;admission_type&quot;       &quot;admission_location&quot;   &quot;discharge_location&quot;  
+## [10] &quot;insurance&quot;            &quot;language&quot;             &quot;religion&quot;            
+## [13] &quot;marital_status&quot;       &quot;ethnicity&quot;            &quot;edregtime&quot;           
+## [16] &quot;edouttime&quot;            &quot;diagnosis&quot;            &quot;hospital_expire_flag&quot;
+## [19] &quot;has_chartevents_data&quot;</code></pre>
+<pre class="r"><code># The year should be delt with to become normal. The discharge time means the time when the patient leave the hospital.
+
+
+# see types
+class(admissions$admittime)</code></pre>
+<pre><code>## [1] &quot;POSIXct&quot; &quot;POSIXt&quot;</code></pre>
+<pre class="r"><code>class(admissions$dischtime)</code></pre>
+<pre><code>## [1] &quot;POSIXct&quot; &quot;POSIXt&quot;</code></pre>
+<pre class="r"><code>class(admissions$deathtime)</code></pre>
+<pre><code>## [1] &quot;POSIXct&quot; &quot;POSIXt&quot;</code></pre>
+<pre class="r"><code>class(admissions$admission_type) </code></pre>
+<pre><code>## [1] &quot;character&quot;</code></pre>
+<pre class="r"><code>class(admissions$insurance)</code></pre>
+<pre><code>## [1] &quot;character&quot;</code></pre>
+<pre class="r"><code>class(admissions$religion)</code></pre>
+<pre><code>## [1] &quot;character&quot;</code></pre>
+<pre class="r"><code>class(admissions$ethnicity)</code></pre>
+<pre><code>## [1] &quot;character&quot;</code></pre>
+<pre class="r"><code>class(admissions$edregtime)</code></pre>
+<pre><code>## [1] &quot;POSIXct&quot; &quot;POSIXt&quot;</code></pre>
+<pre class="r"><code>class(admissions$edouttime)</code></pre>
+<pre><code>## [1] &quot;POSIXct&quot; &quot;POSIXt&quot;</code></pre>
+<p>All of them are factors.</p>
+</div>
+<div id="tidy-data" class="section level3">
+<h3>Tidy data</h3>
+<pre class="r"><code>#Create year, month, day variables
+admissions &lt;- 
+  admissions %&gt;% 
+  separate(admittime, into = c(&quot;admittime_year&quot;, &quot;admittime_month&quot;, &quot;admittime_day&quot;), sep = &quot;-&quot;)
+admissions &lt;- 
+  admissions %&gt;% 
+  separate(dischtime, into = c(&quot;dischtime_year&quot;, &quot;dischtime_month&quot;, &quot;dischtime_day&quot;), sep = &quot;-&quot;) %&gt;% 
+  separate(dischtime_day, into = c(&quot;dischtime_day&quot;, &quot;dischtime_time&quot;), sep = &quot; &quot;)
+admissions &lt;- 
+  admissions %&gt;% 
+  separate(deathtime, into = c(&quot;deathtime_year&quot;, &quot;deathtime_month&quot;, &quot;deathtime_day&quot;), sep = &quot;-&quot;) %&gt;% 
+  separate(deathtime_day, into = c(&quot;deathtime_day&quot;, &quot;deathtime_time&quot;), sep = &quot; &quot;)
+admissions &lt;- 
+  admissions %&gt;% 
+  separate(edregtime, into = c(&quot;edregtime_year&quot;, &quot;edregtime_month&quot;, &quot;edregtime_day&quot;), sep = &quot;-&quot;) %&gt;% 
+  separate(edregtime_day, into = c(&quot;edregtime_day&quot;, &quot;edregtime_time&quot;), sep = &quot; &quot;)
+admissions &lt;- 
+  admissions %&gt;% 
+  separate(edouttime, into = c(&quot;edouttime_year&quot;, &quot;edouttime_month&quot;, &quot;edouttime_day&quot;), sep = &quot;-&quot;) %&gt;% 
+  separate(edouttime_day, into = c(&quot;edouttime_day&quot;, &quot;edouttime_time&quot;), sep = &quot; &quot;)
+
+# Correct year to normal
+admissions &lt;- 
+  admissions %&gt;% 
+  mutate(admittime_year = as.numeric(admittime_year) - 200, dischtime_year = as.numeric(dischtime_year) - 200, deathtime_year = as.numeric(deathtime_year) - 200, edregtime_year = as.numeric(edregtime_year) - 200, edouttime_year = as.numeric(edouttime_year) - 200)
+# Take a look
+head(admissions)</code></pre>
+<pre><code>## # A tibble: 6 x 33
+##   row_id subject_id hadm_id admittime_year admittime_month admittime_day
+##    &lt;dbl&gt;      &lt;dbl&gt;   &lt;dbl&gt;          &lt;dbl&gt; &lt;chr&gt;           &lt;chr&gt;        
+## 1     21         22  165315           1996 04              09 12:26:00  
+## 2     22         23  152223           1953 09              03 07:15:00  
+## 3     23         23  124321           1957 10              18 19:34:00  
+## 4     24         24  161859           1939 06              06 16:14:00  
+## 5     25         25  129635           1960 11              02 02:06:00  
+## 6     26         26  197661           1926 05              06 15:16:00  
+## # ... with 27 more variables: dischtime_year &lt;dbl&gt;, dischtime_month &lt;chr&gt;,
+## #   dischtime_day &lt;chr&gt;, dischtime_time &lt;chr&gt;, deathtime_year &lt;dbl&gt;,
+## #   deathtime_month &lt;chr&gt;, deathtime_day &lt;chr&gt;, deathtime_time &lt;chr&gt;,
+## #   admission_type &lt;chr&gt;, admission_location &lt;chr&gt;,
+## #   discharge_location &lt;chr&gt;, insurance &lt;chr&gt;, language &lt;chr&gt;,
+## #   religion &lt;chr&gt;, marital_status &lt;chr&gt;, ethnicity &lt;chr&gt;,
+## #   edregtime_year &lt;dbl&gt;, edregtime_month &lt;chr&gt;, edregtime_day &lt;chr&gt;,
+## #   edregtime_time &lt;chr&gt;, edouttime_year &lt;dbl&gt;, edouttime_month &lt;chr&gt;,
+## #   edouttime_day &lt;chr&gt;, edouttime_time &lt;chr&gt;, diagnosis &lt;chr&gt;,
+## #   hospital_expire_flag &lt;dbl&gt;, has_chartevents_data &lt;dbl&gt;</code></pre>
+</div>
+<div id="linear-regression" class="section level3">
+<h3>linear regression</h3>
+<pre class="r"><code># read original data
+admissions_origin &lt;- 
+  read_csv(&quot;./database/data/admissions.csv&quot;) %&gt;% 
+  janitor::clean_names()</code></pre>
+<pre><code>## Parsed with column specification:
+## cols(
+##   ROW_ID = col_double(),
+##   SUBJECT_ID = col_double(),
+##   HADM_ID = col_double(),
+##   ADMITTIME = col_datetime(format = &quot;&quot;),
+##   DISCHTIME = col_datetime(format = &quot;&quot;),
+##   DEATHTIME = col_datetime(format = &quot;&quot;),
+##   ADMISSION_TYPE = col_character(),
+##   ADMISSION_LOCATION = col_character(),
+##   DISCHARGE_LOCATION = col_character(),
+##   INSURANCE = col_character(),
+##   LANGUAGE = col_character(),
+##   RELIGION = col_character(),
+##   MARITAL_STATUS = col_character(),
+##   ETHNICITY = col_character(),
+##   EDREGTIME = col_datetime(format = &quot;&quot;),
+##   EDOUTTIME = col_datetime(format = &quot;&quot;),
+##   DIAGNOSIS = col_character(),
+##   HOSPITAL_EXPIRE_FLAG = col_double(),
+##   HAS_CHARTEVENTS_DATA = col_double()
+## )</code></pre>
+<pre class="r"><code># add a death factor and duration factor
+# exclude NEWBORN, because they are not treated as patients.
+### There are too many diagnosis, so the diagnosis will be analyzed by some analysis of scores in another part.
+admissions_death &lt;- 
+  mutate(admissions_origin, living = is.na(admissions_origin$deathtime), hospitaltime =  admissions_origin$dischtime - admissions_origin$admittime, edtime = admissions_origin$edouttime - admissions_origin$edregtime) %&gt;% 
+  filter(diagnosis != &quot;NEWBORN&quot;)</code></pre>
+<pre class="r"><code># glance data
+skimr::skim(admissions_death)</code></pre>
+<pre><code>## Skim summary statistics
+##  n obs: 51128 
+##  n variables: 22 
+## 
+## ── Variable type:character ─────────────────────────────────────────────────────────────────────────────────────
+##            variable missing complete     n min max empty n_unique
+##  admission_location       0    51128 51128  17  25     0        9
+##      admission_type       0    51128 51128   6   9     0        4
+##           diagnosis       0    51128 51128   2 190     0    15645
+##  discharge_location       0    51128 51128   3  25     0       17
+##           ethnicity       0    51128 51128   5  56     0       41
+##           insurance       0    51128 51128   7  10     0        5
+##            language   17786    33342 51128   4   4     0       75
+##      marital_status    2605    48523 51128   6  17     0        7
+##            religion     451    50677 51128   5  22     0       20
+## 
+## ── Variable type:difftime ──────────────────────────────────────────────────────────────────────────────────────
+##      variable missing complete     n           min         max
+##        edtime   20252    30876 51128 -2504940 secs 253680 secs
+##  hospitaltime       0    51128 51128    -1361 mins 424311 mins
+##             median n_unique
+##  17700 secs            1483
+##        9891.5 mins    24462
+## 
+## ── Variable type:logical ───────────────────────────────────────────────────────────────────────────────────────
+##  variable missing complete     n mean                        count
+##    living       0    51128 51128 0.89 TRU: 45337, FAL: 5791, NA: 0
+## 
+## ── Variable type:numeric ───────────────────────────────────────────────────────────────────────────────────────
+##              variable missing complete     n      mean       sd    p0
+##               hadm_id       0    51128 51128 149980.03 28920.51 1e+05
+##  has_chartevents_data       0    51128 51128      0.97     0.17     0
+##  hospital_expire_flag       0    51128 51128      0.11     0.32     0
+##                row_id       0    51128 51128  31075    17208.1      2
+##            subject_id       0    51128 51128  36524.63 28971.81     3
+##        p25      p50       p75  p100     hist
+##  124877.75 150082.5 175035.25 2e+05 ▇▇▇▇▇▇▇▇
+##       1         1        1        1 ▁▁▁▁▁▁▁▇
+##       0         0        0        1 ▇▁▁▁▁▁▁▁
+##   16097.75  32292.5  46189.25 58976 ▆▆▆▆▇▇▇▇
+##   13116.75  26395    59788.25 99999 ▇▇▅▂▃▂▂▂
+## 
+## ── Variable type:POSIXct ───────────────────────────────────────────────────────────────────────────────────────
+##   variable missing complete     n        min        max     median
+##  admittime       0    51128 51128 2100-06-07 2210-08-17 2151-02-24
+##  deathtime   45337     5791 51128 2100-06-19 2208-02-05 2150-08-29
+##  dischtime       0    51128 51128 2100-06-09 2210-08-24 2151-03-06
+##  edouttime   20252    30876 51128 2100-06-08 2210-08-17 2150-12-12
+##  edregtime   20252    30876 51128 2100-06-07 2210-08-17 2150-12-12
+##  n_unique
+##     50813
+##      5772
+##     50877
+##     30863
+##     30873</code></pre>
+<pre class="r"><code>### try logistic regression step by step.
+
+#SLR
+
+par(mfrow = c(2,2))
+living_lm1 &lt;- 
+  glm(living ~ admission_type, data = admissions_death) %&gt;% 
+  plot()</code></pre>
+<p><img src="data_wrangling_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
+<pre class="r"><code>summary(living_lm1)</code></pre>
+<pre><code>## Length  Class   Mode 
+##      0   NULL   NULL</code></pre>
+<pre class="r"><code>broom::glance(living_lm1)</code></pre>
+<pre><code>## # A tibble: 0 x 0</code></pre>
+<pre class="r"><code>broom::tidy(living_lm1)</code></pre>
+<pre><code>## # A tibble: 0 x 0</code></pre>
+<pre class="r"><code>living_lm2 &lt;- 
+  glm(living ~ admission_location, data = admissions_death) %&gt;% 
+  plot()</code></pre>
+<pre><code>## Warning in sqrt(crit * p * (1 - hh)/hh): NaNs produced
+
+## Warning in sqrt(crit * p * (1 - hh)/hh): NaNs produced</code></pre>
+<p><img src="data_wrangling_files/figure-html/unnamed-chunk-6-2.png" width="672" /></p>
+<pre class="r"><code>summary(living_lm1)</code></pre>
+<pre><code>## Length  Class   Mode 
+##      0   NULL   NULL</code></pre>
+<pre class="r"><code>broom::glance(living_lm2)</code></pre>
+<pre><code>## # A tibble: 0 x 0</code></pre>
+<pre class="r"><code>broom::tidy(living_lm2)</code></pre>
+<pre><code>## # A tibble: 0 x 0</code></pre>
+<pre class="r"><code>living_lm3 &lt;- 
+  glm(living ~ insurance, data = admissions_death) %&gt;% 
+  plot()</code></pre>
+<p><img src="data_wrangling_files/figure-html/unnamed-chunk-6-3.png" width="672" /></p>
+<pre class="r"><code>summary(living_lm3)</code></pre>
+<pre><code>## Length  Class   Mode 
+##      0   NULL   NULL</code></pre>
+<pre class="r"><code>broom::glance(living_lm3)</code></pre>
+<pre><code>## # A tibble: 0 x 0</code></pre>
+<pre class="r"><code>broom::tidy(living_lm3)</code></pre>
+<pre><code>## # A tibble: 0 x 0</code></pre>
+<pre class="r"><code>living_lm4 &lt;- 
+  glm(living ~ language, data = na.omit(select(admissions_death, living, language))) %&gt;% 
+  plot()</code></pre>
+<pre><code>## Warning: not plotting observations with leverage one:
+##   266, 776, 2885, 4400, 4417, 7656, 19568, 20593, 25126</code></pre>
+<pre><code>## Warning: not plotting observations with leverage one:
+##   266, 776, 2885, 4400, 4417, 7656, 19568, 20593, 25126</code></pre>
+<pre><code>## Warning in sqrt(crit * p * (1 - hh)/hh): NaNs produced
+
+## Warning in sqrt(crit * p * (1 - hh)/hh): NaNs produced</code></pre>
+<p><img src="data_wrangling_files/figure-html/unnamed-chunk-6-4.png" width="672" /></p>
+<pre class="r"><code>summary(living_lm4)</code></pre>
+<pre><code>## Length  Class   Mode 
+##      0   NULL   NULL</code></pre>
+<pre class="r"><code>broom::glance(living_lm4)</code></pre>
+<pre><code>## # A tibble: 0 x 0</code></pre>
+<pre class="r"><code>broom::tidy(living_lm4)</code></pre>
+<pre><code>## # A tibble: 0 x 0</code></pre>
+<pre class="r"><code>living_lm5 &lt;- 
+  glm(living ~ religion, data = admissions_death) %&gt;% 
+  plot()</code></pre>
+<pre><code>## Warning: not plotting observations with leverage one:
+##   16992</code></pre>
+<pre><code>## Warning: not plotting observations with leverage one:
+##   16992</code></pre>
+<p><img src="data_wrangling_files/figure-html/unnamed-chunk-6-5.png" width="672" /></p>
+<pre class="r"><code>summary(living_lm5)</code></pre>
+<pre><code>## Length  Class   Mode 
+##      0   NULL   NULL</code></pre>
+<pre class="r"><code>broom::glance(living_lm5)</code></pre>
+<pre><code>## # A tibble: 0 x 0</code></pre>
+<pre class="r"><code>broom::tidy(living_lm5)</code></pre>
+<pre><code>## # A tibble: 0 x 0</code></pre>
+<pre class="r"><code>living_lm6 &lt;- 
+  glm(living ~ marital_status, data = admissions_death) %&gt;% 
+  plot()</code></pre>
+<p><img src="data_wrangling_files/figure-html/unnamed-chunk-6-6.png" width="672" /></p>
+<pre class="r"><code>summary(living_lm6)</code></pre>
+<pre><code>## Length  Class   Mode 
+##      0   NULL   NULL</code></pre>
+<pre class="r"><code>broom::glance(living_lm6)</code></pre>
+<pre><code>## # A tibble: 0 x 0</code></pre>
+<pre class="r"><code>broom::tidy(living_lm6)</code></pre>
+<pre><code>## # A tibble: 0 x 0</code></pre>
+<pre class="r"><code>living_lm7 &lt;- 
+  glm(living ~ ethnicity, data = admissions_death) %&gt;% 
+  plot()</code></pre>
+<p><img src="data_wrangling_files/figure-html/unnamed-chunk-6-7.png" width="672" /></p>
+<pre class="r"><code>summary(living_lm7)</code></pre>
+<pre><code>## Length  Class   Mode 
+##      0   NULL   NULL</code></pre>
+<pre class="r"><code>broom::glance(living_lm7)</code></pre>
+<pre><code>## # A tibble: 0 x 0</code></pre>
+<pre class="r"><code>broom::tidy(living_lm7)</code></pre>
+<pre><code>## # A tibble: 0 x 0</code></pre>
+<pre class="r"><code>#living_lm8 &lt;-   Too many diagnosis 
+#  glm(living ~ diagnosis, data = admissions_death)
+#summary(living_lm8)
+
+living_lm9 &lt;- 
+  glm(living ~ hospital_expire_flag, data = admissions_death) %&gt;% 
+  plot()</code></pre>
+<p><img src="data_wrangling_files/figure-html/unnamed-chunk-6-8.png" width="672" /></p>
+<pre class="r"><code>summary(living_lm9)</code></pre>
+<pre><code>## Length  Class   Mode 
+##      0   NULL   NULL</code></pre>
+<pre class="r"><code>broom::glance(living_lm9)</code></pre>
+<pre><code>## # A tibble: 0 x 0</code></pre>
+<pre class="r"><code>broom::tidy(living_lm9)</code></pre>
+<pre><code>## # A tibble: 0 x 0</code></pre>
+<pre class="r"><code>living_lm10 &lt;- 
+  glm(living ~ has_chartevents_data, data = admissions_death) %&gt;% 
+  plot()</code></pre>
+<p><img src="data_wrangling_files/figure-html/unnamed-chunk-6-9.png" width="672" /></p>
+<pre class="r"><code>summary(living_lm10)</code></pre>
+<pre><code>## Length  Class   Mode 
+##      0   NULL   NULL</code></pre>
+<pre class="r"><code>broom::glance(living_lm10)</code></pre>
+<pre><code>## # A tibble: 0 x 0</code></pre>
+<pre class="r"><code>broom::tidy(living_lm10)</code></pre>
+<pre><code>## # A tibble: 0 x 0</code></pre>
+<pre class="r"><code>living_lm11 &lt;- 
+  glm(living ~ hospitaltime, data = admissions_death) %&gt;% 
+  plot()</code></pre>
+<p><img src="data_wrangling_files/figure-html/unnamed-chunk-6-10.png" width="672" /></p>
+<pre class="r"><code>summary(living_lm11)</code></pre>
+<pre><code>## Length  Class   Mode 
+##      0   NULL   NULL</code></pre>
+<pre class="r"><code>broom::glance(living_lm11)</code></pre>
+<pre><code>## # A tibble: 0 x 0</code></pre>
+<pre class="r"><code>broom::tidy(living_lm11)</code></pre>
+<pre><code>## # A tibble: 0 x 0</code></pre>
+<pre class="r"><code>living_lm12 &lt;- 
+  glm(living ~ edtime, data = na.omit(select(admissions_death, living, edtime))) %&gt;% 
+  plot()</code></pre>
+<p><img src="data_wrangling_files/figure-html/unnamed-chunk-6-11.png" width="672" /></p>
+<pre class="r"><code>summary(living_lm12)</code></pre>
+<pre><code>## Length  Class   Mode 
+##      0   NULL   NULL</code></pre>
+<pre class="r"><code>broom::glance(living_lm12)</code></pre>
+<pre><code>## # A tibble: 0 x 0</code></pre>
+<pre class="r"><code>broom::tidy(living_lm12)</code></pre>
+<pre><code>## # A tibble: 0 x 0</code></pre>
+<pre class="r"><code>#MLR
+living_mlr &lt;- 
+  glm(living ~ admission_type + admission_location + insurance + language + religion + marital_status + ethnicity + hospital_expire_flag + has_chartevents_data + hospitaltime + edtime, data = admissions_death)
+broom::glance(living_mlr)
+
+
+
+
+
+
+
+# Do more regression analysis
+
+coefficients(living_mlr)
+confint(living_mlr)
+fitted(living_mlr)
+residuals(living_mlr)
+anova(living_mlr)
+vcov(living_mlr)
+
+
+###backward elimination
+#Backward elimination: take out non-significant variables ’one at a time’ starting with the highest p-value
+step1 &lt;- update(living_mlr, . ~. -admission_type)
+broom::glance(step1)
+# remove
+
+step2 &lt;- update(living_mlr, . ~. -admission_type-admission_location)
+broom::glance(step2)
+#keep
+
+step3 &lt;- update(living_mlr, . ~. -admission_type-insurance)
+broom::glance(step3)
+#keep
+
+step4 &lt;- update(living_mlr, . ~. -admission_type-language)
+broom::glance(step4)
+#remove
+
+step5 &lt;- update(living_mlr, . ~. -admission_type-language-religion)
+broom::glance(step5)
+#keep
+
+step6 &lt;- update(living_mlr, . ~. -admission_type-language-marital_status)
+broom::glance(step6)
+#keep
+
+step7 &lt;- update(living_mlr, . ~. -admission_type-language-ethnicity)
+broom::glance(step7)
+#keep
+
+step8 &lt;- update(living_mlr, . ~. -admission_type-language-hospital_expire_flag)
+broom::glance(step8)
+#keep
+
+step9 &lt;- update(living_mlr, . ~. -admission_type-language-has_chartevents_data)
+broom::glance(step9)
+#keep
+
+step10 &lt;- update(living_mlr, . ~.  -admission_type-language-hospitaltime)
+broom::glance(step10)
+#keep
+
+step11 &lt;- update(living_mlr, . ~. -admission_type-language-edtime)
+broom::glance(step11)
+#keep</code></pre>
+</div>
+<div id="so-we-got-this-regression-model" class="section level3">
+<h3>So we got this regression model:</h3>
+
+<p><span class="math inline">\(\hat{Living}\)</span> = <span class="math inline">\(\hat{\beta_0}\)</span> + <span class="math inline">\(\hat{\beta_1}\)</span> Admission.Location + <span class="math inline">\(\hat{\beta_2}\)</span> Insurance + <span class="math inline">\(\hat{\beta_3}\)</span> Insurance + <span class="math inline">\(\hat{\beta_4}\)</span> Religion + <span class="math inline">\(\hat{\beta_5}\)</span> Marital.Status + <span class="math inline">\(\hat{\beta_6}\)</span> Ethnicity + <span class="math inline">\(\hat{\beta_7}\)</span> Hospital.Expire.Flag + <span class="math inline">\(\hat{\beta_8}\)</span> Has.ChartEvents.Data + <span class="math inline">\(\hat{\beta_9}\)</span> Hospital.Time + <span class="math inline">\(\hat{\beta_10}\)</span> Edtime</p>
+<p>Maybe we need this step:</p>
+<pre class="r"><code># Remove NA lines
+#admissions_death_nona &lt;- 
+#  admissions_death %&gt;% 
+#  select(admission_type, admission_location, insurance, religion, marital_status, ethnicity, hospitaltime, edtime) %&gt;% 
+#  na.omit() 
+
+#MLR with no NAs
+#living_mlr_nona &lt;- 
+#  glm(living ~ admission_type + admission_location + insurance + language + religion + marital_status + ethnicity + hospital_expire_flag + has_chartevents_data + hospitaltime + edtime, data = admissions_death_nona)
+#summary(living_mlr_nona)
+#broom::glance(living_mlr_nona)
+#broom::tidy(living_mlr_nona)</code></pre>
+</div>
+</div>
+<div id="openfda" class="section level1">
+<h1>OpenFDA</h1>
+<div id="import-openfda" class="section level3">
+<h3>Import OpenFDA</h3>
+<pre class="r"><code># Already installed openfda data
+# Load OpenFDA
+library(openfda)
+
+
+library(jsonlite)</code></pre>
+<pre><code>## 
+## Attaching package: &#39;jsonlite&#39;</code></pre>
+<pre><code>## The following object is masked from &#39;package:purrr&#39;:
+## 
+##     flatten</code></pre>
+<pre class="r"><code>fda &lt;- 
+  fromJSON(&quot;https://api.fda.gov/drug/event.json&quot;) %&gt;% 
+  janitor::clean_names()
+
+names(fda$results)</code></pre>
+<pre><code>##  [1] &quot;receiptdateformat&quot;          &quot;receiver&quot;                  
+##  [3] &quot;companynumb&quot;                &quot;receivedateformat&quot;         
+##  [5] &quot;primarysource&quot;              &quot;seriousnessother&quot;          
+##  [7] &quot;transmissiondateformat&quot;     &quot;fulfillexpeditecriteria&quot;   
+##  [9] &quot;safetyreportid&quot;             &quot;sender&quot;                    
+## [11] &quot;receivedate&quot;                &quot;patient&quot;                   
+## [13] &quot;seriousnesshospitalization&quot; &quot;transmissiondate&quot;          
+## [15] &quot;serious&quot;                    &quot;receiptdate&quot;</code></pre>
+<p>There are 16 observations in the <code>event</code> dataset under <code>drug</code>, they are: receiptdateformat, receiver, companynumb, receivedateformat, primarysource, seriousnessother, transmissiondateformat, fulfillexpeditecriteria, safetyreportid, sender, receivedate, patient, seriousnesshospitalization, transmissiondate, serious, receiptdate.</p>
+</div>
+<div id="visulization" class="section level3">
+<h3>Visulization</h3>
+<p>Let’s take a look at the combination of MIMIC data and ICU together(for we want to know the ICU time since it is more critical for mortality)</p>
+<pre class="r"><code>icu &lt;- 
+  read_csv(&quot;./database/data/icu_detail.csv&quot;) %&gt;% 
+  janitor::clean_names()</code></pre>
+<pre><code>## Parsed with column specification:
+## cols(
+##   subject_id = col_double(),
+##   hadm_id = col_double(),
+##   icustay_id = col_double(),
+##   gender = col_character(),
+##   dod = col_datetime(format = &quot;&quot;),
+##   admittime = col_datetime(format = &quot;&quot;),
+##   dischtime = col_datetime(format = &quot;&quot;),
+##   los_hospital = col_double(),
+##   admission_age = col_double(),
+##   ethnicity = col_character(),
+##   admission_type = col_character(),
+##   hospital_expire_flag = col_double(),
+##   hospstay_seq = col_double(),
+##   first_hosp_stay = col_logical(),
+##   intime = col_datetime(format = &quot;&quot;),
+##   outtime = col_datetime(format = &quot;&quot;),
+##   los_icu = col_double(),
+##   icustay_seq = col_double(),
+##   first_icu_stay = col_logical()
+## )</code></pre>
+<pre class="r"><code># See what is the types of columns in icu dataset
+output = vector(&quot;list&quot;, length = 19)
+
+for (i in 1:19) {
+  output[[i]] = class(icu[[i]])
+}</code></pre>
+<p>Let’s combine these two dataset so we can visualize it correctly</p>
+<pre class="r"><code>total_patient &lt;-
+  merge(admissions_death, icu, by=&quot;hadm_id&quot;) %&gt;% 
+  as.tibble()
+
+#mutate icu time
+total_patient &lt;- 
+  mutate(total_patient, icutime = outtime - intime)
+
+skimr::skim(total_patient) %&gt;% 
+  knitr::kable()</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">variable</th>
+<th align="left">type</th>
+<th align="left">stat</th>
+<th align="left">level</th>
+<th align="right">value</th>
+<th align="left">formatted</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">hadm_id</td>
+<td align="left">numeric</td>
+<td align="left">missing</td>
+<td align="left">.all</td>
+<td align="right">0.000000e+00</td>
+<td align="left">0</td>
+</tr>
+<tr class="even">
+<td align="left">hadm_id</td>
+<td align="left">numeric</td>
+<td align="left">complete</td>
+<td align="left">.all</td>
+<td align="right">5.321900e+04</td>
+<td align="left">53219</td>
+</tr>
+<tr class="odd">
+<td align="left">hadm_id</td>
+<td align="left">numeric</td>
+<td align="left">n</td>
+<td align="left">.all</td>
+<td align="right">5.321900e+04</td>
+<td align="left">53219</td>
+</tr>
+<tr class="even">
+<td align="left">hadm_id</td>
+<td align="left">numeric</td>
+<td align="left">mean</td>
+<td align="left">.all</td>
+<td align="right">1.499624e+05</td>
+<td align="left">149962.39</td>
+</tr>
+<tr class="odd">
+<td align="left">hadm_id</td>
+<td align="left">numeric</td>
+<td align="left">sd</td>
+<td align="left">.all</td>
+<td align="right">2.893430e+04</td>
+<td align="left">28934.3</td>
+</tr>
+<tr class="even">
+<td align="left">hadm_id</td>
+<td align="left">numeric</td>
+<td align="left">p0</td>
+<td align="left">.all</td>
+<td align="right">1.000010e+05</td>
+<td align="left">1e+05</td>
+</tr>
+<tr class="odd">
+<td align="left">hadm_id</td>
+<td align="left">numeric</td>
+<td align="left">p25</td>
+<td align="left">.all</td>
+<td align="right">1.248880e+05</td>
+<td align="left">124888</td>
+</tr>
+<tr class="even">
+<td align="left">hadm_id</td>
+<td align="left">numeric</td>
+<td align="left">p50</td>
+<td align="left">.all</td>
+<td align="right">1.499790e+05</td>
+<td align="left">149979</td>
+</tr>
+<tr class="odd">
+<td align="left">hadm_id</td>
+<td align="left">numeric</td>
+<td align="left">p75</td>
+<td align="left">.all</td>
+<td align="right">1.750600e+05</td>
+<td align="left">175060</td>
+</tr>
+<tr class="even">
+<td align="left">hadm_id</td>
+<td align="left">numeric</td>
+<td align="left">p100</td>
+<td align="left">.all</td>
+<td align="right">1.999990e+05</td>
+<td align="left">2e+05</td>
+</tr>
+<tr class="odd">
+<td align="left">hadm_id</td>
+<td align="left">numeric</td>
+<td align="left">hist</td>
+<td align="left">.all</td>
+<td align="right">NA</td>
+<td align="left">▇▇▇▇▇▇▇▇</td>
+</tr>
+<tr class="even">
+<td align="left">row_id</td>
+<td align="left">numeric</td>
+<td align="left">missing</td>
+<td align="left">.all</td>
+<td align="right">0.000000e+00</td>
+<td align="left">0</td>
+</tr>
+<tr class="odd">
+<td align="left">row_id</td>
+<td align="left">numeric</td>
+<td align="left">complete</td>
+<td align="left">.all</td>
+<td align="right">5.321900e+04</td>
+<td align="left">53219</td>
+</tr>
+<tr class="even">
+<td align="left">row_id</td>
+<td align="left">numeric</td>
+<td align="left">n</td>
+<td align="left">.all</td>
+<td align="right">5.321900e+04</td>
+<td align="left">53219</td>
+</tr>
+<tr class="odd">
+<td align="left">row_id</td>
+<td align="left">numeric</td>
+<td align="left">mean</td>
+<td align="left">.all</td>
+<td align="right">3.115956e+04</td>
+<td align="left">31159.56</td>
+</tr>
+<tr class="even">
+<td align="left">row_id</td>
+<td align="left">numeric</td>
+<td align="left">sd</td>
+<td align="left">.all</td>
+<td align="right">1.720859e+04</td>
+<td align="left">17208.59</td>
+</tr>
+<tr class="odd">
+<td align="left">row_id</td>
+<td align="left">numeric</td>
+<td align="left">p0</td>
+<td align="left">.all</td>
+<td align="right">2.000000e+00</td>
+<td align="left">2</td>
+</tr>
+<tr class="even">
+<td align="left">row_id</td>
+<td align="left">numeric</td>
+<td align="left">p25</td>
+<td align="left">.all</td>
+<td align="right">1.622450e+04</td>
+<td align="left">16224.5</td>
+</tr>
+<tr class="odd">
+<td align="left">row_id</td>
+<td align="left">numeric</td>
+<td align="left">p50</td>
+<td align="left">.all</td>
+<td align="right">3.251400e+04</td>
+<td align="left">32514</td>
+</tr>
+<tr class="even">
+<td align="left">row_id</td>
+<td align="left">numeric</td>
+<td align="left">p75</td>
+<td align="left">.all</td>
+<td align="right">4.624850e+04</td>
+<td align="left">46248.5</td>
+</tr>
+<tr class="odd">
+<td align="left">row_id</td>
+<td align="left">numeric</td>
+<td align="left">p100</td>
+<td align="left">.all</td>
+<td align="right">5.897600e+04</td>
+<td align="left">58976</td>
+</tr>
+<tr class="even">
+<td align="left">row_id</td>
+<td align="left">numeric</td>
+<td align="left">hist</td>
+<td align="left">.all</td>
+<td align="right">NA</td>
+<td align="left">▆▆▆▆▇▇▇▇</td>
+</tr>
+<tr class="odd">
+<td align="left">subject_id.x</td>
+<td align="left">numeric</td>
+<td align="left">missing</td>
+<td align="left">.all</td>
+<td align="right">0.000000e+00</td>
+<td align="left">0</td>
+</tr>
+<tr class="even">
+<td align="left">subject_id.x</td>
+<td align="left">numeric</td>
+<td align="left">complete</td>
+<td align="left">.all</td>
+<td align="right">5.321900e+04</td>
+<td align="left">53219</td>
+</tr>
+<tr class="odd">
+<td align="left">subject_id.x</td>
+<td align="left">numeric</td>
+<td align="left">n</td>
+<td align="left">.all</td>
+<td align="right">5.321900e+04</td>
+<td align="left">53219</td>
+</tr>
+<tr class="even">
+<td align="left">subject_id.x</td>
+<td align="left">numeric</td>
+<td align="left">mean</td>
+<td align="left">.all</td>
+<td align="right">3.665625e+04</td>
+<td align="left">36656.25</td>
+</tr>
+<tr class="odd">
+<td align="left">subject_id.x</td>
+<td align="left">numeric</td>
+<td align="left">sd</td>
+<td align="left">.all</td>
+<td align="right">2.898717e+04</td>
+<td align="left">28987.17</td>
+</tr>
+<tr class="even">
+<td align="left">subject_id.x</td>
+<td align="left">numeric</td>
+<td align="left">p0</td>
+<td align="left">.all</td>
+<td align="right">3.000000e+00</td>
+<td align="left">3</td>
+</tr>
+<tr class="odd">
+<td align="left">subject_id.x</td>
+<td align="left">numeric</td>
+<td align="left">p25</td>
+<td align="left">.all</td>
+<td align="right">1.322750e+04</td>
+<td align="left">13227.5</td>
+</tr>
+<tr class="even">
+<td align="left">subject_id.x</td>
+<td align="left">numeric</td>
+<td align="left">p50</td>
+<td align="left">.all</td>
+<td align="right">2.658200e+04</td>
+<td align="left">26582</td>
+</tr>
+<tr class="odd">
+<td align="left">subject_id.x</td>
+<td align="left">numeric</td>
+<td align="left">p75</td>
+<td align="left">.all</td>
+<td align="right">5.988950e+04</td>
+<td align="left">59889.5</td>
+</tr>
+<tr class="even">
+<td align="left">subject_id.x</td>
+<td align="left">numeric</td>
+<td align="left">p100</td>
+<td align="left">.all</td>
+<td align="right">9.999900e+04</td>
+<td align="left">99999</td>
+</tr>
+<tr class="odd">
+<td align="left">subject_id.x</td>
+<td align="left">numeric</td>
+<td align="left">hist</td>
+<td align="left">.all</td>
+<td align="right">NA</td>
+<td align="left">▇▇▅▂▃▂▂▃</td>
+</tr>
+<tr class="even">
+<td align="left">admittime.x</td>
+<td align="left">POSIXct</td>
+<td align="left">missing</td>
+<td align="left">.all</td>
+<td align="right">0.000000e+00</td>
+<td align="left">0</td>
+</tr>
+<tr class="odd">
+<td align="left">admittime.x</td>
+<td align="left">POSIXct</td>
+<td align="left">complete</td>
+<td align="left">.all</td>
+<td align="right">5.321900e+04</td>
+<td align="left">53219</td>
+</tr>
+<tr class="even">
+<td align="left">admittime.x</td>
+<td align="left">POSIXct</td>
+<td align="left">n</td>
+<td align="left">.all</td>
+<td align="right">5.321900e+04</td>
+<td align="left">53219</td>
+</tr>
+<tr class="odd">
+<td align="left">admittime.x</td>
+<td align="left">POSIXct</td>
+<td align="left">min</td>
+<td align="left">.all</td>
+<td align="right">4.116082e+09</td>
+<td align="left">2100-06-07</td>
+</tr>
+<tr class="even">
+<td align="left">admittime.x</td>
+<td align="left">POSIXct</td>
+<td align="left">max</td>
+<td align="left">.all</td>
+<td align="right">7.593412e+09</td>
+<td align="left">2210-08-17</td>
+</tr>
+<tr class="odd">
+<td align="left">admittime.x</td>
+<td align="left">POSIXct</td>
+<td align="left">median</td>
+<td align="left">.all</td>
+<td align="right">5.714706e+09</td>
+<td align="left">2151-02-03</td>
+</tr>
+<tr class="even">
+<td align="left">admittime.x</td>
+<td align="left">POSIXct</td>
+<td align="left">n_unique</td>
+<td align="left">.all</td>
+<td align="right">4.933100e+04</td>
+<td align="left">49331</td>
+</tr>
+<tr class="odd">
+<td align="left">dischtime.x</td>
+<td align="left">POSIXct</td>
+<td align="left">missing</td>
+<td align="left">.all</td>
+<td align="right">0.000000e+00</td>
+<td align="left">0</td>
+</tr>
+<tr class="even">
+<td align="left">dischtime.x</td>
+<td align="left">POSIXct</td>
+<td align="left">complete</td>
+<td align="left">.all</td>
+<td align="right">5.321900e+04</td>
+<td align="left">53219</td>
+</tr>
+<tr class="odd">
+<td align="left">dischtime.x</td>
+<td align="left">POSIXct</td>
+<td align="left">n</td>
+<td align="left">.all</td>
+<td align="right">5.321900e+04</td>
+<td align="left">53219</td>
+</tr>
+<tr class="even">
+<td align="left">dischtime.x</td>
+<td align="left">POSIXct</td>
+<td align="left">min</td>
+<td align="left">.all</td>
+<td align="right">4.116244e+09</td>
+<td align="left">2100-06-09</td>
+</tr>
+<tr class="odd">
+<td align="left">dischtime.x</td>
+<td align="left">POSIXct</td>
+<td align="left">max</td>
+<td align="left">.all</td>
+<td align="right">7.594026e+09</td>
+<td align="left">2210-08-24</td>
+</tr>
+<tr class="even">
+<td align="left">dischtime.x</td>
+<td align="left">POSIXct</td>
+<td align="left">median</td>
+<td align="left">.all</td>
+<td align="right">5.716205e+09</td>
+<td align="left">2151-02-20</td>
+</tr>
+<tr class="odd">
+<td align="left">dischtime.x</td>
+<td align="left">POSIXct</td>
+<td align="left">n_unique</td>
+<td align="left">.all</td>
+<td align="right">4.937500e+04</td>
+<td align="left">49375</td>
+</tr>
+<tr class="even">
+<td align="left">deathtime</td>
+<td align="left">POSIXct</td>
+<td align="left">missing</td>
+<td align="left">.all</td>
+<td align="right">4.668600e+04</td>
+<td align="left">46686</td>
+</tr>
+<tr class="odd">
+<td align="left">deathtime</td>
+<td align="left">POSIXct</td>
+<td align="left">complete</td>
+<td align="left">.all</td>
+<td align="right">6.533000e+03</td>
+<td align="left">6533</td>
+</tr>
+<tr class="even">
+<td align="left">deathtime</td>
+<td align="left">POSIXct</td>
+<td align="left">n</td>
+<td align="left">.all</td>
+<td align="right">5.321900e+04</td>
+<td align="left">53219</td>
+</tr>
+<tr class="odd">
+<td align="left">deathtime</td>
+<td align="left">POSIXct</td>
+<td align="left">min</td>
+<td align="left">.all</td>
+<td align="right">4.117076e+09</td>
+<td align="left">2100-06-19</td>
+</tr>
+<tr class="even">
+<td align="left">deathtime</td>
+<td align="left">POSIXct</td>
+<td align="left">max</td>
+<td align="left">.all</td>
+<td align="right">7.513559e+09</td>
+<td align="left">2208-02-05</td>
+</tr>
+<tr class="odd">
+<td align="left">deathtime</td>
+<td align="left">POSIXct</td>
+<td align="left">median</td>
+<td align="left">.all</td>
+<td align="right">5.699749e+09</td>
+<td align="left">2150-08-14</td>
+</tr>
+<tr class="even">
+<td align="left">deathtime</td>
+<td align="left">POSIXct</td>
+<td align="left">n_unique</td>
+<td align="left">.all</td>
+<td align="right">5.732000e+03</td>
+<td align="left">5732</td>
+</tr>
+<tr class="odd">
+<td align="left">admission_type.x</td>
+<td align="left">character</td>
+<td align="left">missing</td>
+<td align="left">.all</td>
+<td align="right">0.000000e+00</td>
+<td align="left">0</td>
+</tr>
+<tr class="even">
+<td align="left">admission_type.x</td>
+<td align="left">character</td>
+<td align="left">complete</td>
+<td align="left">.all</td>
+<td align="right">5.321900e+04</td>
+<td align="left">53219</td>
+</tr>
+<tr class="odd">
+<td align="left">admission_type.x</td>
+<td align="left">character</td>
+<td align="left">n</td>
+<td align="left">.all</td>
+<td align="right">5.321900e+04</td>
+<td align="left">53219</td>
+</tr>
+<tr class="even">
+<td align="left">admission_type.x</td>
+<td align="left">character</td>
+<td align="left">min</td>
+<td align="left">.all</td>
+<td align="right">6.000000e+00</td>
+<td align="left">6</td>
+</tr>
+<tr class="odd">
+<td align="left">admission_type.x</td>
+<td align="left">character</td>
+<td align="left">max</td>
+<td align="left">.all</td>
+<td align="right">9.000000e+00</td>
+<td align="left">9</td>
+</tr>
+<tr class="even">
+<td align="left">admission_type.x</td>
+<td align="left">character</td>
+<td align="left">empty</td>
+<td align="left">.all</td>
+<td align="right">0.000000e+00</td>
+<td align="left">0</td>
+</tr>
+<tr class="odd">
+<td align="left">admission_type.x</td>
+<td align="left">character</td>
+<td align="left">n_unique</td>
+<td align="left">.all</td>
+<td align="right">4.000000e+00</td>
+<td align="left">4</td>
+</tr>
+<tr class="even">
+<td align="left">admission_location</td>
+<td align="left">character</td>
+<td align="left">missing</td>
+<td align="left">.all</td>
+<td align="right">0.000000e+00</td>
+<td align="left">0</td>
+</tr>
+<tr class="odd">
+<td align="left">admission_location</td>
+<td align="left">character</td>
+<td align="left">complete</td>
+<td align="left">.all</td>
+<td align="right">5.321900e+04</td>
+<td align="left">53219</td>
+</tr>
+<tr class="even">
+<td align="left">admission_location</td>
+<td align="left">character</td>
+<td align="left">n</td>
+<td align="left">.all</td>
+<td align="right">5.321900e+04</td>
+<td align="left">53219</td>
+</tr>
+<tr class="odd">
+<td align="left">admission_location</td>
+<td align="left">character</td>
+<td align="left">min</td>
+<td align="left">.all</td>
+<td align="right">1.700000e+01</td>
+<td align="left">17</td>
+</tr>
+<tr class="even">
+<td align="left">admission_location</td>
+<td align="left">character</td>
+<td align="left">max</td>
+<td align="left">.all</td>
+<td align="right">2.500000e+01</td>
+<td align="left">25</td>
+</tr>
+<tr class="odd">
+<td align="left">admission_location</td>
+<td align="left">character</td>
+<td align="left">empty</td>
+<td align="left">.all</td>
+<td align="right">0.000000e+00</td>
+<td align="left">0</td>
+</tr>
+<tr class="even">
+<td align="left">admission_location</td>
+<td align="left">character</td>
+<td align="left">n_unique</td>
+<td align="left">.all</td>
+<td align="right">9.000000e+00</td>
+<td align="left">9</td>
+</tr>
+<tr class="odd">
+<td align="left">discharge_location</td>
+<td align="left">character</td>
+<td align="left">missing</td>
+<td align="left">.all</td>
+<td align="right">0.000000e+00</td>
+<td align="left">0</td>
+</tr>
+<tr class="even">
+<td align="left">discharge_location</td>
+<td align="left">character</td>
+<td align="left">complete</td>
+<td align="left">.all</td>
+<td align="right">5.321900e+04</td>
+<td align="left">53219</td>
+</tr>
+<tr class="odd">
+<td align="left">discharge_location</td>
+<td align="left">character</td>
+<td align="left">n</td>
+<td align="left">.all</td>
+<td align="right">5.321900e+04</td>
+<td align="left">53219</td>
+</tr>
+<tr class="even">
+<td align="left">discharge_location</td>
+<td align="left">character</td>
+<td align="left">min</td>
+<td align="left">.all</td>
+<td align="right">3.000000e+00</td>
+<td align="left">3</td>
+</tr>
+<tr class="odd">
+<td align="left">discharge_location</td>
+<td align="left">character</td>
+<td align="left">max</td>
+<td align="left">.all</td>
+<td align="right">2.500000e+01</td>
+<td align="left">25</td>
+</tr>
+<tr class="even">
+<td align="left">discharge_location</td>
+<td align="left">character</td>
+<td align="left">empty</td>
+<td align="left">.all</td>
+<td align="right">0.000000e+00</td>
+<td align="left">0</td>
+</tr>
+<tr class="odd">
+<td align="left">discharge_location</td>
+<td align="left">character</td>
+<td align="left">n_unique</td>
+<td align="left">.all</td>
+<td align="right">1.700000e+01</td>
+<td align="left">17</td>
+</tr>
+<tr class="even">
+<td align="left">insurance</td>
+<td align="left">character</td>
+<td align="left">missing</td>
+<td align="left">.all</td>
+<td align="right">0.000000e+00</td>
+<td align="left">0</td>
+</tr>
+<tr class="odd">
+<td align="left">insurance</td>
+<td align="left">character</td>
+<td align="left">complete</td>
+<td align="left">.all</td>
+<td align="right">5.321900e+04</td>
+<td align="left">53219</td>
+</tr>
+<tr class="even">
+<td align="left">insurance</td>
+<td align="left">character</td>
+<td align="left">n</td>
+<td align="left">.all</td>
+<td align="right">5.321900e+04</td>
+<td align="left">53219</td>
+</tr>
+<tr class="odd">
+<td align="left">insurance</td>
+<td align="left">character</td>
+<td align="left">min</td>
+<td align="left">.all</td>
+<td align="right">7.000000e+00</td>
+<td align="left">7</td>
+</tr>
+<tr class="even">
+<td align="left">insurance</td>
+<td align="left">character</td>
+<td align="left">max</td>
+<td align="left">.all</td>
+<td align="right">1.000000e+01</td>
+<td align="left">10</td>
+</tr>
+<tr class="odd">
+<td align="left">insurance</td>
+<td align="left">character</td>
+<td align="left">empty</td>
+<td align="left">.all</td>
+<td align="right">0.000000e+00</td>
+<td align="left">0</td>
+</tr>
+<tr class="even">
+<td align="left">insurance</td>
+<td align="left">character</td>
+<td align="left">n_unique</td>
+<td align="left">.all</td>
+<td align="right">5.000000e+00</td>
+<td align="left">5</td>
+</tr>
+<tr class="odd">
+<td align="left">language</td>
+<td align="left">character</td>
+<td align="left">missing</td>
+<td align="left">.all</td>
+<td align="right">1.826400e+04</td>
+<td align="left">18264</td>
+</tr>
+<tr class="even">
+<td align="left">language</td>
+<td align="left">character</td>
+<td align="left">complete</td>
+<td align="left">.all</td>
+<td align="right">3.495500e+04</td>
+<td align="left">34955</td>
+</tr>
+<tr class="odd">
+<td align="left">language</td>
+<td align="left">character</td>
+<td align="left">n</td>
+<td align="left">.all</td>
+<td align="right">5.321900e+04</td>
+<td align="left">53219</td>
+</tr>
+<tr class="even">
+<td align="left">language</td>
+<td align="left">character</td>
+<td align="left">min</td>
+<td align="left">.all</td>
+<td align="right">4.000000e+00</td>
+<td align="left">4</td>
+</tr>
+<tr class="odd">
+<td align="left">language</td>
+<td align="left">character</td>
+<td align="left">max</td>
+<td align="left">.all</td>
+<td align="right">4.000000e+00</td>
+<td align="left">4</td>
+</tr>
+<tr class="even">
+<td align="left">language</td>
+<td align="left">character</td>
+<td align="left">empty</td>
+<td align="left">.all</td>
+<td align="right">0.000000e+00</td>
+<td align="left">0</td>
+</tr>
+<tr class="odd">
+<td align="left">language</td>
+<td align="left">character</td>
+<td align="left">n_unique</td>
+<td align="left">.all</td>
+<td align="right">7.500000e+01</td>
+<td align="left">75</td>
+</tr>
+<tr class="even">
+<td align="left">religion</td>
+<td align="left">character</td>
+<td align="left">missing</td>
+<td align="left">.all</td>
+<td align="right">4.690000e+02</td>
+<td align="left">469</td>
+</tr>
+<tr class="odd">
+<td align="left">religion</td>
+<td align="left">character</td>
+<td align="left">complete</td>
+<td align="left">.all</td>
+<td align="right">5.275000e+04</td>
+<td align="left">52750</td>
+</tr>
+<tr class="even">
+<td align="left">religion</td>
+<td align="left">character</td>
+<td align="left">n</td>
+<td align="left">.all</td>
+<td align="right">5.321900e+04</td>
+<td align="left">53219</td>
+</tr>
+<tr class="odd">
+<td align="left">religion</td>
+<td align="left">character</td>
+<td align="left">min</td>
+<td align="left">.all</td>
+<td align="right">5.000000e+00</td>
+<td align="left">5</td>
+</tr>
+<tr class="even">
+<td align="left">religion</td>
+<td align="left">character</td>
+<td align="left">max</td>
+<td align="left">.all</td>
+<td align="right">2.200000e+01</td>
+<td align="left">22</td>
+</tr>
+<tr class="odd">
+<td align="left">religion</td>
+<td align="left">character</td>
+<td align="left">empty</td>
+<td align="left">.all</td>
+<td align="right">0.000000e+00</td>
+<td align="left">0</td>
+</tr>
+<tr class="even">
+<td align="left">religion</td>
+<td align="left">character</td>
+<td align="left">n_unique</td>
+<td align="left">.all</td>
+<td align="right">2.000000e+01</td>
+<td align="left">20</td>
+</tr>
+<tr class="odd">
+<td align="left">marital_status</td>
+<td align="left">character</td>
+<td align="left">missing</td>
+<td align="left">.all</td>
+<td align="right">2.688000e+03</td>
+<td align="left">2688</td>
+</tr>
+<tr class="even">
+<td align="left">marital_status</td>
+<td align="left">character</td>
+<td align="left">complete</td>
+<td align="left">.all</td>
+<td align="right">5.053100e+04</td>
+<td align="left">50531</td>
+</tr>
+<tr class="odd">
+<td align="left">marital_status</td>
+<td align="left">character</td>
+<td align="left">n</td>
+<td align="left">.all</td>
+<td align="right">5.321900e+04</td>
+<td align="left">53219</td>
+</tr>
+<tr class="even">
+<td align="left">marital_status</td>
+<td align="left">character</td>
+<td align="left">min</td>
+<td align="left">.all</td>
+<td align="right">6.000000e+00</td>
+<td align="left">6</td>
+</tr>
+<tr class="odd">
+<td align="left">marital_status</td>
+<td align="left">character</td>
+<td align="left">max</td>
+<td align="left">.all</td>
+<td align="right">1.700000e+01</td>
+<td align="left">17</td>
+</tr>
+<tr class="even">
+<td align="left">marital_status</td>
+<td align="left">character</td>
+<td align="left">empty</td>
+<td align="left">.all</td>
+<td align="right">0.000000e+00</td>
+<td align="left">0</td>
+</tr>
+<tr class="odd">
+<td align="left">marital_status</td>
+<td align="left">character</td>
+<td align="left">n_unique</td>
+<td align="left">.all</td>
+<td align="right">7.000000e+00</td>
+<td align="left">7</td>
+</tr>
+<tr class="even">
+<td align="left">ethnicity.x</td>
+<td align="left">character</td>
+<td align="left">missing</td>
+<td align="left">.all</td>
+<td align="right">0.000000e+00</td>
+<td align="left">0</td>
+</tr>
+<tr class="odd">
+<td align="left">ethnicity.x</td>
+<td align="left">character</td>
+<td align="left">complete</td>
+<td align="left">.all</td>
+<td align="right">5.321900e+04</td>
+<td align="left">53219</td>
+</tr>
+<tr class="even">
+<td align="left">ethnicity.x</td>
+<td align="left">character</td>
+<td align="left">n</td>
+<td align="left">.all</td>
+<td align="right">5.321900e+04</td>
+<td align="left">53219</td>
+</tr>
+<tr class="odd">
+<td align="left">ethnicity.x</td>
+<td align="left">character</td>
+<td align="left">min</td>
+<td align="left">.all</td>
+<td align="right">5.000000e+00</td>
+<td align="left">5</td>
+</tr>
+<tr class="even">
+<td align="left">ethnicity.x</td>
+<td align="left">character</td>
+<td align="left">max</td>
+<td align="left">.all</td>
+<td align="right">5.600000e+01</td>
+<td align="left">56</td>
+</tr>
+<tr class="odd">
+<td align="left">ethnicity.x</td>
+<td align="left">character</td>
+<td align="left">empty</td>
+<td align="left">.all</td>
+<td align="right">0.000000e+00</td>
+<td align="left">0</td>
+</tr>
+<tr class="even">
+<td align="left">ethnicity.x</td>
+<td align="left">character</td>
+<td align="left">n_unique</td>
+<td align="left">.all</td>
+<td align="right">4.100000e+01</td>
+<td align="left">41</td>
+</tr>
+<tr class="odd">
+<td align="left">edregtime</td>
+<td align="left">POSIXct</td>
+<td align="left">missing</td>
+<td align="left">.all</td>
+<td align="right">2.073600e+04</td>
+<td align="left">20736</td>
+</tr>
+<tr class="even">
+<td align="left">edregtime</td>
+<td align="left">POSIXct</td>
+<td align="left">complete</td>
+<td align="left">.all</td>
+<td align="right">3.248300e+04</td>
+<td align="left">32483</td>
+</tr>
+<tr class="odd">
+<td align="left">edregtime</td>
+<td align="left">POSIXct</td>
+<td align="left">n</td>
+<td align="left">.all</td>
+<td align="right">5.321900e+04</td>
+<td align="left">53219</td>
+</tr>
+<tr class="even">
+<td align="left">edregtime</td>
+<td align="left">POSIXct</td>
+<td align="left">min</td>
+<td align="left">.all</td>
+<td align="right">4.116057e+09</td>
+<td align="left">2100-06-07</td>
+</tr>
+<tr class="odd">
+<td align="left">edregtime</td>
+<td align="left">POSIXct</td>
+<td align="left">max</td>
+<td align="left">.all</td>
+<td align="right">7.593387e+09</td>
+<td align="left">2210-08-17</td>
+</tr>
+<tr class="even">
+<td align="left">edregtime</td>
+<td align="left">POSIXct</td>
+<td align="left">median</td>
+<td align="left">.all</td>
+<td align="right">5.710052e+09</td>
+<td align="left">2150-12-11</td>
+</tr>
+<tr class="odd">
+<td align="left">edregtime</td>
+<td align="left">POSIXct</td>
+<td align="left">n_unique</td>
+<td align="left">.all</td>
+<td align="right">3.036200e+04</td>
+<td align="left">30362</td>
+</tr>
+<tr class="even">
+<td align="left">edouttime</td>
+<td align="left">POSIXct</td>
+<td align="left">missing</td>
+<td align="left">.all</td>
+<td align="right">2.073600e+04</td>
+<td align="left">20736</td>
+</tr>
+<tr class="odd">
+<td align="left">edouttime</td>
+<td align="left">POSIXct</td>
+<td align="left">complete</td>
+<td align="left">.all</td>
+<td align="right">3.248300e+04</td>
+<td align="left">32483</td>
+</tr>
+<tr class="even">
+<td align="left">edouttime</td>
+<td align="left">POSIXct</td>
+<td align="left">n</td>
+<td align="left">.all</td>
+<td align="right">5.321900e+04</td>
+<td align="left">53219</td>
+</tr>
+<tr class="odd">
+<td align="left">edouttime</td>
+<td align="left">POSIXct</td>
+<td align="left">min</td>
+<td align="left">.all</td>
+<td align="right">4.116096e+09</td>
+<td align="left">2100-06-08</td>
+</tr>
+<tr class="even">
+<td align="left">edouttime</td>
+<td align="left">POSIXct</td>
+<td align="left">max</td>
+<td align="left">.all</td>
+<td align="right">7.593417e+09</td>
+<td align="left">2210-08-17</td>
+</tr>
+<tr class="odd">
+<td align="left">edouttime</td>
+<td align="left">POSIXct</td>
+<td align="left">median</td>
+<td align="left">.all</td>
+<td align="right">5.710071e+09</td>
+<td align="left">2150-12-11</td>
+</tr>
+<tr class="even">
+<td align="left">edouttime</td>
+<td align="left">POSIXct</td>
+<td align="left">n_unique</td>
+<td align="left">.all</td>
+<td align="right">3.035100e+04</td>
+<td align="left">30351</td>
+</tr>
+<tr class="odd">
+<td align="left">diagnosis</td>
+<td align="left">character</td>
+<td align="left">missing</td>
+<td align="left">.all</td>
+<td align="right">0.000000e+00</td>
+<td align="left">0</td>
+</tr>
+<tr class="even">
+<td align="left">diagnosis</td>
+<td align="left">character</td>
+<td align="left">complete</td>
+<td align="left">.all</td>
+<td align="right">5.321900e+04</td>
+<td align="left">53219</td>
+</tr>
+<tr class="odd">
+<td align="left">diagnosis</td>
+<td align="left">character</td>
+<td align="left">n</td>
+<td align="left">.all</td>
+<td align="right">5.321900e+04</td>
+<td align="left">53219</td>
+</tr>
+<tr class="even">
+<td align="left">diagnosis</td>
+<td align="left">character</td>
+<td align="left">min</td>
+<td align="left">.all</td>
+<td align="right">2.000000e+00</td>
+<td align="left">2</td>
+</tr>
+<tr class="odd">
+<td align="left">diagnosis</td>
+<td align="left">character</td>
+<td align="left">max</td>
+<td align="left">.all</td>
+<td align="right">1.900000e+02</td>
+<td align="left">190</td>
+</tr>
+<tr class="even">
+<td align="left">diagnosis</td>
+<td align="left">character</td>
+<td align="left">empty</td>
+<td align="left">.all</td>
+<td align="right">0.000000e+00</td>
+<td align="left">0</td>
+</tr>
+<tr class="odd">
+<td align="left">diagnosis</td>
+<td align="left">character</td>
+<td align="left">n_unique</td>
+<td align="left">.all</td>
+<td align="right">1.507100e+04</td>
+<td align="left">15071</td>
+</tr>
+<tr class="even">
+<td align="left">hospital_expire_flag.x</td>
+<td align="left">numeric</td>
+<td align="left">missing</td>
+<td align="left">.all</td>
+<td align="right">0.000000e+00</td>
+<td align="left">0</td>
+</tr>
+<tr class="odd">
+<td align="left">hospital_expire_flag.x</td>
+<td align="left">numeric</td>
+<td align="left">complete</td>
+<td align="left">.all</td>
+<td align="right">5.321900e+04</td>
+<td align="left">53219</td>
+</tr>
+<tr class="even">
+<td align="left">hospital_expire_flag.x</td>
+<td align="left">numeric</td>
+<td align="left">n</td>
+<td align="left">.all</td>
+<td align="right">5.321900e+04</td>
+<td align="left">53219</td>
+</tr>
+<tr class="odd">
+<td align="left">hospital_expire_flag.x</td>
+<td align="left">numeric</td>
+<td align="left">mean</td>
+<td align="left">.all</td>
+<td align="right">1.227569e-01</td>
+<td align="left">0.12</td>
+</tr>
+<tr class="even">
+<td align="left">hospital_expire_flag.x</td>
+<td align="left">numeric</td>
+<td align="left">sd</td>
+<td align="left">.all</td>
+<td align="right">3.281610e-01</td>
+<td align="left">0.33</td>
+</tr>
+<tr class="odd">
+<td align="left">hospital_expire_flag.x</td>
+<td align="left">numeric</td>
+<td align="left">p0</td>
+<td align="left">.all</td>
+<td align="right">0.000000e+00</td>
+<td align="left">0</td>
+</tr>
+<tr class="even">
+<td align="left">hospital_expire_flag.x</td>
+<td align="left">numeric</td>
+<td align="left">p25</td>
+<td align="left">.all</td>
+<td align="right">0.000000e+00</td>
+<td align="left">0</td>
+</tr>
+<tr class="odd">
+<td align="left">hospital_expire_flag.x</td>
+<td align="left">numeric</td>
+<td align="left">p50</td>
+<td align="left">.all</td>
+<td align="right">0.000000e+00</td>
+<td align="left">0</td>
+</tr>
+<tr class="even">
+<td align="left">hospital_expire_flag.x</td>
+<td align="left">numeric</td>
+<td align="left">p75</td>
+<td align="left">.all</td>
+<td align="right">0.000000e+00</td>
+<td align="left">0</td>
+</tr>
+<tr class="odd">
+<td align="left">hospital_expire_flag.x</td>
+<td align="left">numeric</td>
+<td align="left">p100</td>
+<td align="left">.all</td>
+<td align="right">1.000000e+00</td>
+<td align="left">1</td>
+</tr>
+<tr class="even">
+<td align="left">hospital_expire_flag.x</td>
+<td align="left">numeric</td>
+<td align="left">hist</td>
+<td align="left">.all</td>
+<td align="right">NA</td>
+<td align="left">▇▁▁▁▁▁▁▁</td>
+</tr>
+<tr class="odd">
+<td align="left">has_chartevents_data</td>
+<td align="left">numeric</td>
+<td align="left">missing</td>
+<td align="left">.all</td>
+<td align="right">0.000000e+00</td>
+<td align="left">0</td>
+</tr>
+<tr class="even">
+<td align="left">has_chartevents_data</td>
+<td align="left">numeric</td>
+<td align="left">complete</td>
+<td align="left">.all</td>
+<td align="right">5.321900e+04</td>
+<td align="left">53219</td>
+</tr>
+<tr class="odd">
+<td align="left">has_chartevents_data</td>
+<td align="left">numeric</td>
+<td align="left">n</td>
+<td align="left">.all</td>
+<td align="right">5.321900e+04</td>
+<td align="left">53219</td>
+</tr>
+<tr class="even">
+<td align="left">has_chartevents_data</td>
+<td align="left">numeric</td>
+<td align="left">mean</td>
+<td align="left">.all</td>
+<td align="right">1.000000e+00</td>
+<td align="left">1</td>
+</tr>
+<tr class="odd">
+<td align="left">has_chartevents_data</td>
+<td align="left">numeric</td>
+<td align="left">sd</td>
+<td align="left">.all</td>
+<td align="right">0.000000e+00</td>
+<td align="left">0</td>
+</tr>
+<tr class="even">
+<td align="left">has_chartevents_data</td>
+<td align="left">numeric</td>
+<td align="left">p0</td>
+<td align="left">.all</td>
+<td align="right">1.000000e+00</td>
+<td align="left">1</td>
+</tr>
+<tr class="odd">
+<td align="left">has_chartevents_data</td>
+<td align="left">numeric</td>
+<td align="left">p25</td>
+<td align="left">.all</td>
+<td align="right">1.000000e+00</td>
+<td align="left">1</td>
+</tr>
+<tr class="even">
+<td align="left">has_chartevents_data</td>
+<td align="left">numeric</td>
+<td align="left">p50</td>
+<td align="left">.all</td>
+<td align="right">1.000000e+00</td>
+<td align="left">1</td>
+</tr>
+<tr class="odd">
+<td align="left">has_chartevents_data</td>
+<td align="left">numeric</td>
+<td align="left">p75</td>
+<td align="left">.all</td>
+<td align="right">1.000000e+00</td>
+<td align="left">1</td>
+</tr>
+<tr class="even">
+<td align="left">has_chartevents_data</td>
+<td align="left">numeric</td>
+<td align="left">p100</td>
+<td align="left">.all</td>
+<td align="right">1.000000e+00</td>
+<td align="left">1</td>
+</tr>
+<tr class="odd">
+<td align="left">has_chartevents_data</td>
+<td align="left">numeric</td>
+<td align="left">hist</td>
+<td align="left">.all</td>
+<td align="right">NA</td>
+<td align="left">▁▁▁▇▁▁▁▁</td>
+</tr>
+<tr class="even">
+<td align="left">living</td>
+<td align="left">logical</td>
+<td align="left">missing</td>
+<td align="left">.all</td>
+<td align="right">0.000000e+00</td>
+<td align="left">0</td>
+</tr>
+<tr class="odd">
+<td align="left">living</td>
+<td align="left">logical</td>
+<td align="left">complete</td>
+<td align="left">.all</td>
+<td align="right">5.321900e+04</td>
+<td align="left">53219</td>
+</tr>
+<tr class="even">
+<td align="left">living</td>
+<td align="left">logical</td>
+<td align="left">n</td>
+<td align="left">.all</td>
+<td align="right">5.321900e+04</td>
+<td align="left">53219</td>
+</tr>
+<tr class="odd">
+<td align="left">living</td>
+<td align="left">logical</td>
+<td align="left">mean</td>
+<td align="left">.all</td>
+<td align="right">8.772431e-01</td>
+<td align="left">0.88</td>
+</tr>
+<tr class="even">
+<td align="left">living</td>
+<td align="left">logical</td>
+<td align="left">count</td>
+<td align="left">TRUE</td>
+<td align="right">4.668600e+04</td>
+<td align="left">TRU: 46686</td>
+</tr>
+<tr class="odd">
+<td align="left">living</td>
+<td align="left">logical</td>
+<td align="left">count</td>
+<td align="left">FALSE</td>
+<td align="right">6.533000e+03</td>
+<td align="left">FAL: 6533</td>
+</tr>
+<tr class="even">
+<td align="left">living</td>
+<td align="left">logical</td>
+<td align="left">count</td>
+<td align="left">NA</td>
+<td align="right">0.000000e+00</td>
+<td align="left">NA: 0</td>
+</tr>
+<tr class="odd">
+<td align="left">hospitaltime</td>
+<td align="left">difftime</td>
+<td align="left">missing</td>
+<td align="left">.all</td>
+<td align="right">0.000000e+00</td>
+<td align="left">0</td>
+</tr>
+<tr class="even">
+<td align="left">hospitaltime</td>
+<td align="left">difftime</td>
+<td align="left">complete</td>
+<td align="left">.all</td>
+<td align="right">5.321900e+04</td>
+<td align="left">53219</td>
+</tr>
+<tr class="odd">
+<td align="left">hospitaltime</td>
+<td align="left">difftime</td>
+<td align="left">n</td>
+<td align="left">.all</td>
+<td align="right">5.321900e+04</td>
+<td align="left">53219</td>
+</tr>
+<tr class="even">
+<td align="left">hospitaltime</td>
+<td align="left">difftime</td>
+<td align="left">min</td>
+<td align="left">.all</td>
+<td align="right">-1.361000e+03</td>
+<td align="left">-1361 mins</td>
+</tr>
+<tr class="odd">
+<td align="left">hospitaltime</td>
+<td align="left">difftime</td>
+<td align="left">max</td>
+<td align="left">.all</td>
+<td align="right">4.243110e+05</td>
+<td align="left">424311 mins</td>
+</tr>
+<tr class="even">
+<td align="left">hospitaltime</td>
+<td align="left">difftime</td>
+<td align="left">median</td>
+<td align="left">.all</td>
+<td align="right">1.052300e+04</td>
+<td align="left">10523 mins</td>
+</tr>
+<tr class="odd">
+<td align="left">hospitaltime</td>
+<td align="left">difftime</td>
+<td align="left">n_unique</td>
+<td align="left">.all</td>
+<td align="right">2.410800e+04</td>
+<td align="left">24108</td>
+</tr>
+<tr class="even">
+<td align="left">edtime</td>
+<td align="left">difftime</td>
+<td align="left">missing</td>
+<td align="left">.all</td>
+<td align="right">2.073600e+04</td>
+<td align="left">20736</td>
+</tr>
+<tr class="odd">
+<td align="left">edtime</td>
+<td align="left">difftime</td>
+<td align="left">complete</td>
+<td align="left">.all</td>
+<td align="right">3.248300e+04</td>
+<td align="left">32483</td>
+</tr>
+<tr class="even">
+<td align="left">edtime</td>
+<td align="left">difftime</td>
+<td align="left">n</td>
+<td align="left">.all</td>
+<td align="right">5.321900e+04</td>
+<td align="left">53219</td>
+</tr>
+<tr class="odd">
+<td align="left">edtime</td>
+<td align="left">difftime</td>
+<td align="left">min</td>
+<td align="left">.all</td>
+<td align="right">-2.504940e+06</td>
+<td align="left">-2504940 secs</td>
+</tr>
+<tr class="even">
+<td align="left">edtime</td>
+<td align="left">difftime</td>
+<td align="left">max</td>
+<td align="left">.all</td>
+<td align="right">2.536800e+05</td>
+<td align="left">253680 secs</td>
+</tr>
+<tr class="odd">
+<td align="left">edtime</td>
+<td align="left">difftime</td>
+<td align="left">median</td>
+<td align="left">.all</td>
+<td align="right">1.776000e+04</td>
+<td align="left">17760 secs</td>
+</tr>
+<tr class="even">
+<td align="left">edtime</td>
+<td align="left">difftime</td>
+<td align="left">n_unique</td>
+<td align="left">.all</td>
+<td align="right">1.463000e+03</td>
+<td align="left">1463</td>
+</tr>
+<tr class="odd">
+<td align="left">subject_id.y</td>
+<td align="left">numeric</td>
+<td align="left">missing</td>
+<td align="left">.all</td>
+<td align="right">0.000000e+00</td>
+<td align="left">0</td>
+</tr>
+<tr class="even">
+<td align="left">subject_id.y</td>
+<td align="left">numeric</td>
+<td align="left">complete</td>
+<td align="left">.all</td>
+<td align="right">5.321900e+04</td>
+<td align="left">53219</td>
+</tr>
+<tr class="odd">
+<td align="left">subject_id.y</td>
+<td align="left">numeric</td>
+<td align="left">n</td>
+<td align="left">.all</td>
+<td align="right">5.321900e+04</td>
+<td align="left">53219</td>
+</tr>
+<tr class="even">
+<td align="left">subject_id.y</td>
+<td align="left">numeric</td>
+<td align="left">mean</td>
+<td align="left">.all</td>
+<td align="right">3.665625e+04</td>
+<td align="left">36656.25</td>
+</tr>
+<tr class="odd">
+<td align="left">subject_id.y</td>
+<td align="left">numeric</td>
+<td align="left">sd</td>
+<td align="left">.all</td>
+<td align="right">2.898717e+04</td>
+<td align="left">28987.17</td>
+</tr>
+<tr class="even">
+<td align="left">subject_id.y</td>
+<td align="left">numeric</td>
+<td align="left">p0</td>
+<td align="left">.all</td>
+<td align="right">3.000000e+00</td>
+<td align="left">3</td>
+</tr>
+<tr class="odd">
+<td align="left">subject_id.y</td>
+<td align="left">numeric</td>
+<td align="left">p25</td>
+<td align="left">.all</td>
+<td align="right">1.322750e+04</td>
+<td align="left">13227.5</td>
+</tr>
+<tr class="even">
+<td align="left">subject_id.y</td>
+<td align="left">numeric</td>
+<td align="left">p50</td>
+<td align="left">.all</td>
+<td align="right">2.658200e+04</td>
+<td align="left">26582</td>
+</tr>
+<tr class="odd">
+<td align="left">subject_id.y</td>
+<td align="left">numeric</td>
+<td align="left">p75</td>
+<td align="left">.all</td>
+<td align="right">5.988950e+04</td>
+<td align="left">59889.5</td>
+</tr>
+<tr class="even">
+<td align="left">subject_id.y</td>
+<td align="left">numeric</td>
+<td align="left">p100</td>
+<td align="left">.all</td>
+<td align="right">9.999900e+04</td>
+<td align="left">99999</td>
+</tr>
+<tr class="odd">
+<td align="left">subject_id.y</td>
+<td align="left">numeric</td>
+<td align="left">hist</td>
+<td align="left">.all</td>
+<td align="right">NA</td>
+<td align="left">▇▇▅▂▃▂▂▃</td>
+</tr>
+<tr class="even">
+<td align="left">icustay_id</td>
+<td align="left">numeric</td>
+<td align="left">missing</td>
+<td align="left">.all</td>
+<td align="right">0.000000e+00</td>
+<td align="left">0</td>
+</tr>
+<tr class="odd">
+<td align="left">icustay_id</td>
+<td align="left">numeric</td>
+<td align="left">complete</td>
+<td align="left">.all</td>
+<td align="right">5.321900e+04</td>
+<td align="left">53219</td>
+</tr>
+<tr class="even">
+<td align="left">icustay_id</td>
+<td align="left">numeric</td>
+<td align="left">n</td>
+<td align="left">.all</td>
+<td align="right">5.321900e+04</td>
+<td align="left">53219</td>
+</tr>
+<tr class="odd">
+<td align="left">icustay_id</td>
+<td align="left">numeric</td>
+<td align="left">mean</td>
+<td align="left">.all</td>
+<td align="right">2.500211e+05</td>
+<td align="left">250021.09</td>
+</tr>
+<tr class="even">
+<td align="left">icustay_id</td>
+<td align="left">numeric</td>
+<td align="left">sd</td>
+<td align="left">.all</td>
+<td align="right">2.890967e+04</td>
+<td align="left">28909.67</td>
+</tr>
+<tr class="odd">
+<td align="left">icustay_id</td>
+<td align="left">numeric</td>
+<td align="left">p0</td>
+<td align="left">.all</td>
+<td align="right">2.000010e+05</td>
+<td align="left">2e+05</td>
+</tr>
+<tr class="even">
+<td align="left">icustay_id</td>
+<td align="left">numeric</td>
+<td align="left">p25</td>
+<td align="left">.all</td>
+<td align="right">2.249665e+05</td>
+<td align="left">224966.5</td>
+</tr>
+<tr class="odd">
+<td align="left">icustay_id</td>
+<td align="left">numeric</td>
+<td align="left">p50</td>
+<td align="left">.all</td>
+<td align="right">2.500190e+05</td>
+<td align="left">250019</td>
+</tr>
+<tr class="even">
+<td align="left">icustay_id</td>
+<td align="left">numeric</td>
+<td align="left">p75</td>
+<td align="left">.all</td>
+<td align="right">2.750700e+05</td>
+<td align="left">275070</td>
+</tr>
+<tr class="odd">
+<td align="left">icustay_id</td>
+<td align="left">numeric</td>
+<td align="left">p100</td>
+<td align="left">.all</td>
+<td align="right">2.999990e+05</td>
+<td align="left">3e+05</td>
+</tr>
+<tr class="even">
+<td align="left">icustay_id</td>
+<td align="left">numeric</td>
+<td align="left">hist</td>
+<td align="left">.all</td>
+<td align="right">NA</td>
+<td align="left">▇▇▇▇▇▇▇▇</td>
+</tr>
+<tr class="odd">
+<td align="left">gender</td>
+<td align="left">character</td>
+<td align="left">missing</td>
+<td align="left">.all</td>
+<td align="right">0.000000e+00</td>
+<td align="left">0</td>
+</tr>
+<tr class="even">
+<td align="left">gender</td>
+<td align="left">character</td>
+<td align="left">complete</td>
+<td align="left">.all</td>
+<td align="right">5.321900e+04</td>
+<td align="left">53219</td>
+</tr>
+<tr class="odd">
+<td align="left">gender</td>
+<td align="left">character</td>
+<td align="left">n</td>
+<td align="left">.all</td>
+<td align="right">5.321900e+04</td>
+<td align="left">53219</td>
+</tr>
+<tr class="even">
+<td align="left">gender</td>
+<td align="left">character</td>
+<td align="left">min</td>
+<td align="left">.all</td>
+<td align="right">1.000000e+00</td>
+<td align="left">1</td>
+</tr>
+<tr class="odd">
+<td align="left">gender</td>
+<td align="left">character</td>
+<td align="left">max</td>
+<td align="left">.all</td>
+<td align="right">1.000000e+00</td>
+<td align="left">1</td>
+</tr>
+<tr class="even">
+<td align="left">gender</td>
+<td align="left">character</td>
+<td align="left">empty</td>
+<td align="left">.all</td>
+<td align="right">0.000000e+00</td>
+<td align="left">0</td>
+</tr>
+<tr class="odd">
+<td align="left">gender</td>
+<td align="left">character</td>
+<td align="left">n_unique</td>
+<td align="left">.all</td>
+<td align="right">2.000000e+00</td>
+<td align="left">2</td>
+</tr>
+<tr class="even">
+<td align="left">dod</td>
+<td align="left">POSIXct</td>
+<td align="left">missing</td>
+<td align="left">.all</td>
+<td align="right">2.939300e+04</td>
+<td align="left">29393</td>
+</tr>
+<tr class="odd">
+<td align="left">dod</td>
+<td align="left">POSIXct</td>
+<td align="left">complete</td>
+<td align="left">.all</td>
+<td align="right">2.382600e+04</td>
+<td align="left">23826</td>
+</tr>
+<tr class="even">
+<td align="left">dod</td>
+<td align="left">POSIXct</td>
+<td align="left">n</td>
+<td align="left">.all</td>
+<td align="right">5.321900e+04</td>
+<td align="left">53219</td>
+</tr>
+<tr class="odd">
+<td align="left">dod</td>
+<td align="left">POSIXct</td>
+<td align="left">min</td>
+<td align="left">.all</td>
+<td align="right">4.117061e+09</td>
+<td align="left">2100-06-19</td>
+</tr>
+<tr class="even">
+<td align="left">dod</td>
+<td align="left">POSIXct</td>
+<td align="left">max</td>
+<td align="left">.all</td>
+<td align="right">7.619026e+09</td>
+<td align="left">2211-06-10</td>
+</tr>
+<tr class="odd">
+<td align="left">dod</td>
+<td align="left">POSIXct</td>
+<td align="left">median</td>
+<td align="left">.all</td>
+<td align="right">5.759179e+09</td>
+<td align="left">2152-07-02</td>
+</tr>
+<tr class="even">
+<td align="left">dod</td>
+<td align="left">POSIXct</td>
+<td align="left">n_unique</td>
+<td align="left">.all</td>
+<td align="right">1.284300e+04</td>
+<td align="left">12843</td>
+</tr>
+<tr class="odd">
+<td align="left">admittime.y</td>
+<td align="left">POSIXct</td>
+<td align="left">missing</td>
+<td align="left">.all</td>
+<td align="right">0.000000e+00</td>
+<td align="left">0</td>
+</tr>
+<tr class="even">
+<td align="left">admittime.y</td>
+<td align="left">POSIXct</td>
+<td align="left">complete</td>
+<td align="left">.all</td>
+<td align="right">5.321900e+04</td>
+<td align="left">53219</td>
+</tr>
+<tr class="odd">
+<td align="left">admittime.y</td>
+<td align="left">POSIXct</td>
+<td align="left">n</td>
+<td align="left">.all</td>
+<td align="right">5.321900e+04</td>
+<td align="left">53219</td>
+</tr>
+<tr class="even">
+<td align="left">admittime.y</td>
+<td align="left">POSIXct</td>
+<td align="left">min</td>
+<td align="left">.all</td>
+<td align="right">4.116024e+09</td>
+<td align="left">2100-06-07</td>
+</tr>
+<tr class="odd">
+<td align="left">admittime.y</td>
+<td align="left">POSIXct</td>
+<td align="left">max</td>
+<td align="left">.all</td>
+<td align="right">7.593365e+09</td>
+<td align="left">2210-08-17</td>
+</tr>
+<tr class="even">
+<td align="left">admittime.y</td>
+<td align="left">POSIXct</td>
+<td align="left">median</td>
+<td align="left">.all</td>
+<td align="right">5.714687e+09</td>
+<td align="left">2151-02-03</td>
+</tr>
+<tr class="odd">
+<td align="left">admittime.y</td>
+<td align="left">POSIXct</td>
+<td align="left">n_unique</td>
+<td align="left">.all</td>
+<td align="right">2.732500e+04</td>
+<td align="left">27325</td>
+</tr>
+<tr class="even">
+<td align="left">dischtime.y</td>
+<td align="left">POSIXct</td>
+<td align="left">missing</td>
+<td align="left">.all</td>
+<td align="right">0.000000e+00</td>
+<td align="left">0</td>
+</tr>
+<tr class="odd">
+<td align="left">dischtime.y</td>
+<td align="left">POSIXct</td>
+<td align="left">complete</td>
+<td align="left">.all</td>
+<td align="right">5.321900e+04</td>
+<td align="left">53219</td>
+</tr>
+<tr class="even">
+<td align="left">dischtime.y</td>
+<td align="left">POSIXct</td>
+<td align="left">n</td>
+<td align="left">.all</td>
+<td align="right">5.321900e+04</td>
+<td align="left">53219</td>
+</tr>
+<tr class="odd">
+<td align="left">dischtime.y</td>
+<td align="left">POSIXct</td>
+<td align="left">min</td>
+<td align="left">.all</td>
+<td align="right">4.116197e+09</td>
+<td align="left">2100-06-09</td>
+</tr>
+<tr class="even">
+<td align="left">dischtime.y</td>
+<td align="left">POSIXct</td>
+<td align="left">max</td>
+<td align="left">.all</td>
+<td align="right">7.593970e+09</td>
+<td align="left">2210-08-24</td>
+</tr>
+<tr class="odd">
+<td align="left">dischtime.y</td>
+<td align="left">POSIXct</td>
+<td align="left">median</td>
+<td align="left">.all</td>
+<td align="right">5.716156e+09</td>
+<td align="left">2151-02-20</td>
+</tr>
+<tr class="even">
+<td align="left">dischtime.y</td>
+<td align="left">POSIXct</td>
+<td align="left">n_unique</td>
+<td align="left">.all</td>
+<td align="right">2.693000e+04</td>
+<td align="left">26930</td>
+</tr>
+<tr class="odd">
+<td align="left">los_hospital</td>
+<td align="left">numeric</td>
+<td align="left">missing</td>
+<td align="left">.all</td>
+<td align="right">0.000000e+00</td>
+<td align="left">0</td>
+</tr>
+<tr class="even">
+<td align="left">los_hospital</td>
+<td align="left">numeric</td>
+<td align="left">complete</td>
+<td align="left">.all</td>
+<td align="right">5.321900e+04</td>
+<td align="left">53219</td>
+</tr>
+<tr class="odd">
+<td align="left">los_hospital</td>
+<td align="left">numeric</td>
+<td align="left">n</td>
+<td align="left">.all</td>
+<td align="right">5.321900e+04</td>
+<td align="left">53219</td>
+</tr>
+<tr class="even">
+<td align="left">los_hospital</td>
+<td align="left">numeric</td>
+<td align="left">mean</td>
+<td align="left">.all</td>
+<td align="right">1.129353e+01</td>
+<td align="left">11.29</td>
+</tr>
+<tr class="odd">
+<td align="left">los_hospital</td>
+<td align="left">numeric</td>
+<td align="left">sd</td>
+<td align="left">.all</td>
+<td align="right">1.331059e+01</td>
+<td align="left">13.31</td>
+</tr>
+<tr class="even">
+<td align="left">los_hospital</td>
+<td align="left">numeric</td>
+<td align="left">p0</td>
+<td align="left">.all</td>
+<td align="right">-9.451000e-01</td>
+<td align="left">-0.95</td>
+</tr>
+<tr class="odd">
+<td align="left">los_hospital</td>
+<td align="left">numeric</td>
+<td align="left">p25</td>
+<td align="left">.all</td>
+<td align="right">4.191000e+00</td>
+<td align="left">4.19</td>
+</tr>
+<tr class="even">
+<td align="left">los_hospital</td>
+<td align="left">numeric</td>
+<td align="left">p50</td>
+<td align="left">.all</td>
+<td align="right">7.307600e+00</td>
+<td align="left">7.31</td>
+</tr>
+<tr class="odd">
+<td align="left">los_hospital</td>
+<td align="left">numeric</td>
+<td align="left">p75</td>
+<td align="left">.all</td>
+<td align="right">1.334380e+01</td>
+<td align="left">13.34</td>
+</tr>
+<tr class="even">
+<td align="left">los_hospital</td>
+<td align="left">numeric</td>
+<td align="left">p100</td>
+<td align="left">.all</td>
+<td align="right">2.946604e+02</td>
+<td align="left">294.66</td>
+</tr>
+<tr class="odd">
+<td align="left">los_hospital</td>
+<td align="left">numeric</td>
+<td align="left">hist</td>
+<td align="left">.all</td>
+<td align="right">NA</td>
+<td align="left">▇▁▁▁▁▁▁▁</td>
+</tr>
+<tr class="even">
+<td align="left">admission_age</td>
+<td align="left">numeric</td>
+<td align="left">missing</td>
+<td align="left">.all</td>
+<td align="right">0.000000e+00</td>
+<td align="left">0</td>
+</tr>
+<tr class="odd">
+<td align="left">admission_age</td>
+<td align="left">numeric</td>
+<td align="left">complete</td>
+<td align="left">.all</td>
+<td align="right">5.321900e+04</td>
+<td align="left">53219</td>
+</tr>
+<tr class="even">
+<td align="left">admission_age</td>
+<td align="left">numeric</td>
+<td align="left">n</td>
+<td align="left">.all</td>
+<td align="right">5.321900e+04</td>
+<td align="left">53219</td>
+</tr>
+<tr class="odd">
+<td align="left">admission_age</td>
+<td align="left">numeric</td>
+<td align="left">mean</td>
+<td align="left">.all</td>
+<td align="right">7.439396e+01</td>
+<td align="left">74.39</td>
+</tr>
+<tr class="even">
+<td align="left">admission_age</td>
+<td align="left">numeric</td>
+<td align="left">sd</td>
+<td align="left">.all</td>
+<td align="right">5.489341e+01</td>
+<td align="left">54.89</td>
+</tr>
+<tr class="odd">
+<td align="left">admission_age</td>
+<td align="left">numeric</td>
+<td align="left">p0</td>
+<td align="left">.all</td>
+<td align="right">4.000000e-04</td>
+<td align="left">4e-04</td>
+</tr>
+<tr class="even">
+<td align="left">admission_age</td>
+<td align="left">numeric</td>
+<td align="left">p25</td>
+<td align="left">.all</td>
+<td align="right">5.259940e+01</td>
+<td align="left">52.6</td>
+</tr>
+<tr class="odd">
+<td align="left">admission_age</td>
+<td align="left">numeric</td>
+<td align="left">p50</td>
+<td align="left">.all</td>
+<td align="right">6.565990e+01</td>
+<td align="left">65.66</td>
+</tr>
+<tr class="even">
+<td align="left">admission_age</td>
+<td align="left">numeric</td>
+<td align="left">p75</td>
+<td align="left">.all</td>
+<td align="right">7.776540e+01</td>
+<td align="left">77.77</td>
+</tr>
+<tr class="odd">
+<td align="left">admission_age</td>
+<td align="left">numeric</td>
+<td align="left">p100</td>
+<td align="left">.all</td>
+<td align="right">3.115610e+02</td>
+<td align="left">311.56</td>
+</tr>
+<tr class="even">
+<td align="left">admission_age</td>
+<td align="left">numeric</td>
+<td align="left">hist</td>
+<td align="left">.all</td>
+<td align="right">NA</td>
+<td align="left">▁▇▂▁▁▁▁▁</td>
+</tr>
+<tr class="odd">
+<td align="left">ethnicity.y</td>
+<td align="left">character</td>
+<td align="left">missing</td>
+<td align="left">.all</td>
+<td align="right">0.000000e+00</td>
+<td align="left">0</td>
+</tr>
+<tr class="even">
+<td align="left">ethnicity.y</td>
+<td align="left">character</td>
+<td align="left">complete</td>
+<td align="left">.all</td>
+<td align="right">5.321900e+04</td>
+<td align="left">53219</td>
+</tr>
+<tr class="odd">
+<td align="left">ethnicity.y</td>
+<td align="left">character</td>
+<td align="left">n</td>
+<td align="left">.all</td>
+<td align="right">5.321900e+04</td>
+<td align="left">53219</td>
+</tr>
+<tr class="even">
+<td align="left">ethnicity.y</td>
+<td align="left">character</td>
+<td align="left">min</td>
+<td align="left">.all</td>
+<td align="right">5.000000e+00</td>
+<td align="left">5</td>
+</tr>
+<tr class="odd">
+<td align="left">ethnicity.y</td>
+<td align="left">character</td>
+<td align="left">max</td>
+<td align="left">.all</td>
+<td align="right">5.600000e+01</td>
+<td align="left">56</td>
+</tr>
+<tr class="even">
+<td align="left">ethnicity.y</td>
+<td align="left">character</td>
+<td align="left">empty</td>
+<td align="left">.all</td>
+<td align="right">0.000000e+00</td>
+<td align="left">0</td>
+</tr>
+<tr class="odd">
+<td align="left">ethnicity.y</td>
+<td align="left">character</td>
+<td align="left">n_unique</td>
+<td align="left">.all</td>
+<td align="right">4.100000e+01</td>
+<td align="left">41</td>
+</tr>
+<tr class="even">
+<td align="left">admission_type.y</td>
+<td align="left">character</td>
+<td align="left">missing</td>
+<td align="left">.all</td>
+<td align="right">0.000000e+00</td>
+<td align="left">0</td>
+</tr>
+<tr class="odd">
+<td align="left">admission_type.y</td>
+<td align="left">character</td>
+<td align="left">complete</td>
+<td align="left">.all</td>
+<td align="right">5.321900e+04</td>
+<td align="left">53219</td>
+</tr>
+<tr class="even">
+<td align="left">admission_type.y</td>
+<td align="left">character</td>
+<td align="left">n</td>
+<td align="left">.all</td>
+<td align="right">5.321900e+04</td>
+<td align="left">53219</td>
+</tr>
+<tr class="odd">
+<td align="left">admission_type.y</td>
+<td align="left">character</td>
+<td align="left">min</td>
+<td align="left">.all</td>
+<td align="right">6.000000e+00</td>
+<td align="left">6</td>
+</tr>
+<tr class="even">
+<td align="left">admission_type.y</td>
+<td align="left">character</td>
+<td align="left">max</td>
+<td align="left">.all</td>
+<td align="right">9.000000e+00</td>
+<td align="left">9</td>
+</tr>
+<tr class="odd">
+<td align="left">admission_type.y</td>
+<td align="left">character</td>
+<td align="left">empty</td>
+<td align="left">.all</td>
+<td align="right">0.000000e+00</td>
+<td align="left">0</td>
+</tr>
+<tr class="even">
+<td align="left">admission_type.y</td>
+<td align="left">character</td>
+<td align="left">n_unique</td>
+<td align="left">.all</td>
+<td align="right">4.000000e+00</td>
+<td align="left">4</td>
+</tr>
+<tr class="odd">
+<td align="left">hospital_expire_flag.y</td>
+<td align="left">numeric</td>
+<td align="left">missing</td>
+<td align="left">.all</td>
+<td align="right">0.000000e+00</td>
+<td align="left">0</td>
+</tr>
+<tr class="even">
+<td align="left">hospital_expire_flag.y</td>
+<td align="left">numeric</td>
+<td align="left">complete</td>
+<td align="left">.all</td>
+<td align="right">5.321900e+04</td>
+<td align="left">53219</td>
+</tr>
+<tr class="odd">
+<td align="left">hospital_expire_flag.y</td>
+<td align="left">numeric</td>
+<td align="left">n</td>
+<td align="left">.all</td>
+<td align="right">5.321900e+04</td>
+<td align="left">53219</td>
+</tr>
+<tr class="even">
+<td align="left">hospital_expire_flag.y</td>
+<td align="left">numeric</td>
+<td align="left">mean</td>
+<td align="left">.all</td>
+<td align="right">1.227569e-01</td>
+<td align="left">0.12</td>
+</tr>
+<tr class="odd">
+<td align="left">hospital_expire_flag.y</td>
+<td align="left">numeric</td>
+<td align="left">sd</td>
+<td align="left">.all</td>
+<td align="right">3.281610e-01</td>
+<td align="left">0.33</td>
+</tr>
+<tr class="even">
+<td align="left">hospital_expire_flag.y</td>
+<td align="left">numeric</td>
+<td align="left">p0</td>
+<td align="left">.all</td>
+<td align="right">0.000000e+00</td>
+<td align="left">0</td>
+</tr>
+<tr class="odd">
+<td align="left">hospital_expire_flag.y</td>
+<td align="left">numeric</td>
+<td align="left">p25</td>
+<td align="left">.all</td>
+<td align="right">0.000000e+00</td>
+<td align="left">0</td>
+</tr>
+<tr class="even">
+<td align="left">hospital_expire_flag.y</td>
+<td align="left">numeric</td>
+<td align="left">p50</td>
+<td align="left">.all</td>
+<td align="right">0.000000e+00</td>
+<td align="left">0</td>
+</tr>
+<tr class="odd">
+<td align="left">hospital_expire_flag.y</td>
+<td align="left">numeric</td>
+<td align="left">p75</td>
+<td align="left">.all</td>
+<td align="right">0.000000e+00</td>
+<td align="left">0</td>
+</tr>
+<tr class="even">
+<td align="left">hospital_expire_flag.y</td>
+<td align="left">numeric</td>
+<td align="left">p100</td>
+<td align="left">.all</td>
+<td align="right">1.000000e+00</td>
+<td align="left">1</td>
+</tr>
+<tr class="odd">
+<td align="left">hospital_expire_flag.y</td>
+<td align="left">numeric</td>
+<td align="left">hist</td>
+<td align="left">.all</td>
+<td align="right">NA</td>
+<td align="left">▇▁▁▁▁▁▁▁</td>
+</tr>
+<tr class="even">
+<td align="left">hospstay_seq</td>
+<td align="left">numeric</td>
+<td align="left">missing</td>
+<td align="left">.all</td>
+<td align="right">0.000000e+00</td>
+<td align="left">0</td>
+</tr>
+<tr class="odd">
+<td align="left">hospstay_seq</td>
+<td align="left">numeric</td>
+<td align="left">complete</td>
+<td align="left">.all</td>
+<td align="right">5.321900e+04</td>
+<td align="left">53219</td>
+</tr>
+<tr class="even">
+<td align="left">hospstay_seq</td>
+<td align="left">numeric</td>
+<td align="left">n</td>
+<td align="left">.all</td>
+<td align="right">5.321900e+04</td>
+<td align="left">53219</td>
+</tr>
+<tr class="odd">
+<td align="left">hospstay_seq</td>
+<td align="left">numeric</td>
+<td align="left">mean</td>
+<td align="left">.all</td>
+<td align="right">1.480148e+00</td>
+<td align="left">1.48</td>
+</tr>
+<tr class="even">
+<td align="left">hospstay_seq</td>
+<td align="left">numeric</td>
+<td align="left">sd</td>
+<td align="left">.all</td>
+<td align="right">1.609203e+00</td>
+<td align="left">1.61</td>
+</tr>
+<tr class="odd">
+<td align="left">hospstay_seq</td>
+<td align="left">numeric</td>
+<td align="left">p0</td>
+<td align="left">.all</td>
+<td align="right">1.000000e+00</td>
+<td align="left">1</td>
+</tr>
+<tr class="even">
+<td align="left">hospstay_seq</td>
+<td align="left">numeric</td>
+<td align="left">p25</td>
+<td align="left">.all</td>
+<td align="right">1.000000e+00</td>
+<td align="left">1</td>
+</tr>
+<tr class="odd">
+<td align="left">hospstay_seq</td>
+<td align="left">numeric</td>
+<td align="left">p50</td>
+<td align="left">.all</td>
+<td align="right">1.000000e+00</td>
+<td align="left">1</td>
+</tr>
+<tr class="even">
+<td align="left">hospstay_seq</td>
+<td align="left">numeric</td>
+<td align="left">p75</td>
+<td align="left">.all</td>
+<td align="right">1.000000e+00</td>
+<td align="left">1</td>
+</tr>
+<tr class="odd">
+<td align="left">hospstay_seq</td>
+<td align="left">numeric</td>
+<td align="left">p100</td>
+<td align="left">.all</td>
+<td align="right">4.100000e+01</td>
+<td align="left">41</td>
+</tr>
+<tr class="even">
+<td align="left">hospstay_seq</td>
+<td align="left">numeric</td>
+<td align="left">hist</td>
+<td align="left">.all</td>
+<td align="right">NA</td>
+<td align="left">▇▁▁▁▁▁▁▁</td>
+</tr>
+<tr class="odd">
+<td align="left">first_hosp_stay</td>
+<td align="left">logical</td>
+<td align="left">missing</td>
+<td align="left">.all</td>
+<td align="right">0.000000e+00</td>
+<td align="left">0</td>
+</tr>
+<tr class="even">
+<td align="left">first_hosp_stay</td>
+<td align="left">logical</td>
+<td align="left">complete</td>
+<td align="left">.all</td>
+<td align="right">5.321900e+04</td>
+<td align="left">53219</td>
+</tr>
+<tr class="odd">
+<td align="left">first_hosp_stay</td>
+<td align="left">logical</td>
+<td align="left">n</td>
+<td align="left">.all</td>
+<td align="right">5.321900e+04</td>
+<td align="left">53219</td>
+</tr>
+<tr class="even">
+<td align="left">first_hosp_stay</td>
+<td align="left">logical</td>
+<td align="left">mean</td>
+<td align="left">.all</td>
+<td align="right">7.775982e-01</td>
+<td align="left">0.78</td>
+</tr>
+<tr class="odd">
+<td align="left">first_hosp_stay</td>
+<td align="left">logical</td>
+<td align="left">count</td>
+<td align="left">TRUE</td>
+<td align="right">4.138300e+04</td>
+<td align="left">TRU: 41383</td>
+</tr>
+<tr class="even">
+<td align="left">first_hosp_stay</td>
+<td align="left">logical</td>
+<td align="left">count</td>
+<td align="left">FALSE</td>
+<td align="right">1.183600e+04</td>
+<td align="left">FAL: 11836</td>
+</tr>
+<tr class="odd">
+<td align="left">first_hosp_stay</td>
+<td align="left">logical</td>
+<td align="left">count</td>
+<td align="left">NA</td>
+<td align="right">0.000000e+00</td>
+<td align="left">NA: 0</td>
+</tr>
+<tr class="even">
+<td align="left">intime</td>
+<td align="left">POSIXct</td>
+<td align="left">missing</td>
+<td align="left">.all</td>
+<td align="right">0.000000e+00</td>
+<td align="left">0</td>
+</tr>
+<tr class="odd">
+<td align="left">intime</td>
+<td align="left">POSIXct</td>
+<td align="left">complete</td>
+<td align="left">.all</td>
+<td align="right">5.321900e+04</td>
+<td align="left">53219</td>
+</tr>
+<tr class="even">
+<td align="left">intime</td>
+<td align="left">POSIXct</td>
+<td align="left">n</td>
+<td align="left">.all</td>
+<td align="right">5.321900e+04</td>
+<td align="left">53219</td>
+</tr>
+<tr class="odd">
+<td align="left">intime</td>
+<td align="left">POSIXct</td>
+<td align="left">min</td>
+<td align="left">.all</td>
+<td align="right">4.116024e+09</td>
+<td align="left">2100-06-07</td>
+</tr>
+<tr class="even">
+<td align="left">intime</td>
+<td align="left">POSIXct</td>
+<td align="left">max</td>
+<td align="left">.all</td>
+<td align="right">7.593451e+09</td>
+<td align="left">2210-08-18</td>
+</tr>
+<tr class="odd">
+<td align="left">intime</td>
+<td align="left">POSIXct</td>
+<td align="left">median</td>
+<td align="left">.all</td>
+<td align="right">5.714687e+09</td>
+<td align="left">2151-02-03</td>
+</tr>
+<tr class="even">
+<td align="left">intime</td>
+<td align="left">POSIXct</td>
+<td align="left">n_unique</td>
+<td align="left">.all</td>
+<td align="right">2.825600e+04</td>
+<td align="left">28256</td>
+</tr>
+<tr class="odd">
+<td align="left">outtime</td>
+<td align="left">POSIXct</td>
+<td align="left">missing</td>
+<td align="left">.all</td>
+<td align="right">3.000000e+00</td>
+<td align="left">3</td>
+</tr>
+<tr class="even">
+<td align="left">outtime</td>
+<td align="left">POSIXct</td>
+<td align="left">complete</td>
+<td align="left">.all</td>
+<td align="right">5.321600e+04</td>
+<td align="left">53216</td>
+</tr>
+<tr class="odd">
+<td align="left">outtime</td>
+<td align="left">POSIXct</td>
+<td align="left">n</td>
+<td align="left">.all</td>
+<td align="right">5.321900e+04</td>
+<td align="left">53219</td>
+</tr>
+<tr class="even">
+<td align="left">outtime</td>
+<td align="left">POSIXct</td>
+<td align="left">min</td>
+<td align="left">.all</td>
+<td align="right">4.116110e+09</td>
+<td align="left">2100-06-08</td>
+</tr>
+<tr class="odd">
+<td align="left">outtime</td>
+<td align="left">POSIXct</td>
+<td align="left">max</td>
+<td align="left">.all</td>
+<td align="right">7.593624e+09</td>
+<td align="left">2210-08-20</td>
+</tr>
+<tr class="even">
+<td align="left">outtime</td>
+<td align="left">POSIXct</td>
+<td align="left">median</td>
+<td align="left">.all</td>
+<td align="right">5.715508e+09</td>
+<td align="left">2151-02-12</td>
+</tr>
+<tr class="odd">
+<td align="left">outtime</td>
+<td align="left">POSIXct</td>
+<td align="left">n_unique</td>
+<td align="left">.all</td>
+<td align="right">2.833500e+04</td>
+<td align="left">28335</td>
+</tr>
+<tr class="even">
+<td align="left">los_icu</td>
+<td align="left">numeric</td>
+<td align="left">missing</td>
+<td align="left">.all</td>
+<td align="right">3.000000e+00</td>
+<td align="left">3</td>
+</tr>
+<tr class="odd">
+<td align="left">los_icu</td>
+<td align="left">numeric</td>
+<td align="left">complete</td>
+<td align="left">.all</td>
+<td align="right">5.321600e+04</td>
+<td align="left">53216</td>
+</tr>
+<tr class="even">
+<td align="left">los_icu</td>
+<td align="left">numeric</td>
+<td align="left">n</td>
+<td align="left">.all</td>
+<td align="right">5.321900e+04</td>
+<td align="left">53219</td>
+</tr>
+<tr class="odd">
+<td align="left">los_icu</td>
+<td align="left">numeric</td>
+<td align="left">mean</td>
+<td align="left">.all</td>
+<td align="right">4.210659e+00</td>
+<td align="left">4.21</td>
+</tr>
+<tr class="even">
+<td align="left">los_icu</td>
+<td align="left">numeric</td>
+<td align="left">sd</td>
+<td align="left">.all</td>
+<td align="right">6.453207e+00</td>
+<td align="left">6.45</td>
+</tr>
+<tr class="odd">
+<td align="left">los_icu</td>
+<td align="left">numeric</td>
+<td align="left">p0</td>
+<td align="left">.all</td>
+<td align="right">1.000000e-04</td>
+<td align="left">1e-04</td>
+</tr>
+<tr class="even">
+<td align="left">los_icu</td>
+<td align="left">numeric</td>
+<td align="left">p25</td>
+<td align="left">.all</td>
+<td align="right">1.207800e+00</td>
+<td align="left">1.21</td>
+</tr>
+<tr class="odd">
+<td align="left">los_icu</td>
+<td align="left">numeric</td>
+<td align="left">p50</td>
+<td align="left">.all</td>
+<td align="right">2.147750e+00</td>
+<td align="left">2.15</td>
+</tr>
+<tr class="even">
+<td align="left">los_icu</td>
+<td align="left">numeric</td>
+<td align="left">p75</td>
+<td align="left">.all</td>
+<td align="right">4.213625e+00</td>
+<td align="left">4.21</td>
+</tr>
+<tr class="odd">
+<td align="left">los_icu</td>
+<td align="left">numeric</td>
+<td align="left">p100</td>
+<td align="left">.all</td>
+<td align="right">1.730725e+02</td>
+<td align="left">173.07</td>
+</tr>
+<tr class="even">
+<td align="left">los_icu</td>
+<td align="left">numeric</td>
+<td align="left">hist</td>
+<td align="left">.all</td>
+<td align="right">NA</td>
+<td align="left">▇▁▁▁▁▁▁▁</td>
+</tr>
+<tr class="odd">
+<td align="left">icustay_seq</td>
+<td align="left">numeric</td>
+<td align="left">missing</td>
+<td align="left">.all</td>
+<td align="right">0.000000e+00</td>
+<td align="left">0</td>
+</tr>
+<tr class="even">
+<td align="left">icustay_seq</td>
+<td align="left">numeric</td>
+<td align="left">complete</td>
+<td align="left">.all</td>
+<td align="right">5.321900e+04</td>
+<td align="left">53219</td>
+</tr>
+<tr class="odd">
+<td align="left">icustay_seq</td>
+<td align="left">numeric</td>
+<td align="left">n</td>
+<td align="left">.all</td>
+<td align="right">5.321900e+04</td>
+<td align="left">53219</td>
+</tr>
+<tr class="even">
+<td align="left">icustay_seq</td>
+<td align="left">numeric</td>
+<td align="left">mean</td>
+<td align="left">.all</td>
+<td align="right">1.079314e+00</td>
+<td align="left">1.08</td>
+</tr>
+<tr class="odd">
+<td align="left">icustay_seq</td>
+<td align="left">numeric</td>
+<td align="left">sd</td>
+<td align="left">.all</td>
+<td align="right">3.193150e-01</td>
+<td align="left">0.32</td>
+</tr>
+<tr class="even">
+<td align="left">icustay_seq</td>
+<td align="left">numeric</td>
+<td align="left">p0</td>
+<td align="left">.all</td>
+<td align="right">1.000000e+00</td>
+<td align="left">1</td>
+</tr>
+<tr class="odd">
+<td align="left">icustay_seq</td>
+<td align="left">numeric</td>
+<td align="left">p25</td>
+<td align="left">.all</td>
+<td align="right">1.000000e+00</td>
+<td align="left">1</td>
+</tr>
+<tr class="even">
+<td align="left">icustay_seq</td>
+<td align="left">numeric</td>
+<td align="left">p50</td>
+<td align="left">.all</td>
+<td align="right">1.000000e+00</td>
+<td align="left">1</td>
+</tr>
+<tr class="odd">
+<td align="left">icustay_seq</td>
+<td align="left">numeric</td>
+<td align="left">p75</td>
+<td align="left">.all</td>
+<td align="right">1.000000e+00</td>
+<td align="left">1</td>
+</tr>
+<tr class="even">
+<td align="left">icustay_seq</td>
+<td align="left">numeric</td>
+<td align="left">p100</td>
+<td align="left">.all</td>
+<td align="right">7.000000e+00</td>
+<td align="left">7</td>
+</tr>
+<tr class="odd">
+<td align="left">icustay_seq</td>
+<td align="left">numeric</td>
+<td align="left">hist</td>
+<td align="left">.all</td>
+<td align="right">NA</td>
+<td align="left">▇▁▁▁▁▁▁▁</td>
+</tr>
+<tr class="even">
+<td align="left">first_icu_stay</td>
+<td align="left">logical</td>
+<td align="left">missing</td>
+<td align="left">.all</td>
+<td align="right">0.000000e+00</td>
+<td align="left">0</td>
+</tr>
+<tr class="odd">
+<td align="left">first_icu_stay</td>
+<td align="left">logical</td>
+<td align="left">complete</td>
+<td align="left">.all</td>
+<td align="right">5.321900e+04</td>
+<td align="left">53219</td>
+</tr>
+<tr class="even">
+<td align="left">first_icu_stay</td>
+<td align="left">logical</td>
+<td align="left">n</td>
+<td align="left">.all</td>
+<td align="right">5.321900e+04</td>
+<td align="left">53219</td>
+</tr>
+<tr class="odd">
+<td align="left">first_icu_stay</td>
+<td align="left">logical</td>
+<td align="left">mean</td>
+<td align="left">.all</td>
+<td align="right">9.320731e-01</td>
+<td align="left">0.93</td>
+</tr>
+<tr class="even">
+<td align="left">first_icu_stay</td>
+<td align="left">logical</td>
+<td align="left">count</td>
+<td align="left">TRUE</td>
+<td align="right">4.960400e+04</td>
+<td align="left">TRU: 49604</td>
+</tr>
+<tr class="odd">
+<td align="left">first_icu_stay</td>
+<td align="left">logical</td>
+<td align="left">count</td>
+<td align="left">FALSE</td>
+<td align="right">3.615000e+03</td>
+<td align="left">FAL: 3615</td>
+</tr>
+<tr class="even">
+<td align="left">first_icu_stay</td>
+<td align="left">logical</td>
+<td align="left">count</td>
+<td align="left">NA</td>
+<td align="right">0.000000e+00</td>
+<td align="left">NA: 0</td>
+</tr>
+<tr class="odd">
+<td align="left">icutime</td>
+<td align="left">difftime</td>
+<td align="left">missing</td>
+<td align="left">.all</td>
+<td align="right">3.000000e+00</td>
+<td align="left">3</td>
+</tr>
+<tr class="even">
+<td align="left">icutime</td>
+<td align="left">difftime</td>
+<td align="left">complete</td>
+<td align="left">.all</td>
+<td align="right">5.321600e+04</td>
+<td align="left">53216</td>
+</tr>
+<tr class="odd">
+<td align="left">icutime</td>
+<td align="left">difftime</td>
+<td align="left">n</td>
+<td align="left">.all</td>
+<td align="right">5.321900e+04</td>
+<td align="left">53219</td>
+</tr>
+<tr class="even">
+<td align="left">icutime</td>
+<td align="left">difftime</td>
+<td align="left">min</td>
+<td align="left">.all</td>
+<td align="right">0.000000e+00</td>
+<td align="left">0 secs</td>
+</tr>
+<tr class="odd">
+<td align="left">icutime</td>
+<td align="left">difftime</td>
+<td align="left">max</td>
+<td align="left">.all</td>
+<td align="right">1.494720e+07</td>
+<td align="left">14947200 secs</td>
+</tr>
+<tr class="even">
+<td align="left">icutime</td>
+<td align="left">difftime</td>
+<td align="left">median</td>
+<td align="left">.all</td>
+<td align="right">1.728000e+05</td>
+<td align="left">172800 secs</td>
+</tr>
+<tr class="odd">
+<td align="left">icutime</td>
+<td align="left">difftime</td>
+<td align="left">n_unique</td>
+<td align="left">.all</td>
+<td align="right">2.230000e+02</td>
+<td align="left">223</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>head(total_patient) %&gt;% 
+  knitr::kable()</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="right">hadm_id</th>
+<th align="right">row_id</th>
+<th align="right">subject_id.x</th>
+<th align="left">admittime.x</th>
+<th align="left">dischtime.x</th>
+<th align="left">deathtime</th>
+<th align="left">admission_type.x</th>
+<th align="left">admission_location</th>
+<th align="left">discharge_location</th>
+<th align="left">insurance</th>
+<th align="left">language</th>
+<th align="left">religion</th>
+<th align="left">marital_status</th>
+<th align="left">ethnicity.x</th>
+<th align="left">edregtime</th>
+<th align="left">edouttime</th>
+<th align="left">diagnosis</th>
+<th align="right">hospital_expire_flag.x</th>
+<th align="right">has_chartevents_data</th>
+<th align="left">living</th>
+<th align="left">hospitaltime</th>
+<th align="left">edtime</th>
+<th align="right">subject_id.y</th>
+<th align="right">icustay_id</th>
+<th align="left">gender</th>
+<th align="left">dod</th>
+<th align="left">admittime.y</th>
+<th align="left">dischtime.y</th>
+<th align="right">los_hospital</th>
+<th align="right">admission_age</th>
+<th align="left">ethnicity.y</th>
+<th align="left">admission_type.y</th>
+<th align="right">hospital_expire_flag.y</th>
+<th align="right">hospstay_seq</th>
+<th align="left">first_hosp_stay</th>
+<th align="left">intime</th>
+<th align="left">outtime</th>
+<th align="right">los_icu</th>
+<th align="right">icustay_seq</th>
+<th align="left">first_icu_stay</th>
+<th align="left">icutime</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">100001</td>
+<td align="right">45749</td>
+<td align="right">58526</td>
+<td align="left">2117-09-11 11:46:00</td>
+<td align="left">2117-09-17 16:45:00</td>
+<td align="left">NA</td>
+<td align="left">EMERGENCY</td>
+<td align="left">CLINIC REFERRAL/PREMATURE</td>
+<td align="left">HOME</td>
+<td align="left">Private</td>
+<td align="left">ENGL</td>
+<td align="left">PROTESTANT QUAKER</td>
+<td align="left">DIVORCED</td>
+<td align="left">WHITE</td>
+<td align="left">2117-09-11 08:59:00</td>
+<td align="left">2117-09-11 12:35:00</td>
+<td align="left">DIABETIC KETOACIDOSIS</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="left">TRUE</td>
+<td align="left">8939 mins</td>
+<td align="left">12960 secs</td>
+<td align="right">58526</td>
+<td align="right">275225</td>
+<td align="left">F</td>
+<td align="left">NA</td>
+<td align="left">2117-09-11 04:00:00</td>
+<td align="left">2117-09-17 04:00:00</td>
+<td align="right">6.2076</td>
+<td align="right">35.4765</td>
+<td align="left">WHITE</td>
+<td align="left">EMERGENCY</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="left">TRUE</td>
+<td align="left">2117-09-11 04:00:00</td>
+<td align="left">2117-09-15 04:00:00</td>
+<td align="right">4.2567</td>
+<td align="right">1</td>
+<td align="left">TRUE</td>
+<td align="left">345600 secs</td>
+</tr>
+<tr class="even">
+<td align="right">100003</td>
+<td align="right">44463</td>
+<td align="right">54610</td>
+<td align="left">2150-04-17 15:34:00</td>
+<td align="left">2150-04-21 17:30:00</td>
+<td align="left">NA</td>
+<td align="left">EMERGENCY</td>
+<td align="left">EMERGENCY ROOM ADMIT</td>
+<td align="left">HOME</td>
+<td align="left">Private</td>
+<td align="left">ENGL</td>
+<td align="left">NOT SPECIFIED</td>
+<td align="left">SINGLE</td>
+<td align="left">WHITE</td>
+<td align="left">2150-04-17 13:10:00</td>
+<td align="left">2150-04-17 17:47:00</td>
+<td align="left">UPPER GI BLEED</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="left">TRUE</td>
+<td align="left">5876 mins</td>
+<td align="left">16620 secs</td>
+<td align="right">54610</td>
+<td align="right">209281</td>
+<td align="left">M</td>
+<td align="left">2150-12-28 05:00:00</td>
+<td align="left">2150-04-17 04:00:00</td>
+<td align="left">2150-04-21 04:00:00</td>
+<td align="right">4.0806</td>
+<td align="right">59.9127</td>
+<td align="left">WHITE</td>
+<td align="left">EMERGENCY</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="left">TRUE</td>
+<td align="left">2150-04-17 04:00:00</td>
+<td align="left">2150-04-19 04:00:00</td>
+<td align="right">1.9425</td>
+<td align="right">1</td>
+<td align="left">TRUE</td>
+<td align="left">172800 secs</td>
+</tr>
+<tr class="odd">
+<td align="right">100006</td>
+<td align="right">12108</td>
+<td align="right">9895</td>
+<td align="left">2108-04-06 15:49:00</td>
+<td align="left">2108-04-18 17:18:00</td>
+<td align="left">NA</td>
+<td align="left">EMERGENCY</td>
+<td align="left">EMERGENCY ROOM ADMIT</td>
+<td align="left">HOME</td>
+<td align="left">Private</td>
+<td align="left">NA</td>
+<td align="left">NOT SPECIFIED</td>
+<td align="left">SINGLE</td>
+<td align="left">BLACK/AFRICAN AMERICAN</td>
+<td align="left">2108-04-06 11:39:00</td>
+<td align="left">2108-04-06 17:56:00</td>
+<td align="left">COPD FLARE</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="left">TRUE</td>
+<td align="left">17369 mins</td>
+<td align="left">22620 secs</td>
+<td align="right">9895</td>
+<td align="right">291788</td>
+<td align="left">F</td>
+<td align="left">2109-10-24 04:00:00</td>
+<td align="left">2108-04-06 04:00:00</td>
+<td align="left">2108-04-18 04:00:00</td>
+<td align="right">12.0618</td>
+<td align="right">48.9173</td>
+<td align="left">BLACK/AFRICAN AMERICAN</td>
+<td align="left">EMERGENCY</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="left">TRUE</td>
+<td align="left">2108-04-06 04:00:00</td>
+<td align="left">2108-04-11 04:00:00</td>
+<td align="right">4.9776</td>
+<td align="right">1</td>
+<td align="left">TRUE</td>
+<td align="left">432000 secs</td>
+</tr>
+<tr class="even">
+<td align="right">100007</td>
+<td align="right">28086</td>
+<td align="right">23018</td>
+<td align="left">2145-03-31 05:33:00</td>
+<td align="left">2145-04-07 12:40:00</td>
+<td align="left">NA</td>
+<td align="left">EMERGENCY</td>
+<td align="left">EMERGENCY ROOM ADMIT</td>
+<td align="left">HOME</td>
+<td align="left">Private</td>
+<td align="left">NA</td>
+<td align="left">JEWISH</td>
+<td align="left">MARRIED</td>
+<td align="left">WHITE</td>
+<td align="left">2145-03-30 20:43:00</td>
+<td align="left">2145-03-31 06:08:00</td>
+<td align="left">BOWEL OBSTRUCTION</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="left">TRUE</td>
+<td align="left">10507 mins</td>
+<td align="left">33900 secs</td>
+<td align="right">23018</td>
+<td align="right">217937</td>
+<td align="left">F</td>
+<td align="left">NA</td>
+<td align="left">2145-03-31 04:00:00</td>
+<td align="left">2145-04-07 04:00:00</td>
+<td align="right">7.2965</td>
+<td align="right">73.8229</td>
+<td align="left">WHITE</td>
+<td align="left">EMERGENCY</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="left">TRUE</td>
+<td align="left">2145-03-31 04:00:00</td>
+<td align="left">2145-04-04 04:00:00</td>
+<td align="right">4.0998</td>
+<td align="right">1</td>
+<td align="left">TRUE</td>
+<td align="left">345600 secs</td>
+</tr>
+<tr class="odd">
+<td align="right">100009</td>
+<td align="right">671</td>
+<td align="right">533</td>
+<td align="left">2162-05-16 15:56:00</td>
+<td align="left">2162-05-21 13:37:00</td>
+<td align="left">NA</td>
+<td align="left">EMERGENCY</td>
+<td align="left">TRANSFER FROM HOSP/EXTRAM</td>
+<td align="left">HOME HEALTH CARE</td>
+<td align="left">Private</td>
+<td align="left">NA</td>
+<td align="left">CATHOLIC</td>
+<td align="left">MARRIED</td>
+<td align="left">WHITE</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="left">CORONARY ARTERY DISEASE</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="left">TRUE</td>
+<td align="left">7061 mins</td>
+<td align="left">NA</td>
+<td align="right">533</td>
+<td align="right">253656</td>
+<td align="left">M</td>
+<td align="left">NA</td>
+<td align="left">2162-05-16 04:00:00</td>
+<td align="left">2162-05-21 04:00:00</td>
+<td align="right">4.9035</td>
+<td align="right">60.7971</td>
+<td align="left">WHITE</td>
+<td align="left">EMERGENCY</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="left">TRUE</td>
+<td align="left">2162-05-17 04:00:00</td>
+<td align="left">2162-05-19 04:00:00</td>
+<td align="right">2.4908</td>
+<td align="right">1</td>
+<td align="left">TRUE</td>
+<td align="left">172800 secs</td>
+</tr>
+<tr class="even">
+<td align="right">100010</td>
+<td align="right">44865</td>
+<td align="right">55853</td>
+<td align="left">2109-12-10 07:15:00</td>
+<td align="left">2109-12-14 16:45:00</td>
+<td align="left">NA</td>
+<td align="left">ELECTIVE</td>
+<td align="left">PHYS REFERRAL/NORMAL DELI</td>
+<td align="left">HOME</td>
+<td align="left">Private</td>
+<td align="left">ENGL</td>
+<td align="left">EPISCOPALIAN</td>
+<td align="left">MARRIED</td>
+<td align="left">WHITE</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="left">RENAL MASS LEFT/SDA</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="left">TRUE</td>
+<td align="left">6330 mins</td>
+<td align="left">NA</td>
+<td align="right">55853</td>
+<td align="right">271147</td>
+<td align="left">F</td>
+<td align="left">NA</td>
+<td align="left">2109-12-10 05:00:00</td>
+<td align="left">2109-12-14 05:00:00</td>
+<td align="right">4.3958</td>
+<td align="right">54.5208</td>
+<td align="left">WHITE</td>
+<td align="left">ELECTIVE</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="left">TRUE</td>
+<td align="left">2109-12-10 05:00:00</td>
+<td align="left">2109-12-12 05:00:00</td>
+<td align="right">1.5940</td>
+<td align="right">1</td>
+<td align="left">TRUE</td>
+<td align="left">172800 secs</td>
+</tr>
+</tbody>
+</table>
+<p>Let’s see some plots from these two datasets</p>
+<pre class="r"><code>hospitaltimeplot &lt;- ggplot(data = total_patient, aes(x = diagnosis, y = hospitaltime)) + 
+geom_histogram()
+
+icutimeplot &lt;- ggplot(data = total_patient, aes(x = diagnosis, y = icutime)) + 
+geom_histogram()</code></pre>
+<p>Let’s focus on the <code>hospitaltime</code> and <code>icutime</code></p>
+<pre class="r"><code>mlr_time &lt;- 
+  glm(living ~ hospitaltime + icutime, data = total_patient)
+plot(mlr_time)
+
+plot(total_patient)</code></pre>
+</div>
+</div>
+
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
