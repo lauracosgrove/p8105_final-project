@@ -27,14 +27,7 @@ Initial Questions
 Exploratory Analysis
 --------------------
 
-``` r
-admissions <- 
-  read_csv("./database/data/admissions.csv") %>% 
-  janitor::clean_names() %>% 
-  mutate(diagnosis = factor(diagnosis))
-```
-
-The raw admissions dataset consists of 58976 observations of 19 variables:
+The raw admissions dataset consists of 58976 observations of the following 19 variables:
 
 -   Row ID
 -   Subject ID
@@ -56,33 +49,19 @@ The raw admissions dataset consists of 58976 observations of 19 variables:
 -   Hospital expire flag
 -   Has chart events
 
-``` r
-## Distribution of insurance type
-admissions %>% 
-  group_by(insurance) %>% 
-  count() %>% 
-  mutate(percent_of_patients = round(n/nrow(admissions)*100, digits = 2)) %>% 
-  arrange(desc(percent_of_patients)) %>% 
-  select(-n)
-```
+*Initial exploration*
 
-    ## # A tibble: 5 x 2
-    ## # Groups:   insurance [5]
-    ##   insurance  percent_of_patients
-    ##   <chr>                    <dbl>
-    ## 1 Medicare                 47.8 
-    ## 2 Private                  38.3 
-    ## 3 Medicaid                  9.81
-    ## 4 Government                3.02
-    ## 5 Self Pay                  1.04
+-   71.34% of patients admitted were classified as emergencies, while 13.33% were newborns and 71.34% were elective. The remaining 2.26% were classified as urgent.
 
-41.1% of the critical care patients were married, 22.47% of patients were single, 12.23 were widowed and 5.45 were divorced. The remaining 18.75% were either separated, with a life partner, or marital status was unknown.
+-   47.84% of patients had Medicare, while 38.29% had private insurance and 9.81% had Medicaid. The remaining patients either were insured by the government or paid out of pocket.
+
+-   41.1% of the critical care patients were married, 22.47% of patients were single, 12.23% were widowed and 5.45% were divorced. The remaining 18.75% were either separated, with a life partner, or marital status was unknown.
+
+-   42.95% of the patients were missing data entries for language. Of the patients that did have language entries, 49.32% of them spoke English.
 
 For the scope of this project, we are especially interested in focusing on patient mortalities and length of hospital stay. The depth of our initial analysis is concentrated here.
 
 Out of the 58976 patient admissions, 90.07% patients were ultimately discharged. The remaining 9.93% were recorded as patient deaths.
-
-**Let's explain the process of making simpler diagnostic groups** Then include top 10 diagnoses associated with death.
 
 ``` r
 icu_data = read_csv("./database/data/icu_detail.csv") %>% 
@@ -96,7 +75,9 @@ ggplot(icu_data, aes(x = los_icu, y = los_hospital)) +
   )
 ```
 
-![](report_files/figure-markdown_github/unnamed-chunk-5-1.png)
+![](report_files/figure-markdown_github/unnamed-chunk-8-1.png)
+
+**Let's explain the process of making simpler diagnostic groups** Then include top 10 diagnoses associated with death.
 
 Additional Analysis
 -------------------

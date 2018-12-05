@@ -116,52 +116,44 @@ skimr::skim(admissions_death)
 
 #SLR
 
-par(mfrow = c(2,2))
 living_lm1 <- 
-  glm(living ~ admission_type, data = admissions_death) %>% 
-  plot()
+  glm(living ~ admission_type, data = admissions_death)
 summary(living_lm1)
 broom::glance(living_lm1)
 broom::tidy(living_lm1)
 
 living_lm2 <- 
-  glm(living ~ admission_location, data = admissions_death) %>% 
-  plot()
+  glm(living ~ admission_location, data = admissions_death)
 summary(living_lm1)
 broom::glance(living_lm2)
 broom::tidy(living_lm2)
 
 living_lm3 <- 
-  glm(living ~ insurance, data = admissions_death) %>% 
-  plot()
+  glm(living ~ insurance, data = admissions_death)
 summary(living_lm3)
 broom::glance(living_lm3)
 broom::tidy(living_lm3)
 
 living_lm4 <- 
-  glm(living ~ language, data = na.omit(select(admissions_death, living, language))) %>% 
-  plot()
+  glm(living ~ language, data = na.omit(select(admissions_death, living, language)))
 summary(living_lm4)
 broom::glance(living_lm4)
 broom::tidy(living_lm4)
 
 living_lm5 <- 
-  glm(living ~ religion, data = admissions_death) %>% 
-  plot()
+  glm(living ~ religion, data = admissions_death)
 summary(living_lm5)
 broom::glance(living_lm5)
 broom::tidy(living_lm5)
 
 living_lm6 <- 
-  glm(living ~ marital_status, data = admissions_death) %>% 
-  plot()
+  glm(living ~ marital_status, data = admissions_death)
 summary(living_lm6)
 broom::glance(living_lm6)
 broom::tidy(living_lm6)
 
 living_lm7 <- 
-  glm(living ~ ethnicity, data = admissions_death) %>% 
-  plot()
+  glm(living ~ ethnicity, data = admissions_death)
 summary(living_lm7)
 broom::glance(living_lm7)
 broom::tidy(living_lm7)
@@ -171,29 +163,25 @@ broom::tidy(living_lm7)
 #summary(living_lm8)
 
 living_lm9 <- 
-  glm(living ~ hospital_expire_flag, data = admissions_death) %>% 
-  plot()
+  glm(living ~ hospital_expire_flag, data = admissions_death)
 summary(living_lm9)
 broom::glance(living_lm9)
 broom::tidy(living_lm9)
 
 living_lm10 <- 
-  glm(living ~ has_chartevents_data, data = admissions_death) %>% 
-  plot()
+  glm(living ~ has_chartevents_data, data = admissions_death)
 summary(living_lm10)
 broom::glance(living_lm10)
 broom::tidy(living_lm10)
 
 living_lm11 <- 
-  glm(living ~ hospitaltime, data = admissions_death) %>% 
-  plot()
+  glm(living ~ hospitaltime, data = admissions_death)
 summary(living_lm11)
 broom::glance(living_lm11)
 broom::tidy(living_lm11)
 
 living_lm12 <- 
-  glm(living ~ edtime, data = na.omit(select(admissions_death, living, edtime))) %>% 
-  plot()
+  glm(living ~ edtime, data = na.omit(select(admissions_death, living, edtime)))
 summary(living_lm12)
 broom::glance(living_lm12)
 broom::tidy(living_lm12)
@@ -271,11 +259,11 @@ broom::glance(step11)
 
 ```
 
-### So we got this regression model:
+So we got this regression model:
 
 
 
-\item $\hat{Living}$ = \item $\hat{\beta_0}$ + \item $\hat{\beta_1}$ Admission.Location + \item $\hat{\beta_2}$ Insurance + \item $\hat{\beta_3}$ Religion + \item $\hat{\beta_4}$ Marital.Status + \item $\hat{\beta_5}$ Ethnicity + \item $\hat{\beta_6}$ Hospital.Expire.Flag + \item $\hat{\beta_7}$ Has.ChartEvents.Data + \item $\hat{\beta_8}$ Hospital.Time + \item $\hat{\beta_9}$ Edtime 
+\item $\hat{Living}$ = \item $\hat{\beta_0}$ + \item $\hat{\beta_1}$ Admission.Location + \item $\hat{\beta_2}$ Insurance + \item $\hat{\beta_3}$ Insurance + \item $\hat{\beta_4}$ Religion + \item $\hat{\beta_5}$ Marital.Status + \item $\hat{\beta_6}$ Ethnicity + \item $\hat{\beta_7}$ Hospital.Expire.Flag + \item $\hat{\beta_8}$ Has.ChartEvents.Data + \item $\hat{\beta_9}$ Hospital.Time + \item $\hat{\beta_10}$ Edtime 
 
 
 
@@ -411,7 +399,7 @@ total_patient <-
   mutate(total_patient, icutime = outtime - intime)
 
 skimr::skim(total_patient) %>% 
-  knitr::kable()
+  skimr::skim()
 
 head(total_patient) %>% 
   knitr::kable()
@@ -423,16 +411,6 @@ head(total_patient) %>%
 
 
 Let's see some plots from these two datasets
-
-```{r}
-hospitaltimeplot <- ggplot(data = total_patient, aes(x = diagnosis, y = hospitaltime)) + 
-geom_histogram()
-
-icutimeplot <- ggplot(data = total_patient, aes(x = diagnosis, y = icutime)) + 
-geom_histogram()
-```
-
-
 Let's focus on the `hospitaltime` and `icutime`
 
 
