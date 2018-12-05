@@ -36,7 +36,7 @@ The next step was to follow the
 
 ## Exploratory Analysis
 
-```{r, message = FALSE, warning = FALSE}
+```{r, message = FALSE, warning = FALSE, include = FALSE}
 admissions <- 
   read_csv("./database/data/admissions.csv") %>% 
   janitor::clean_names() %>% 
@@ -44,7 +44,7 @@ admissions <-
 ```
 
 
-The raw admissions dataset consists of `r nrow(admissions)` observations of `r ncol(admissions)` variables:
+The raw admissions dataset consists of `r nrow(admissions)` observations of the following `r ncol(admissions)` variables:
 
 * Row ID
 * Subject ID
@@ -67,9 +67,26 @@ The raw admissions dataset consists of `r nrow(admissions)` observations of `r n
 * Has chart events
 
 
-```{r}
+```{r, include = FALSE}
+## Distribution of admission type
+admission_type_df = admissions %>% 
+  group_by(admission_type) %>% 
+  count() %>% 
+  mutate(percent_of_patients = round(n/nrow(admissions)*100, digits = 2)) %>% 
+  arrange(desc(percent_of_patients)) %>% 
+  select(-n)
+
+##ggplot(admission_type_df, aes(x = reorder(admission_type, percent_of_patients), y = percent_of_patients)) + geom_col()
+```
+
+
+_Initial exploration_
+
+* `r admission_type_df[1,2]`% of patients admitted were classified as emergencies, while `r admission_type_df[2,2]`% were newborns and `r admission_type_df[1,2]`% were elective. The remaining `r 100 - (admission_type_df[1,2] + admission_type_df[2,2] + admission_type_df[3,2])`% were classified as urgent.
+
+```{r, include = FALSE}
 ## Distribution of insurance type
-admissions %>% 
+insurance_df = admissions %>% 
   group_by(insurance) %>% 
   count() %>% 
   mutate(percent_of_patients = round(n/nrow(admissions)*100, digits = 2)) %>% 
@@ -77,6 +94,7 @@ admissions %>%
   select(-n)
 ```
 
+* `r insurance_df[[1, 2]]`% of patients had Medicare, while `r insurance_df[[2, 2]]`% had private insurance and `r insurance_df[[3, 2]]`% had Medicaid. The remaining patients either were insured by the government or paid out of pocket.
 
 ```{r, include = FALSE}
 ## Marital Status
@@ -87,10 +105,35 @@ marital_status = admissions %>%
   arrange(desc(percent))
 ```
 
-`r round(marital_status[1,3], digits = 2)`% of the critical care patients were married, `r round(marital_status[2, 3], digits = 2)`% of patients were single, `r round(marital_status[4,3], digits = 2)` were widowed and `r round(marital_status[5,3], digits = 2)` were divorced. The remaining `r round(100 - (marital_status[1,3] + marital_status[2, 3] + marital_status[4,3] + marital_status[5,3]), digits = 2)`% were either separated, with a life partner, or marital status was unknown.
+* `r round(marital_status[1,3], digits = 2)`% of the critical care patients were married, `r round(marital_status[2, 3], digits = 2)`% of patients were single, `r round(marital_status[4,3], digits = 2)`% were widowed and `r round(marital_status[5,3], digits = 2)`% were divorced. The remaining `r round(100 - (marital_status[1,3] + marital_status[2, 3] + marital_status[4,3] + marital_status[5,3]), digits = 2)`% were either separated, with a life partner, or marital status was unknown.
+
+```{r, include = FALSE}
+## Ethnicity
+admissions %>% 
+  distinct(ethnicity) %>% 
+  nrow()
+
+ethnicity_df = admissions %>% 
+  group_by(ethnicity) %>% 
+  count() %>% 
+  mutate(percent = n/nrow(admissions)*100) %>% 
+  arrange(desc(percent))
+```
+
+* I need help with sorting out the ethnicity please!!
+
+```{r, include = FALSE}
+## Language
+
+language_df = admissions %>% 
+  group_by(language) %>% 
+  count() %>% 
+  mutate(percent = n/nrow(admissions)*100) %>% 
+  arrange(desc(percent))
+```
 
 
-
+* `r round(language_df[[2, 3]], digits = 2)`%  of the patients were missing data entries for language. Of the patients that did have language entries, `r round(language_df[[1, 3]], digits = 2)`% of them spoke English.  
 
 
 For the scope of this project, we are especially interested in focusing on patient mortalities and length of hospital stay. The depth of our initial analysis is concentrated here.
@@ -106,10 +149,6 @@ n_discharge = admissions %>%
 
 Out of the `r admissions %>% nrow()` patient admissions, `r round((admissions %>%  filter(is.na(deathtime)) %>%  nrow())/(admissions %>% nrow())*100, digits = 2)`% patients were ultimately discharged. The remaining `r round((1 - (n_discharge/n_admits)) * 100, digits = 2)`% were recorded as patient deaths.
 
-**Let's explain the process of making simpler diagnostic groups** Then include top 10 diagnoses associated with death.
-
-
-
 ```{r, message = FALSE}
 icu_data = read_csv("./database/data/icu_detail.csv") %>% 
   filter(!(los_hospital < 0), !(los_icu < 0))
@@ -121,6 +160,11 @@ ggplot(icu_data, aes(x = los_icu, y = los_hospital)) +
     y = "Total Length of Stay in Hospital, in days" 
   )
 ```
+
+
+**Let's explain the process of making simpler diagnostic groups** Then include top 10 diagnoses associated with death.
+
+
 
 
 ## Additional Analysis

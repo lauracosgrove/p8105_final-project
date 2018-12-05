@@ -46,7 +46,7 @@ ethnicity = admissions %>%
 Need to do string replace to combine similar groups.
 
 ```{r}
-## Married
+## Marital Status
 marital_status = admissions %>% 
   group_by(marital_status) %>% 
   count() %>% 
@@ -242,7 +242,7 @@ summary(filtered_prop$los_icu)
 
 ## Proportion of time in ICU by admission type
 ## INCLUDE!!! 
-ggplot(filtered_prop, aes(x = admission_type, y = prop_icu)) +
+ggplot(filtered_prop, aes(x = admission_type.x, y = prop_icu)) +
   geom_boxplot() +
   facet_grid(~mortality) +
   labs(
