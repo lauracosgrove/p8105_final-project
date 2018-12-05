@@ -979,20 +979,13 @@ predictor_detail_data_tidy %&gt;%
        y = &quot;True Proportion of Deaths&quot;)</code></pre>
 <p><img src="severity-scores_files/figure-html/plot%202-1.png" width="960" /></p>
 <p>Above, we’ve plotted the true, observed proportion of deaths for each score value versus the probability of death predicted from mainterm regression (or, in the SAPSII case, a literature value) for each severity score. Each point is a particular score value for a patient – i.e., there are 5x the numbers of ICU patients plotted.</p>
-<p>There’s some interesting data here! As expected, the SAPSII test, being from a literature value, is further under the equality line for most scores. This means that the external, literature value is more aggressive in estimating probability of death for patients, compared ot probabilities imputed from regression on our data. This could be because the care at Beth Israel Deaconness is unusually good, or it could be because it is clinically useful that</p>
-<p>Another interesting finding is that some severity scores “group up” near probabilities 1 and 0. This could mean that there needs to be an adjustment in the range of the severity scores.</p>
+<p>There’s some interesting data here! As expected, the SAPSII test, being from a literature value, is further under the equality line for most scores. This means that the external, literature value is more aggressive in estimating probability of death for patients, compared ot probabilities imputed from regression on our data. This could be because the care at Beth Israel Deaconness is unusually good, or it could be because it is clinically useful that a classification algorithm be a bit more aggressive in estimating severity.</p>
+<p>Another interesting finding is that some severity scores “silo” near probabilities 1 and 0. This could mean that there needs to be an adjustment in the range of the severity scores.</p>
 </div>
-<div id="area-under-curves" class="section level2">
-<h2>Area under curves</h2>
+<div id="area-under-roc-curves" class="section level2">
+<h2>Area under ROC curves</h2>
 <p>To plot the area under the curve for the SAPSII and SOFA scores, I need to calculate the respective TPR and FPR for each score. I’ll use the literature value for the SAPSII score.</p>
-<pre class="r"><code>for_roc &lt;- predictor_detail_data %&gt;% 
-  distinct(icustay_id, .keep_all = TRUE) %&gt;% 
-  select(icustay_id, sapsii, sofa, death_bin) %&gt;% 
-  mutate(prob_death_sofa = exp(-3.36 + 0.273*sofa)/(1 + exp(-3.36 + 0.273*sofa))) %&gt;%
-  mutate(prob_death_sapsii = exp(-7.7631 + 0.07237*sapsii + 0.9971*log(1 + sapsii))/(1 + exp(-7.7631 +  0.07237*sapsii + 0.9971*log(1 + sapsii)))) %&gt;%  
-  select(icustay_id, death_bin, sapsii, prob_death_sapsii, sofa, prob_death_sofa) 
-
-for_roc &lt;- score_data_tidy %&gt;% 
+<pre class="r"><code>for_roc &lt;- score_data_tidy %&gt;% 
   select(score, death_bin, prob_death) %&gt;% 
   group_by(score) %&gt;% 
   nest()
@@ -1047,7 +1040,7 @@ oasis_for_roc &lt;- for_roc %&gt;%
 roc_log_oasis &lt;- roc_log_fcn(oasis_for_roc$death_bin, oasis_for_roc$prob_death)
 
 
-tibble(FPR_sapsii = roc_log_sapsii[,1], TPR_sapsii = roc_log_sapsii[,2],
+tidy_for_roc &lt;- tibble(FPR_sapsii = roc_log_sapsii[,1], TPR_sapsii = roc_log_sapsii[,2],
        FPR_sofa = roc_log_sofa[,1], TPR_sofa = roc_log_sofa[,2],
        FPR_lods = roc_log_lods[,1], TPR_lods = roc_log_lods[,2],
        FPR_apsiii = roc_log_apsiii[,1], TPR_apsiii = roc_log_apsiii[,2],
@@ -1072,7 +1065,9 @@ tibble(FPR_sapsii = roc_log_sapsii[,1], TPR_sapsii = roc_log_sapsii[,2],
                                 if_else(score2 == &quot;TPR_oasis&quot;, &quot;oasis&quot;, &quot;NA&quot;), &quot;NA&quot;
                               )))))))))
                          ) %&gt;% 
-  filter(score != &quot;NA&quot;) %&gt;% 
+  filter(score != &quot;NA&quot;)
+
+tidy_for_roc %&gt;% 
   select(score, FPR, TPR) %&gt;% 
   ggplot(aes(x = FPR, y = TPR, color = score)) +
   geom_point() +
@@ -1090,11 +1085,287 @@ tibble(FPR_sapsii = roc_log_sapsii[,1], TPR_sapsii = roc_log_sapsii[,2],
   hgt &lt;- roc[-1,2]
   ##The Riemann Sum
   sum(-delta*hgt)
-}</code></pre>
+}
+
+tibble(score = c(&quot;sapsii&quot;, &quot;sofa&quot;, &quot;lods&quot;, &quot;apsiii&quot;, &quot;oasis&quot;), AUROC = c(auc(roc_log_sapsii), auc(roc_log_sofa), auc(roc_log_lods), auc(roc_log_apsiii), auc(roc_log_oasis))) %&gt;% 
+  arrange(desc(AUROC)) %&gt;% 
+  knitr::kable()</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">score</th>
+<th align="right">AUROC</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">sapsii</td>
+<td align="right">0.7952234</td>
+</tr>
+<tr class="even">
+<td align="left">apsiii</td>
+<td align="right">0.7651836</td>
+</tr>
+<tr class="odd">
+<td align="left">oasis</td>
+<td align="right">0.7505908</td>
+</tr>
+<tr class="even">
+<td align="left">lods</td>
+<td align="right">0.7023117</td>
+</tr>
+<tr class="odd">
+<td align="left">sofa</td>
+<td align="right">0.6930094</td>
+</tr>
+</tbody>
+</table>
+<p>SAPSII is our winner in terms of AUROC.</p>
 </div>
 <div id="adding-other-predictors-to-our-model" class="section level2">
 <h2>Adding other predictors to our model</h2>
-<p>The above analysis showed us that when considered severity scores computed from biomarkers, the best analysis</p>
+<p>The above analysis showed us that when considered severity scores computed from biomarkers, the best mortality algorithm as imputed by an AUROC analysis was the SAPSII score, taking the literature values for probability.</p>
+<p>Can we improve upon this severity score by adding other predictors?</p>
+<p>Our initial analysis showed that the best-fit logistic regression model for mortaility in terms of AIC included the following covariate terms from the admissions dataset: admission_type, admission_location, insurance, religion, marital_status, and ethnicity.</p>
+<pre class="r"><code>predictor_detail_data &lt;- predictor_detail_data %&gt;% 
+  distinct(icustay_id, .keep_all = TRUE) %&gt;% 
+#Need a couple more variables
+  inner_join(admissions, by = &quot;hadm_id&quot;) %&gt;% 
+  select(icustay_id, death_bin, sapsii, admission_type.x, admission_age, admission_location, insurance, religion, marital_status, ethnicity.x) %&gt;% 
+  rename(admission_type = admission_type.x, ethnicity = ethnicity.x) %&gt;% 
+  mutate(admission_type = factor(admission_type), admission_age = factor(admission_age), insurance = factor(insurance), religion = factor(religion), marital_status = factor(marital_status), ethnicity = factor(ethnicity))
+
+#Removing missing values for effective comparison
+predictor_detail_data &lt;- predictor_detail_data %&gt;% 
+  drop_na()
+
+fit_null &lt;- predictor_detail_data %&gt;% 
+  glm(death_bin ~ sapsii, data = .) 
+
+fit_alt &lt;- predictor_detail_data %&gt;% 
+  glm(death_bin ~ sapsii + admission_type + admission_location + insurance + religion + marital_status + ethnicity, family = binomial, data = .) 
+
+#Use anova to compare the null with the added predictors model
+anova(fit_null, fit_alt)</code></pre>
+<pre><code>## Analysis of Deviance Table
+## 
+## Model 1: death_bin ~ sapsii
+## Model 2: death_bin ~ sapsii + admission_type + admission_location + insurance + 
+##     religion + marital_status + ethnicity
+##   Resid. Df Resid. Dev Df Deviance
+## 1     50278     4389.2            
+## 2     50199    28422.4 79   -24033</code></pre>
+<pre class="r"><code>library(lmtest)</code></pre>
+<pre><code>## Loading required package: zoo</code></pre>
+<pre><code>## 
+## Attaching package: &#39;zoo&#39;</code></pre>
+<pre><code>## The following objects are masked from &#39;package:base&#39;:
+## 
+##     as.Date, as.Date.numeric</code></pre>
+<pre class="r"><code>lrtest(fit_null, fit_alt)</code></pre>
+<pre><code>## Likelihood ratio test
+## 
+## Model 1: death_bin ~ sapsii
+## Model 2: death_bin ~ sapsii + admission_type + admission_location + insurance + 
+##     religion + marital_status + ethnicity
+##   #Df LogLik Df  Chisq Pr(&gt;Chisq)    
+## 1   3 -10042                         
+## 2  81 -14211 78 8339.5  &lt; 2.2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<pre class="r"><code>##Shows a significant increase in log-likelihood</code></pre>
+<p>Our tests show a significant increase in log-likelihood for the alternative, larger model.</p>
+<p>We can calculate AUROC for our new model and compare against SAPSII. Note that we will be missing some values we previously had.</p>
+<pre class="r"><code> predictor_detail_data %&gt;% 
+  mutate(prob_death_sapsii = exp(-7.7631 + 0.07237*sapsii + 0.9971*log(1 + sapsii))/(1 + exp(-7.7631 +  0.07237*sapsii + 0.9971*log(1 + sapsii)))) %&gt;% 
+  modelr::add_predictions(fit_alt) %&gt;% 
+  mutate(prob_death_full = exp(pred)/(1 + exp(pred))) %&gt;% 
+  select(icustay_id, death_bin, prob_death_sapsii, prob_death_full) %&gt;% 
+  group_by(prob_death_sapsii) %&gt;% 
+  add_tally(death_bin) %&gt;% 
+  rename(tot_death_by_sapsii = n) %&gt;% 
+  add_tally() %&gt;% 
+  mutate(prop_death_sapsii = tot_death_by_sapsii/n) %&gt;% 
+  ungroup() %&gt;% 
+  select(death_bin, prob_death_sapsii, prob_death_full, prop_death_sapsii) %&gt;% 
+  group_by(prob_death_full) %&gt;% 
+  add_tally(death_bin) %&gt;% 
+  rename(tot_death_by_full = n) %&gt;% 
+  add_tally() %&gt;% 
+  mutate(prop_death_full = tot_death_by_full/n) %&gt;% 
+  select(prob_death_sapsii, prop_death_sapsii, prob_death_full, prop_death_full) %&gt;% 
+  ggplot() + 
+  geom_point(aes(x = prob_death_sapsii, y = prop_death_sapsii), color = &quot;blue&quot;) +
+  geom_point(aes(x = prob_death_full, y = prop_death_full), color = &quot;red&quot;) +
+  geom_abline(slope = 1, intercept = 0) +
+  labs(x = &quot;Probability of Death from Mainterm Regression&quot;,
+       y = &quot;True Proportion of Deaths&quot;,
+       caption = &quot;Blue is SAPSII, red is with covariates&quot;)</code></pre>
+<p><img src="severity-scores_files/figure-html/unnamed-chunk-16-1.png" width="672" /></p>
+<p>What a mess! This goes to show that something that looks promising from a model diagnostics perspective may, in fact, be more complex and far less predictive in terms of individual probability values.</p>
+<p>Can we improve it by just adding one term? We sure added a lot in the beginning, and a large number of factors. We’ll use the <code>caret</code> package to pick out the most promising variable:</p>
+<pre class="r"><code>head(caret::varImp(fit_alt))</code></pre>
+<pre><code>##                                                 Overall
+## sapsii                                      70.30796782
+## admission_typeEMERGENCY                      6.55227777
+## admission_typeURGENT                         4.58258971
+## admission_locationCLINIC REFERRAL/PREMATURE  0.80154474
+## admission_locationEMERGENCY ROOM ADMIT       0.67432013
+## admission_locationHMO REFERRAL/SICK          0.01456729</code></pre>
+<pre class="r"><code>#Admission type
+
+fit_alt_2 &lt;- predictor_detail_data %&gt;% 
+  glm(death_bin ~ sapsii + admission_type, family = binomial, data = .) 
+
+#Use anova to compare the null with the added predictors model
+anova(fit_null, fit_alt_2)</code></pre>
+<pre><code>## Analysis of Deviance Table
+## 
+## Model 1: death_bin ~ sapsii
+## Model 2: death_bin ~ sapsii + admission_type
+##   Resid. Df Resid. Dev Df Deviance
+## 1     50278     4389.2            
+## 2     50276    28875.5  2   -24486</code></pre>
+<pre class="r"><code>library(lmtest)
+lrtest(fit_null, fit_alt_2)</code></pre>
+<pre><code>## Likelihood ratio test
+## 
+## Model 1: death_bin ~ sapsii
+## Model 2: death_bin ~ sapsii + admission_type
+##   #Df LogLik Df  Chisq Pr(&gt;Chisq)    
+## 1   3 -10042                         
+## 2   4 -14438  1 8792.6  &lt; 2.2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<pre class="r"><code>#Plot
+
+ predictor_detail_data %&gt;% 
+  mutate(prob_death_sapsii = exp(-7.7631 + 0.07237*sapsii + 0.9971*log(1 + sapsii))/(1 + exp(-7.7631 +  0.07237*sapsii + 0.9971*log(1 + sapsii)))) %&gt;% 
+  modelr::add_predictions(fit_alt_2) %&gt;% 
+  mutate(prob_death_full = exp(pred)/(1 + exp(pred))) %&gt;% 
+  select(icustay_id, death_bin, prob_death_sapsii, prob_death_full) %&gt;% 
+  group_by(prob_death_sapsii) %&gt;% 
+  add_tally(death_bin) %&gt;% 
+  rename(tot_death_by_sapsii = n) %&gt;% 
+  add_tally() %&gt;% 
+  mutate(prop_death_sapsii = tot_death_by_sapsii/n) %&gt;% 
+  ungroup() %&gt;% 
+  select(death_bin, prob_death_sapsii, prob_death_full, prop_death_sapsii) %&gt;% 
+  group_by(prob_death_full) %&gt;% 
+  add_tally(death_bin) %&gt;% 
+  rename(tot_death_by_full = n) %&gt;% 
+  add_tally() %&gt;% 
+  mutate(prop_death_full = tot_death_by_full/n) %&gt;% 
+  select(prob_death_sapsii, prop_death_sapsii, prob_death_full, prop_death_full) %&gt;% 
+  ggplot() + 
+  geom_point(aes(x = prob_death_sapsii, y = prop_death_sapsii), color = &quot;blue&quot;) +
+  geom_point(aes(x = prob_death_full, y = prop_death_full), color = &quot;red&quot;) +
+  geom_abline(slope = 1, intercept = 0) +
+  labs(x = &quot;Probability of Death from Mainterm Regression&quot;,
+       y = &quot;True Proportion of Deaths&quot;,
+       caption = &quot;Blue is SAPSII, red is with covariates&quot;)</code></pre>
+<p><img src="severity-scores_files/figure-html/unnamed-chunk-17-1.png" width="672" /></p>
+<p>It looks like the algorithm with<code>admission_type</code> added as a covariate has far more variance on observed proportion of deaths for a given assigned probabiity of death.</p>
+<div id="testing-original-hypothesis" class="section level3">
+<h3>Testing original hypothesis</h3>
+<p>Finally, one of our original research questions was if insurance coverage could play a part in mortality, beyond basic diagnostic factors. For this, I’ll enter insurance type into the model as an interaction term, because our hypothesis is that the type of insurance someone has could modify the effect of severity of disease by affecting the quality of care that is given.</p>
+<pre class="r"><code>fit_alt_3 &lt;- predictor_detail_data %&gt;% 
+  glm(death_bin ~ sapsii + insurance:sapsii, family = binomial, data = .) 
+
+#Use anova to compare the null with the added predictors model
+anova(fit_null, fit_alt_3)</code></pre>
+<pre><code>## Analysis of Deviance Table
+## 
+## Model 1: death_bin ~ sapsii
+## Model 2: death_bin ~ sapsii + insurance:sapsii
+##   Resid. Df Resid. Dev Df Deviance
+## 1     50278     4389.2            
+## 2     50274    29146.2  4   -24757</code></pre>
+<pre class="r"><code>library(lmtest)
+lrtest(fit_null, fit_alt_3)</code></pre>
+<pre><code>## Likelihood ratio test
+## 
+## Model 1: death_bin ~ sapsii
+## Model 2: death_bin ~ sapsii + insurance:sapsii
+##   #Df LogLik Df  Chisq Pr(&gt;Chisq)    
+## 1   3 -10042                         
+## 2   6 -14573  3 9063.2  &lt; 2.2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<pre class="r"><code>#Plot
+
+ predictor_detail_data %&gt;% 
+  mutate(prob_death_sapsii = exp(-7.7631 + 0.07237*sapsii + 0.9971*log(1 + sapsii))/(1 + exp(-7.7631 +  0.07237*sapsii + 0.9971*log(1 + sapsii)))) %&gt;% 
+  modelr::add_predictions(fit_alt_3) %&gt;% 
+  mutate(prob_death_full = exp(pred)/(1 + exp(pred))) %&gt;% 
+  select(icustay_id, death_bin, prob_death_sapsii, prob_death_full) %&gt;% 
+  group_by(prob_death_sapsii) %&gt;% 
+  add_tally(death_bin) %&gt;% 
+  rename(tot_death_by_sapsii = n) %&gt;% 
+  add_tally() %&gt;% 
+  mutate(prop_death_sapsii = tot_death_by_sapsii/n) %&gt;% 
+  ungroup() %&gt;% 
+  select(death_bin, prob_death_sapsii, prob_death_full, prop_death_sapsii) %&gt;% 
+  group_by(prob_death_full) %&gt;% 
+  add_tally(death_bin) %&gt;% 
+  rename(tot_death_by_full = n) %&gt;% 
+  add_tally() %&gt;% 
+  mutate(prop_death_full = tot_death_by_full/n) %&gt;% 
+  select(prob_death_sapsii, prop_death_sapsii, prob_death_full, prop_death_full) %&gt;% 
+  ggplot() + 
+  geom_point(aes(x = prob_death_sapsii, y = prop_death_sapsii), color = &quot;blue&quot;) +
+  geom_point(aes(x = prob_death_full, y = prop_death_full), color = &quot;red&quot;) +
+  geom_abline(slope = 1, intercept = 0) +
+  labs(x = &quot;Probability of Death from Mainterm Regression&quot;,
+       y = &quot;True Proportion of Deaths&quot;,
+       caption = &quot;Blue is SAPSII, red is with covariates&quot;)</code></pre>
+<p><img src="severity-scores_files/figure-html/fit%20hypothesis-1.png" width="672" /></p>
+<p>For this hypothesis, I’ll create an AUROC curve.</p>
+<pre class="r"><code>full_for_roc &lt;- predictor_detail_data %&gt;% 
+  modelr::add_predictions(fit_alt_3) %&gt;% 
+  mutate(prob_death = exp(pred)/(1 + exp(pred))) %&gt;% 
+  select(death_bin, prob_death)
+
+roc_log_full &lt;- roc_log_fcn(full_for_roc$death_bin, full_for_roc$prob_death)
+
+tibble(FPR_sapsii = roc_log_sapsii[,1], TPR_sapsii = roc_log_sapsii[,2],
+       FPR_full = roc_log_full[,1], TPR_full = roc_log_full[,2]) %&gt;% 
+  gather(key = model, value = FPR, starts_with(&quot;FPR&quot;)) %&gt;% 
+  gather(key = model2, value = TPR, starts_with(&quot;TPR&quot;)) %&gt;% 
+  mutate(model = if_else(model == &quot;FPR_sapsii&quot;, 
+                         if_else(model2 == &quot;TPR_sapsii&quot;, &quot;sapsii&quot;, &quot;NA&quot;),
+                         if_else(model2 == &quot;TPR_full&quot;, &quot;full&quot;, &quot;NA&quot;))) %&gt;% 
+  filter(model != &quot;NA&quot;) %&gt;% 
+  select(model, FPR, TPR) %&gt;% 
+  ggplot(aes(x = FPR, y = TPR, color = model)) +
+  geom_point() +
+  geom_step() +
+  labs(title = &quot;ROC Curves&quot;) +
+  theme_bw() +
+  scale_color_viridis_d()</code></pre>
+<p><img src="severity-scores_files/figure-html/unnamed-chunk-18-1.png" width="672" /></p>
+<pre class="r"><code>tibble(score = c(&quot;sapsii&quot;, &quot;sapsii with insurance interaction&quot;), AUROC = c(auc(roc_log_sapsii), auc(roc_log_full))) %&gt;% 
+  knitr::kable() </code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">score</th>
+<th align="right">AUROC</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">sapsii</td>
+<td align="right">0.7952234</td>
+</tr>
+<tr class="even">
+<td align="left">sapsii with insurance interaction</td>
+<td align="right">0.8002027</td>
+</tr>
+</tbody>
+</table>
+<p>The AUROC values for the two models are surprisingly close, something that is not apparent when looking at the predicted probabilities versus proportions of actual deaths.</p>
+</div>
 </div>
 
 
