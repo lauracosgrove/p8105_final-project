@@ -275,7 +275,7 @@ broom::glance(step11)
 
 
 
-\item $\hat{Living}$ = \item $\hat{\beta_0}$ + \item $\hat{\beta_1}$ Admission.Location + \item $\hat{\beta_2}$ Insurance + \item $\hat{\beta_3}$ Insurance + \item $\hat{\beta_4}$ Religion + \item $\hat{\beta_5}$ Marital.Status + \item $\hat{\beta_6}$ Ethnicity + \item $\hat{\beta_7}$ Hospital.Expire.Flag + \item $\hat{\beta_8}$ Has.ChartEvents.Data + \item $\hat{\beta_9}$ Hospital.Time + \item $\hat{\beta_10}$ Edtime 
+\item $\hat{Living}$ = \item $\hat{\beta_0}$ + \item $\hat{\beta_1}$ Admission.Location + \item $\hat{\beta_2}$ Insurance + \item $\hat{\beta_3}$ Religion + \item $\hat{\beta_4}$ Marital.Status + \item $\hat{\beta_5}$ Ethnicity + \item $\hat{\beta_6}$ Hospital.Expire.Flag + \item $\hat{\beta_7}$ Has.ChartEvents.Data + \item $\hat{\beta_8}$ Hospital.Time + \item $\hat{\beta_9}$ Edtime 
 
 
 
