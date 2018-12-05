@@ -8,7 +8,11 @@ library(tidyverse)
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-Group members: Samantha Brown (UNI: slb2240), Laura Cosgrove (UNI: lec2197), and Francis Z. Fang (UNI: zf2211). 
+Group Members   | UNI
+-------------   | -------------
+Samantha Brown  | slb2240
+Laura Cosgrove  | lec2197
+Francis Z. Fang | zf2211
 
 ### Introduction
 
@@ -28,9 +32,11 @@ The next step was to follow the MIMIC website's open tutorial to install MIMIC i
 
 From this database query, we were able to  gain a clean table of demographic data for all patients who were in the ICU. Using the query, we performed exploratory analysis on the Admissions data from MIMIC. This gave us patient admit time and discharge time, along with several other demographic variables. However we wanted to dig deeper into the relationship between length of total stay in the hospital, length of stay in the ICU, and proportion of mortalities to try to predict the probability of death. This led us to focus a portion of our analysis on patient severity scores. These scores represent aggregate indices of a patient's condition when they arrive at the ICU. Ultimately we found that the SAPS-II severity score performs best. Using the SAPS-II scores, we ran a regression to obtain the probability of patient mortality. This data collection process allowed us to perform a comprehensive analysis on the MIMIC data.
 
+**@LAURA -- Here, let's describe the process of simplifying diagnoses**
+
 ## Initial Questions
 
-Our analysis is centered around the question of which factors affect patient mortality. From previous research, prior to the project we understood and recognized the signficant role that physiological factors play in determining the probability of death in a patient. However, we wanted to explore the question: do demographic characteristics help to predict patient mortality? And how strong is their influence of this prediction? For example, does the health insurance coverage of a patient play a part in mortality, beyond basic diagnostic factors? Additionally, we wished to consider whether length of patient hospital stay is associated with the patient's demographic characteristics. More specifically, which demographic factors influence patient length of stay? Finally, we hoped to determine whether length of patient hospital stay is associated with patient mortality. For this question, we examined both patients' total hospital stay and patients' stay in the ICU. Our work to explore these questions is detailed in the Exploratory Analysis and Additional Analysis sections of the report.
+Our analysis is centered around the question of which factors affect patient mortality. From previous research, prior to the project we understood and recognized the signficant role that physiological factors play in determining the probability of death in a patient. However, we wanted to explore the question: do demographic characteristics help to predict patient mortality? And how strong is their influence of this prediction? For example, does the health insurance coverage of a patient play a part in mortality, beyond basic diagnostic factors? Additionally, we wished to consider whether length of patient hospital stay is associated with the patient's demographic characteristics. More specifically, which demographic factors influence patient length of stay? **Finally, we hoped to determine whether length of patient hospital stay is associated with patient mortality. For this question, we examined both patients' total hospital stay and patients' stay in the ICU. (IS THIS RIGHT?)** Our work to explore these questions is detailed later on in the Exploratory Analysis and Additional Analysis sections.
 
 ## Exploratory Analysis
 
@@ -58,8 +64,8 @@ The raw admissions dataset consists of `r nrow(admissions)` observations of the 
 * Religion
 * Marital status
 * Ethnicity
-* ED REG time
-* ED OUT time
+* ED reg time
+* ED out time
 * Diagnosis
 * Hospital expire flag
 * Has chart events
@@ -76,9 +82,9 @@ admission_type_df = admissions %>%
 ```
 
 
-_Initial exploration_
+__Initial exploration__
 
-* `r admission_type_df[1,2]`% of patients admitted were classified as emergencies, while `r admission_type_df[2,2]`% were newborns and `r admission_type_df[1,2]`% were elective. The remaining `r 100 - (admission_type_df[1,2] + admission_type_df[2,2] + admission_type_df[3,2])`% were classified as urgent.
+* `r admission_type_df[1,2]`% of patients admitted were classified as emergencies, while `r admission_type_df[2,2]`% were newborns and `r admission_type_df[3,2]`% were elective. The remaining `r 100 - (admission_type_df[1,2] + admission_type_df[2,2] + admission_type_df[3,2])`% were classified as urgent.
 
 ```{r, include = FALSE}
 ## Distribution of insurance type
@@ -129,9 +135,6 @@ language_df = admissions %>%
 
 * `r round(language_df[[2, 3]], digits = 2)`%  of the patients were missing data entries for language. Of the patients that did have language entries, `r round(language_df[[1, 3]], digits = 2)`% of them spoke English.  
 
-
-For the scope of this project, we are especially interested in focusing on patient mortalities and length of hospital stay. The depth of our initial analysis is concentrated here.
-
 ```{r, include = FALSE}
 n_admits = admissions %>% 
   nrow()
@@ -141,7 +144,7 @@ n_discharge = admissions %>%
   nrow()
 ```
 
-Out of the `r admissions %>% nrow()` patient admissions, `r round((admissions %>%  filter(is.na(deathtime)) %>%  nrow())/(admissions %>% nrow())*100, digits = 2)`% patients were ultimately discharged. The remaining `r round((1 - (n_discharge/n_admits)) * 100, digits = 2)`% were recorded as patient deaths.
+* `r round((admissions %>%  filter(is.na(deathtime)) %>%  nrow())/(admissions %>% nrow())*100, digits = 2)`% of patients were ultimately discharged. The remaining `r round((1 - (n_discharge/n_admits)) * 100, digits = 2)`% were recorded as patient deaths.
 
 ```{r, message = FALSE}
 icu_data = read_csv("./database/data/icu_detail.csv") %>% 
@@ -156,50 +159,8 @@ ggplot(icu_data, aes(x = los_icu, y = los_hospital)) +
 ```
 
 
-**Let's explain the process of making simpler diagnostic groups** Then include top 10 diagnoses associated with death.
+**Include top 10 diagnoses associated with death**
 
-
-
-
-We just looked into relationship between different factors and `living` so we try different SLR to try to look into the relationship.
-
-
-
-And we make the time form normal since first the year was added 200.
-
-```{r}
-#Create year, month, day variables
-admissions <- 
-  admissions %>% 
-  separate(admittime, into = c("admittime_year", "admittime_month", "admittime_day"), sep = "-")
-admissions <- 
-  admissions %>% 
-  separate(dischtime, into = c("dischtime_year", "dischtime_month", "dischtime_day"), sep = "-") %>% 
-  separate(dischtime_day, into = c("dischtime_day", "dischtime_time"), sep = " ")
-admissions <- 
-  admissions %>% 
-  separate(deathtime, into = c("deathtime_year", "deathtime_month", "deathtime_day"), sep = "-") %>% 
-  separate(deathtime_day, into = c("deathtime_day", "deathtime_time"), sep = " ")
-admissions <- 
-  admissions %>% 
-  separate(edregtime, into = c("edregtime_year", "edregtime_month", "edregtime_day"), sep = "-") %>% 
-  separate(edregtime_day, into = c("edregtime_day", "edregtime_time"), sep = " ")
-admissions <- 
-  admissions %>% 
-  separate(edouttime, into = c("edouttime_year", "edouttime_month", "edouttime_day"), sep = "-") %>% 
-  separate(edouttime_day, into = c("edouttime_day", "edouttime_time"), sep = " ")
-
-# Correct year to normal
-admissions <- 
-  admissions %>% 
-  mutate(admittime_year = as.numeric(admittime_year) - 200, dischtime_year = as.numeric(dischtime_year) - 200, deathtime_year = as.numeric(deathtime_year) - 200, edregtime_year = as.numeric(edregtime_year) - 200, edouttime_year = as.numeric(edouttime_year) - 200)
-# Take a look
-head(admissions)
-```
-
-
-
-** First we need to filter newborn out because the newborn is different from other diagnosis.
 
 
 
