@@ -30,6 +30,8 @@ MIMIC is an openly accessible critical care database created by the MIT Lab for 
 
 The next step was to follow the 
 
+
+
 ## Initial Questions
 
 Are there inner relations between mortality and other factors? Since we have a lot of factors found in our data collected, which of them are more critical and pay more attention?
@@ -39,6 +41,23 @@ To be specific, since this is a highly diversified society, some factors more po
 I tried to read the database of openFDA, found it is .json format. So we googled and found the API to read the database, and it worked! 
 
 At first, I focus on the admissions.csv from MIMIC because I think it includes so many factors, which are large enough to find something. So we found the paper which called 'Data Descriptor- MIMIC-III, a freely accessible critical care database.pdf' Then we found using the method from the paper, the diagnosis is too much, too hard to use itself to analyze. So we found the sapsii.csv, which used the more detailed scores system to judge the patient, for better analyse its diagnosis.
+
+
+## Data
+
+This project used a series of research which whole name is MIMIC-III (Medical Information Mart for Intensive Care III). This dataset is notable for three factors:
+
+
+* it is freely available to researchers worldwide
+
+
+* it encompasses a diverse and very large population of ICU patients
+
+
+* it contains high temporal resolution data including lab results, electronic documentation, and bedside monitor trends and waveforms.
+
+
+
 
 
 ## Exploratory Analysis
