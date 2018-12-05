@@ -70,19 +70,13 @@ The raw admissions dataset consists of 58976 observations of the following 19 va
 
 -   90.07% of patients were ultimately discharged. The remaining 9.93% were recorded as patient deaths.
 
-``` r
-icu_data = read_csv("./database/data/icu_detail.csv") %>% 
-  filter(!(los_hospital < 0), !(los_icu < 0))
+-   On average, patients remained in the ICU for 4.94 days and patients remained in the hospital for 11.34 days. Both length distributions are right-skewed.
 
-ggplot(icu_data, aes(x = los_icu, y = los_hospital)) +
-  geom_point() +
-  labs(
-    x = "Length of Stay in ICU, in days", 
-    y = "Total Length of Stay in Hospital, in days" 
-  )
-```
+Next, we considered the association between length of total hospital stay and length of time in the ICU. As expected, we saw that many patients experienced
 
-![](report_files/figure-markdown_github/unnamed-chunk-8-1.png)
+The results are illustrated below
+
+![](report_files/figure-markdown_github/unnamed-chunk-9-1.png)
 
 **Include top 10 diagnoses associated with death**
 

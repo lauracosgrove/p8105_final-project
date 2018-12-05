@@ -146,10 +146,27 @@ n_discharge = admissions %>%
 
 * `r round((admissions %>%  filter(is.na(deathtime)) %>%  nrow())/(admissions %>% nrow())*100, digits = 2)`% of patients were ultimately discharged. The remaining `r round((1 - (n_discharge/n_admits)) * 100, digits = 2)`% were recorded as patient deaths.
 
-```{r, message = FALSE}
+```{r, include = FALSE}
 icu_data = read_csv("./database/data/icu_detail.csv") %>% 
   filter(!(los_hospital < 0), !(los_icu < 0))
 
+ggplot(icu_data, aes(x = los_icu)) + geom_density()
+ggplot(icu_data, aes(x = los_hospital)) + geom_density()
+```
+
+* On average, patients remained in the ICU for `r round(mean(icu_data$los_icu), digits = 2)` days and patients remained in the hospital for `r round(mean(icu_data$los_hospital), digits = 2)` days. Both length distributions are right-skewed.
+
+
+Next, we considered the association between length of total hospital stay and length of time in the ICU.
+As expected, we saw that many patients experienced 
+
+
+
+The results are illustrated below
+
+
+
+```{r, echo = FALSE, message = FALSE}
 ggplot(icu_data, aes(x = los_icu, y = los_hospital)) +
   geom_point() +
   labs(
