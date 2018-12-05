@@ -19,7 +19,11 @@ Data Collection
 
 The MIMIC database comprises deidentified health-related data associated with over forty thousand patients who stayed in critical care units of the Beth Israel Deaconess Medical Center between 2001 and 2012. It includes the following information: demographics, vital sign measurements made at the bedside (~1 data point per hour), laboratory test results, procedures, medications, caregiver notes, imaging reports, and mortality (both in and out of hospital). After completing the CITI “Data or Specimens Only Research” training course, PhysioNet granted us access to the MIMIC database.
 
+Initially, we performed exploratory analysis on the Admissions data file from MIMIC.
+
 The next step was to follow the MIMIC website's open tutorial to install MIMIC in a local Postgres database. We referenced the public Github MIMIC-code repository for MIT Lab for Computational Physiology (<https://github.com/MIT-LCP/mimic-code/tree/master/buildmimic>) as a guide. The MIT researchers who built the MIMIC database also built this repository with the goal of sharing how they performed the technical analysis described in their published literature. Given the time constraints of this project, we were limited to how much we could understand how to make use of the MIMIC data on our own. Therefore, MIT's Lab for Computational Physiology Github repository served as the most productive and efficient way for us to understand and analyze the MIMIC database.
+
+From this database query, we were able to gain a clean table of demographic data for all patients who were in the ICU. Using the query, we focused a portion of our analysis on patient severity scores. These scores represent aggregate indices of a patient's condition when they arrive at the ICU. From the severity scores, we ran a regression to obtain the probability of patient mortality.
 
 Initial Questions
 -----------------
