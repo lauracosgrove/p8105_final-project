@@ -119,8 +119,6 @@ ethnicity_df = admissions %>%
   arrange(desc(percent))
 ```
 
-* I need help with sorting out the ethnicity please!!
-
 ```{r, include = FALSE}
 ## Language
 
