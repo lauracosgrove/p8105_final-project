@@ -86,6 +86,8 @@ Next, we considered the relationship between patient demographic characteristics
 
 **Include top 10 diagnoses associated with death**
 
+**From rubric: Show any major changes to our ideas in this section**
+
 Additional Analysis
 -------------------
 

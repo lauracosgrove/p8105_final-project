@@ -203,6 +203,8 @@ ggplot(filtered_prop, aes(x = admission_type.x, y = prop_icu)) +
 **Include top 10 diagnoses associated with death**
 
 
+**From rubric: Show any major changes to our ideas in this section**
+
 
 
 ## Additional Analysis
