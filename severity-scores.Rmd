@@ -10,7 +10,6 @@ library(ggplot2)
 library(RPostgreSQL)
 library(tidyverse)
 library(dbplyr)
-library(lubridate)
 ```
 
 ## Database Setup
@@ -400,6 +399,7 @@ predictor_detail_data_tidy %>%
 All severity scores are significant predictors. We'll need to impute a special result for SAPSII following this code, because we're taking the literature value:
 
 ```{r }
+
 score_data_tidy <- predictor_detail_data_tidy %>% 
   select(score, death_bin, score_value) %>% 
   group_by(score) %>% 
