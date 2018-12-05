@@ -192,6 +192,48 @@ ggplot(icu_data, aes(x = los_icu, y = los_hospital)) +
 
 
 
+We just looked into relationship between different factors and `living` so we try different SLR to try to look into the relationship.
+
+
+
+And we make the time form normal since first the year was added 200.
+
+```{r}
+#Create year, month, day variables
+admissions <- 
+  admissions %>% 
+  separate(admittime, into = c("admittime_year", "admittime_month", "admittime_day"), sep = "-")
+admissions <- 
+  admissions %>% 
+  separate(dischtime, into = c("dischtime_year", "dischtime_month", "dischtime_day"), sep = "-") %>% 
+  separate(dischtime_day, into = c("dischtime_day", "dischtime_time"), sep = " ")
+admissions <- 
+  admissions %>% 
+  separate(deathtime, into = c("deathtime_year", "deathtime_month", "deathtime_day"), sep = "-") %>% 
+  separate(deathtime_day, into = c("deathtime_day", "deathtime_time"), sep = " ")
+admissions <- 
+  admissions %>% 
+  separate(edregtime, into = c("edregtime_year", "edregtime_month", "edregtime_day"), sep = "-") %>% 
+  separate(edregtime_day, into = c("edregtime_day", "edregtime_time"), sep = " ")
+admissions <- 
+  admissions %>% 
+  separate(edouttime, into = c("edouttime_year", "edouttime_month", "edouttime_day"), sep = "-") %>% 
+  separate(edouttime_day, into = c("edouttime_day", "edouttime_time"), sep = " ")
+
+# Correct year to normal
+admissions <- 
+  admissions %>% 
+  mutate(admittime_year = as.numeric(admittime_year) - 200, dischtime_year = as.numeric(dischtime_year) - 200, deathtime_year = as.numeric(deathtime_year) - 200, edregtime_year = as.numeric(edregtime_year) - 200, edouttime_year = as.numeric(edouttime_year) - 200)
+# Take a look
+head(admissions)
+```
+
+
+
+** First we need to filter newborn out because the newborn is different from other diagnosis.
+
+
+
 ## Additional Analysis
 
 I dig deep into the dataset, we tried to build different models to find the best one. In research, we found a obstacle to analyse this dataset: the observations is too large (over 50000 by now). Since I am lack of this kind of experience, I tried different methods. The stepwise method does not work, so use backward elimination instead. 
