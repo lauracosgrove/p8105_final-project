@@ -1,7 +1,6 @@
 ---
 title: "Influential Factors in Critical Care Patients"
 author: "Samantha Brown, Laura Cosgrove, Francis Z. Fang"
-date: "12/2/2018"
 output: github_document
 ---
 
