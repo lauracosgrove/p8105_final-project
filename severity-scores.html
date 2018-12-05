@@ -1,0 +1,1129 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+<meta name="author" content="Laura Cosgrove" />
+
+<meta name="date" content="2018-11-20" />
+
+<title>Generating severity scores</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/font-awesome-5.0.13/css/fa-svg-with-js.css" rel="stylesheet" />
+<script src="site_libs/font-awesome-5.0.13/js/fontawesome-all.min.js"></script>
+<script src="site_libs/font-awesome-5.0.13/js/fa-v4-shims.min.js"></script>
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 51px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+
+.section h2 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h3 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h4 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h5 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h6 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+
+<div class="container-fluid main-container">
+
+<!-- tabsets -->
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+</script>
+
+<!-- code folding -->
+
+
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Home</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="about.html">About</a>
+</li>
+<li>
+  <a href="http://github.com/&lt;YOUR_GH_NAME&gt;/">
+    <span class="fa fa-github fa-lg"></span>
+     
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">Generating severity scores</h1>
+<h4 class="author"><em>Laura Cosgrove</em></h4>
+<h4 class="date"><em>11/20/2018</em></h4>
+
+</div>
+
+
+<div id="database-setup" class="section level2">
+<h2>Database Setup</h2>
+<pre class="r"><code># Load configuration settings
+dbdriver &lt;- &#39;PostgreSQL&#39;
+host  &lt;- &#39;127.0.0.1&#39;
+port  &lt;- &#39;5432&#39;
+user  &lt;- &#39;postgres&#39;
+password &lt;- &#39;postgres&#39;
+dbname &lt;- &#39;mimic&#39;
+schema &lt;- &#39;mimiciii&#39;
+# Connect to the database using the configuration settings
+con &lt;- dbConnect(dbDriver(dbdriver), dbname = dbname, host = host, port = port, 
+                 user = user, password = password)
+# Set the default schema
+dbExecute(con, paste(&quot;SET search_path TO &quot;, schema, sep=&quot; &quot;))</code></pre>
+<pre><code>## [1] 0</code></pre>
+<p>Set this database as the connection for all future sql chunks:</p>
+<pre class="r"><code>knitr::opts_chunk$set(connection = &quot;con&quot;)</code></pre>
+<p>(Note: The above chunk is most useful if you use knitr to generate the analysis! But in building the analysis it is better to run your query by saving the sql query as a character object then using <code>dbGetQuery</code>, since the only way to obtain the SQL output is to use knitr.)</p>
+</div>
+<div id="motivation" class="section level2">
+<h2>Motivation</h2>
+<p>The purpose for this portion of the report is to leverage the physiologic data from the EMR in order to estimate likelihood of in-hospital death using severity scores pre-determined in the literature as being a useful proxy for likeliood of mortality. One of these severity scores, or a combination of the scores, will provide us with our base model, after which we will explore whether a model additionally considering factors like insurance coverage, gender, and ethnicity will improve the fit in any meaningful way.</p>
+</div>
+<div id="generating-views" class="section level2">
+<h2>Generating Views</h2>
+<p>We will make use of the local Postgres database and the publicly-accessible <a href="MIMIC%20code%20repository">https://github.com/MIT-LCP/mimic-code</a> from the MIT Computational Physiology lab to make use of biological data in order to obtain computational physiology severity scores.</p>
+<p>We need to generate some views into the database before the query to generate the severity scores:</p>
+<ul>
+<li><ol style="list-style-type: decimal">
+<li>uofirstday - generated by urine-output-first-day.sql. This draws from the “outputevents” table measured from CareVue, an ICU vitals monitoring device, to obtain</li>
+</ol></li>
+<li><ol start="2" style="list-style-type: decimal">
+<li>ventdurations - generated by ventilation-durations.sql</li>
+</ol></li>
+<li><ol start="3" style="list-style-type: decimal">
+<li>vitalsfirstday - generated by vitals-first-day.sql</li>
+</ol></li>
+<li><ol start="4" style="list-style-type: decimal">
+<li>gcsfirstday - generated by gcs-first-day.sql</li>
+</ol></li>
+<li><ol start="5" style="list-style-type: decimal">
+<li>labsfirstday - generated by labs-first-day.sql</li>
+</ol></li>
+<li><ol start="6" style="list-style-type: decimal">
+<li>bloodgasarterialfirstday - generated by blood-gas-first-day-arterial.sql</li>
+</ol></li>
+</ul>
+<pre class="r"><code>urine_view &lt;- read_file(&quot;./database/mimic-code/concepts/firstday/urine-output-first-day.sql&quot;)
+ventdurations_view &lt;- read_file(&quot;./database/mimic-code/concepts/durations/ventilation-durations.sql&quot;)
+vitals_view &lt;- read_file(&quot;./database/mimic-code/concepts/firstday/vitals-first-day.sql&quot;)
+gcs_view &lt;- read_file(&quot;./database/mimic-code/concepts/firstday/gcs-first-day.sql&quot;)
+labs_view &lt;- read_file(&quot;./database/mimic-code/concepts/firstday/labs-first-day.sql&quot;)
+bloodgasarterial_view &lt;- read_file(&quot;./database/mimic-code/concepts/firstday/blood-gas-first-day-arterial.sql&quot;)
+sapsii_view &lt;- read_file(&quot;./database/mimic-code/concepts/severityscores/sapsii.sql&quot;)
+
+
+#Generate materialized views
+dbGetQuery(con, urine_view)
+dbGetQuery(con, ventdurations_view)
+dbGetQuery(con, vitals_view)
+dbGetQuery(con, gcs_view)
+dbGetQuery(con, labs_view)
+dbGetQuery(con, bloodgasarterial_view)
+dbGetQuery(con, sapsii_view)</code></pre>
+<pre class="r"><code>#View sapsii_data
+sapsii_query &lt;- &quot;SELECT *
+              FROM sapsii i;&quot;
+sapsii_data &lt;- as.tibble(dbGetQuery(con, sapsii_query))
+write_csv(sapsii_data, path = &quot;./database/sapsii.csv&quot;)</code></pre>
+<p>Plot distribution:</p>
+<pre class="r"><code>sapsii_data %&gt;% 
+  ggplot(aes(x = sapsii)) + 
+  geom_histogram()</code></pre>
+<pre><code>## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</code></pre>
+<p><img src="severity-scores_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
+<p>A note in the SQL file is the following: Note:</p>
+<p>The score is calculated for <em>all</em> ICU patients, with the assumption that the user will subselect appropriate ICUSTAY_IDs.</p>
+<p>For example, the score is calculated for neonates, but it is likely inappropriate to actually use the score values for these patients.</p>
+<p>Alternate, for knitting:</p>
+<pre class="sql"><code>SELECT *
+FROM sapsii i</code></pre>
+<div class="knitsql-table">
+<table>
+<caption>Displaying records 1 - 10</caption>
+<thead>
+<tr class="header">
+<th align="right">subject_id</th>
+<th align="right">hadm_id</th>
+<th align="right">icustay_id</th>
+<th align="right">sapsii</th>
+<th align="right">sapsii_prob</th>
+<th align="right">age_score</th>
+<th align="right">hr_score</th>
+<th align="right">sysbp_score</th>
+<th align="right">temp_score</th>
+<th align="right">pao2fio2_score</th>
+<th align="right">uo_score</th>
+<th align="right">bun_score</th>
+<th align="right">wbc_score</th>
+<th align="right">potassium_score</th>
+<th align="right">sodium_score</th>
+<th align="right">bicarbonate_score</th>
+<th align="right">bilirubin_score</th>
+<th align="right">gcs_score</th>
+<th align="right">comorbidity_score</th>
+<th align="right">admissiontype_score</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">55973</td>
+<td align="right">152234</td>
+<td align="right">200001</td>
+<td align="right">38</td>
+<td align="right">0.2125600</td>
+<td align="right">12</td>
+<td align="right">4</td>
+<td align="right">5</td>
+<td align="right">0</td>
+<td align="right">NA</td>
+<td align="right">11</td>
+<td align="right">NA</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">6</td>
+</tr>
+<tr class="even">
+<td align="right">27513</td>
+<td align="right">163557</td>
+<td align="right">200003</td>
+<td align="right">30</td>
+<td align="right">0.1063982</td>
+<td align="right">7</td>
+<td align="right">4</td>
+<td align="right">5</td>
+<td align="right">0</td>
+<td align="right">NA</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">3</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">3</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">8</td>
+</tr>
+<tr class="odd">
+<td align="right">10950</td>
+<td align="right">189514</td>
+<td align="right">200006</td>
+<td align="right">20</td>
+<td align="right">0.0372047</td>
+<td align="right">7</td>
+<td align="right">2</td>
+<td align="right">5</td>
+<td align="right">0</td>
+<td align="right">NA</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">NA</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">6</td>
+</tr>
+<tr class="even">
+<td align="right">20707</td>
+<td align="right">129310</td>
+<td align="right">200007</td>
+<td align="right">18</td>
+<td align="right">0.0292952</td>
+<td align="right">7</td>
+<td align="right">0</td>
+<td align="right">5</td>
+<td align="right">0</td>
+<td align="right">NA</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">NA</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">6</td>
+</tr>
+<tr class="odd">
+<td align="right">29904</td>
+<td align="right">129607</td>
+<td align="right">200009</td>
+<td align="right">21</td>
+<td align="right">0.0417535</td>
+<td align="right">7</td>
+<td align="right">0</td>
+<td align="right">5</td>
+<td align="right">0</td>
+<td align="right">6</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">3</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">NA</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">0</td>
+</tr>
+<tr class="even">
+<td align="right">11861</td>
+<td align="right">192256</td>
+<td align="right">200010</td>
+<td align="right">6</td>
+<td align="right">0.0045838</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">NA</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">6</td>
+</tr>
+<tr class="odd">
+<td align="right">93535</td>
+<td align="right">121562</td>
+<td align="right">200011</td>
+<td align="right">41</td>
+<td align="right">0.2660865</td>
+<td align="right">18</td>
+<td align="right">2</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">6</td>
+<td align="right">0</td>
+<td align="right">6</td>
+<td align="right">0</td>
+<td align="right">3</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">NA</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">6</td>
+</tr>
+<tr class="even">
+<td align="right">28448</td>
+<td align="right">177527</td>
+<td align="right">200012</td>
+<td align="right">11</td>
+<td align="right">0.0112653</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">5</td>
+<td align="right">0</td>
+<td align="right">NA</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">NA</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">6</td>
+</tr>
+<tr class="odd">
+<td align="right">9514</td>
+<td align="right">127229</td>
+<td align="right">200014</td>
+<td align="right">43</td>
+<td align="right">0.3055972</td>
+<td align="right">18</td>
+<td align="right">2</td>
+<td align="right">5</td>
+<td align="right">0</td>
+<td align="right">6</td>
+<td align="right">4</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">8</td>
+</tr>
+<tr class="even">
+<td align="right">74032</td>
+<td align="right">117458</td>
+<td align="right">200016</td>
+<td align="right">20</td>
+<td align="right">0.0372047</td>
+<td align="right">12</td>
+<td align="right">2</td>
+<td align="right">5</td>
+<td align="right">0</td>
+<td align="right">NA</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="right">0</td>
+<td align="right">NA</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="right">0</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="visualize-how-fractions-of-death-increase" class="section level3">
+<h3>Visualize how fractions of death increase</h3>
+<p>For a quick validation, we’ll visualize how the fractions of deaths increase for the SAPSII scores.</p>
+<pre class="r"><code>admissions &lt;- read_csv(&quot;./database/data/ADMISSIONS.csv.gz&quot;) %&gt;% 
+  janitor::clean_names()</code></pre>
+<pre><code>## Parsed with column specification:
+## cols(
+##   ROW_ID = col_integer(),
+##   SUBJECT_ID = col_integer(),
+##   HADM_ID = col_integer(),
+##   ADMITTIME = col_datetime(format = &quot;&quot;),
+##   DISCHTIME = col_datetime(format = &quot;&quot;),
+##   DEATHTIME = col_datetime(format = &quot;&quot;),
+##   ADMISSION_TYPE = col_character(),
+##   ADMISSION_LOCATION = col_character(),
+##   DISCHARGE_LOCATION = col_character(),
+##   INSURANCE = col_character(),
+##   LANGUAGE = col_character(),
+##   RELIGION = col_character(),
+##   MARITAL_STATUS = col_character(),
+##   ETHNICITY = col_character(),
+##   EDREGTIME = col_datetime(format = &quot;&quot;),
+##   EDOUTTIME = col_datetime(format = &quot;&quot;),
+##   DIAGNOSIS = col_character(),
+##   HOSPITAL_EXPIRE_FLAG = col_integer(),
+##   HAS_CHARTEVENTS_DATA = col_integer()
+## )</code></pre>
+<pre class="r"><code>patients &lt;- read_csv(&quot;./database/data/PATIENTS.csv.gz&quot;) %&gt;% 
+  janitor::clean_names()</code></pre>
+<pre><code>## Parsed with column specification:
+## cols(
+##   ROW_ID = col_integer(),
+##   SUBJECT_ID = col_integer(),
+##   GENDER = col_character(),
+##   DOB = col_datetime(format = &quot;&quot;),
+##   DOD = col_datetime(format = &quot;&quot;),
+##   DOD_HOSP = col_datetime(format = &quot;&quot;),
+##   DOD_SSN = col_datetime(format = &quot;&quot;),
+##   EXPIRE_FLAG = col_integer()
+## )</code></pre>
+<pre class="r"><code>admissions %&gt;% 
+  inner_join(., patients, by = &quot;subject_id&quot;) %&gt;% 
+  filter(has_chartevents_data == 1) %&gt;% 
+  inner_join(., sapsii_data, by = &quot;hadm_id&quot;) %&gt;% 
+  mutate(target = if_else(deathtime %in% NA, 0, 1),
+         predictor = sapsii) %&gt;%
+  select(subject_id.x, target, predictor) %&gt;% 
+  group_by(predictor) %&gt;% 
+  summarize(deaths = sum(target),
+            n = n()) %&gt;% 
+  mutate(frac_deaths = deaths/n) %&gt;% 
+  ggplot(aes(x = predictor, y = frac_deaths)) +
+  geom_point(aes(color = n)) + 
+  labs(x = &quot;SAPS II Score&quot;,
+       y = &quot;Mortality Fraction&quot;, 
+       title = &quot;Predicting Mortality of ICU Patients with First-Day SAPS II scores&quot;) +
+  theme_bw()</code></pre>
+<p><img src="severity-scores_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
+</div>
+</div>
+<div id="other-severity-scores" class="section level2">
+<h2>Other severity scores</h2>
+<p>(Note: must run document once before knitting, but eval is set to false so the views aren’t re-loaded every time you knit.)</p>
+<pre class="r"><code>sofa_view &lt;- read_file(&quot;./database/mimic-code/concepts/severityscores/sofa.sql&quot;)
+lods_view &lt;- read_file(&quot;./database/mimic-code/concepts/severityscores/lods.sql&quot;)
+saps_view &lt;- read_file(&quot;./database/mimic-code/concepts/severityscores/saps.sql&quot;)
+apsiii_view &lt;- read_file(&quot;./database/mimic-code/concepts/severityscores/apsiii.sql&quot;)
+oasis_view &lt;- read_file(&quot;./database/mimic-code/concepts/severityscores/oasis.sql&quot;)
+
+#SOFA needs echo data 
+echodata_view &lt;- read_file(&quot;./database/mimic-code/concepts/echo-data.sql&quot;)
+
+dbGetQuery(con, echodata_view)
+dbGetQuery(con, sofa_view)
+
+#LODS
+dbGetQuery(con, lods_view)
+
+#SAPS needs ventilated first day
+ventfirstday_view &lt;- read_file(&quot;./database/mimic-code/concepts/firstday/ventilation-first-day.sql&quot;)
+dbGetQuery(con, ventfirstday_view)
+dbGetQuery(con, saps_view)
+
+# APSIII  
+dbGetQuery(con, apsiii_view)
+
+# OASIS  
+dbGetQuery(con, oasis_view)</code></pre>
+<p>As before, read all the data from the generated materialized views into tibbles:</p>
+<pre class="r"><code>#SOFA
+sofa_query &lt;- &quot;SELECT *
+              FROM sofa i;&quot;
+sofa_data &lt;- as.tibble(dbGetQuery(con, sofa_query))
+
+#LODS
+lods_query &lt;- &quot;SELECT *
+              FROM lods i;&quot;
+lods_data &lt;- as.tibble(dbGetQuery(con, lods_query))
+
+#SAPS
+saps_query &lt;- &quot;SELECT *
+              FROM saps i;&quot;
+saps_data &lt;- as.tibble(dbGetQuery(con, saps_query))
+
+# APSIII  
+apsiii_query &lt;- &quot;SELECT *
+              FROM apsiii i;&quot;
+apsiii_data &lt;- as.tibble(dbGetQuery(con, apsiii_query))
+
+#OASIS
+oasis_query &lt;- &quot;SELECT *
+              FROM oasis i;&quot;
+oasis_data &lt;- as.tibble(dbGetQuery(con, oasis_query))</code></pre>
+<p>Plot curves for all other scores</p>
+<div id="analysis-with-admissions-data" class="section level3">
+<h3>Analysis with admissions data</h3>
+<pre class="r"><code>icu_detail &lt;- read_csv(&quot;./database/icu_detail.csv&quot;) %&gt;% 
+  janitor::clean_names()</code></pre>
+<pre><code>## Parsed with column specification:
+## cols(
+##   subject_id = col_integer(),
+##   hadm_id = col_integer(),
+##   icustay_id = col_integer(),
+##   gender = col_character(),
+##   dod = col_datetime(format = &quot;&quot;),
+##   admittime = col_datetime(format = &quot;&quot;),
+##   dischtime = col_datetime(format = &quot;&quot;),
+##   los_hospital = col_double(),
+##   admission_age = col_double(),
+##   ethnicity = col_character(),
+##   admission_type = col_character(),
+##   hospital_expire_flag = col_integer(),
+##   hospstay_seq = col_integer(),
+##   first_hosp_stay = col_logical(),
+##   intime = col_datetime(format = &quot;&quot;),
+##   outtime = col_datetime(format = &quot;&quot;),
+##   los_icu = col_double(),
+##   icustay_seq = col_integer(),
+##   first_icu_stay = col_logical()
+## )</code></pre>
+<pre class="r"><code>predictor_detail_data &lt;- icu_detail %&gt;% 
+  inner_join(., sapsii_data, by = &quot;hadm_id&quot;) %&gt;% 
+  inner_join(., sofa_data, by = &quot;hadm_id&quot;) %&gt;% 
+  inner_join(., lods_data, by = &quot;hadm_id&quot;) %&gt;% 
+  inner_join(., saps_data, by = &quot;hadm_id&quot;) %&gt;% 
+  inner_join(., apsiii_data, by = &quot;hadm_id&quot;) %&gt;% 
+  inner_join(., oasis_data, by = &quot;hadm_id&quot;) %&gt;% 
+  select(hadm_id, subject_id, icustay_id, gender, ethnicity, admission_type, admission_age, los_hospital, los_icu, dod, hospital_expire_flag.y, hospstay_seq, first_hosp_stay, icustay_seq, first_icu_stay, sapsii, sofa, lods, saps, apsiii, oasis, respiration, coagulation, liver, cardiovascular.y, cns, renal.y, ends_with(&quot;score&quot;)) %&gt;% 
+  rename(death_bin = hospital_expire_flag.y) %&gt;% 
+    filter(admission_type != &quot;NEWBORN&quot;)
+
+
+write_csv(predictor_detail_data, &quot;./database/predictor_detail_data.csv&quot;)
+
+#Correlation of aggregate scores for distinct ICU stays (to remove confusion due to readmission)
+predictor_detail_data %&gt;% 
+  distinct(icustay_id, .keep_all = TRUE) %&gt;% 
+  select(sapsii:oasis) %&gt;% 
+  cor()</code></pre>
+<pre><code>##           sapsii      sofa      lods      saps    apsiii     oasis
+## sapsii 1.0000000 0.6838641 0.8021351 0.7417353 0.7558680 0.6600098
+## sofa   0.6838641 1.0000000 0.7351709 0.5986570 0.7025452 0.4945946
+## lods   0.8021351 0.7351709 1.0000000 0.6846753 0.7509069 0.5936155
+## saps   0.7417353 0.5986570 0.6846753 1.0000000 0.6562129 0.6457071
+## apsiii 0.7558680 0.7025452 0.7509069 0.6562129 1.0000000 0.5838826
+## oasis  0.6600098 0.4945946 0.5936155 0.6457071 0.5838826 1.0000000</code></pre>
+<pre class="r"><code>predictor_detail_data %&gt;% 
+#Select for single admission
+  distinct(icustay_id, .keep_all = TRUE) %&gt;% 
+  gather(key = score, value, sapsii, saps, sofa, lods, apsiii, oasis) %&gt;% 
+  group_by(score, value) %&gt;% 
+  summarize(deaths = sum(death_bin), 
+            n = n()) %&gt;% 
+  mutate(frac_deaths = deaths/n) %&gt;% 
+  ggplot(aes(x = value, y = frac_deaths)) + 
+  geom_point(aes(color = n)) +
+  facet_grid(~score)</code></pre>
+<p><img src="severity-scores_files/figure-html/plot-1.png" width="1152" /></p>
+</div>
+</div>
+<div id="individual-mortality-prediction" class="section level2">
+<h2>Individual mortality prediction</h2>
+<p>It’s fine just as a quick gut check to see how fraction of deaths increase over the distributions of the various severity scores. But how do the scores perform based on their original authored likelihoods?</p>
+<div id="saps-ii" class="section level3">
+<h3>SAPS II</h3>
+<p>We’ll start with the SAPS II score.</p>
+<p>Individual mortality prediction for the SAPS II score is defined by its authors to be:</p>
+<p>log([pr(death)][1 - pr(death)]) = -7.7631 + 0.07237<em>SAPSII + 0.9971</em>log(1 + SAPSII)</p>
+<p>A mortality prediction algorithm is said to have adequate discrimination if it tends to assign higher severity scores to patients that died in the hospital compared to those that did not. To evaluate discrimination, we’ll visualize the probability of death as predicted by the SAPSII score versus the actual proportion of patients who died with that SAPSII score.</p>
+<p>Because I suspect I may want the information to do subgroup analyses, I’m going to start by using the large datasheet from the <code>predictor_detail_data</code>.</p>
+<pre class="r"><code>#Joining admissions and length of stay, and adding probability of death
+predictor_detail_data %&gt;% 
+  distinct(hadm_id, .keep_all = TRUE) %&gt;% 
+  select(hadm_id, sapsii, death_bin) %&gt;% 
+  mutate(prob_death = exp(-7.7631 + 0.07237*sapsii + 0.9971*log(1 + sapsii))/(1 + exp(-7.7631 + 0.07237*sapsii + 0.9971*log(1 + sapsii)))) %&gt;% 
+  group_by(sapsii) %&gt;% 
+  add_tally(death_bin) %&gt;% 
+  rename(tot_death_by_group = n) %&gt;% 
+  add_tally() %&gt;% 
+  mutate(prop_death = tot_death_by_group/n) %&gt;% 
+  select(sapsii, prob_death, prop_death) %&gt;% 
+  ggplot(aes(x = prob_death, y = prop_death)) + 
+  geom_point() +
+  geom_abline(slope = 1, intercept = 0) +
+  labs(title = &quot;SAPSII&quot;,
+      x = &quot;Probability of Death from Literature&quot;,
+       y = &quot;True Proportion of Deaths&quot;) + 
+  theme_bw()</code></pre>
+<p><img src="severity-scores_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
+<p>Although the authors of the SAPS score publish a non-linear in parameters regression for association with likelihood of death, I’ll fit a main-term logistic regression to obtain mortality prediction based on a linear-in-parameters assumption.</p>
+<pre class="r"><code>fit_sapsii &lt;- predictor_detail_data %&gt;% 
+  distinct(icustay_id, .keep_all = TRUE) %&gt;% 
+  select(sapsii, death_bin) %&gt;% 
+  glm(death_bin ~ sapsii, family = binomial, data = .) 
+
+fit_sapsii %&gt;% 
+  broom::tidy()</code></pre>
+<pre><code>## # A tibble: 2 x 5
+##   term        estimate std.error statistic p.value
+##   &lt;chr&gt;          &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;   &lt;dbl&gt;
+## 1 (Intercept)  -5.22     0.0489     -107.        0
+## 2 sapsii        0.0803   0.00104      77.0       0</code></pre>
+<pre class="r"><code>fit_sapsii %&gt;% 
+  broom::tidy(conf.int = TRUE, exponentiate = TRUE)</code></pre>
+<pre><code>## # A tibble: 2 x 7
+##   term        estimate std.error statistic p.value conf.low conf.high
+##   &lt;chr&gt;          &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;   &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt;
+## 1 (Intercept)  0.00541   0.0489     -107.        0  0.00491   0.00595
+## 2 sapsii       1.08      0.00104      77.0       0  1.08      1.09</code></pre>
+<p>The regression fits a parameter estimate of log([pr(death)][1 - pr(death)]) = -5.22 + 0.0803*SAPSII; or, for every unit increase in SOFA score, you can expect to have 1.08x the odds of death.</p>
+<p>I’ll refit the plot based on the mainterm regression:</p>
+<pre class="r"><code>predictor_detail_data %&gt;% 
+  distinct(icustay_id, .keep_all = TRUE) %&gt;% 
+  select(hadm_id, sapsii, death_bin) %&gt;% 
+  mutate(prob_death = exp( -5.22 + 0.0803*sapsii)/(1 + exp(-5.22 + 0.0803*sapsii))) %&gt;% 
+  group_by(sapsii) %&gt;% 
+  add_tally(death_bin) %&gt;% 
+  rename(tot_death_by_group = n) %&gt;% 
+  add_tally() %&gt;% 
+  mutate(prop_death = tot_death_by_group/n) %&gt;% 
+  select(sapsii, prob_death, prop_death) %&gt;% 
+  ggplot(aes(x = prob_death, y = prop_death)) + 
+  geom_point() +
+  geom_abline(slope = 1, intercept = 0) +
+  labs(title = &quot;SAPSII&quot;,
+      x = &quot;Probability of Death from Mainterm Regression&quot;,
+       y = &quot;True Proportion of Deaths&quot;) + 
+  theme_bw()</code></pre>
+<p><img src="severity-scores_files/figure-html/unnamed-chunk-11-1.png" width="672" /></p>
+<p>We see a better fit with the mainterm logistic regression, which makes sense given that the literature value was an externally-generated prediction, while our regression is internally-generated. Keep that caveat in mind as we continue with algorithm comparison for other scores, because no direct external value exists for predictive capability of the other severity scores; rather, they’re used in practive as clinical decision support rather than giving probability determination.</p>
+</div>
+</div>
+<div id="sofa-score" class="section level2">
+<h2>SOFA Score</h2>
+<p>Authors of the SOFA score do not publish a base probability calculation for likelihood of death, so I’ll use a main-term logistic regression to obtain mortality prediction based on the SOFA score.</p>
+<pre class="r"><code>fit_sofa &lt;- predictor_detail_data %&gt;% 
+  distinct(icustay_id, .keep_all = TRUE) %&gt;% 
+  select(sofa, death_bin) %&gt;% 
+  glm(death_bin ~ sofa, family = binomial, data = .) 
+
+fit_sofa %&gt;% 
+  broom::tidy()</code></pre>
+<pre><code>## # A tibble: 2 x 5
+##   term        estimate std.error statistic p.value
+##   &lt;chr&gt;          &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;   &lt;dbl&gt;
+## 1 (Intercept)   -3.36    0.0280     -120.        0
+## 2 sofa           0.273   0.00409      66.7       0</code></pre>
+<pre class="r"><code>fit_sofa %&gt;% 
+  broom::tidy(conf.int = TRUE, exponentiate = TRUE)</code></pre>
+<pre><code>## # A tibble: 2 x 7
+##   term        estimate std.error statistic p.value conf.low conf.high
+##   &lt;chr&gt;          &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;   &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt;
+## 1 (Intercept)   0.0347   0.0280     -120.        0   0.0328    0.0366
+## 2 sofa          1.31     0.00409      66.7       0   1.30      1.32</code></pre>
+<p>The regression fits a parameter estimate of log([pr(death)][1 - pr(death)]) = -3.36 + 0.273*SOFA; for every unit increase in SOFA score, you can expect to have 1.31x the odds of death.</p>
+<pre class="r"><code>predictor_detail_data %&gt;% 
+  distinct(icustay_id, .keep_all = TRUE) %&gt;% 
+  select(hadm_id, sofa, death_bin) %&gt;% 
+  mutate(prob_death = exp(-3.36 + 0.273*sofa)/(1 + exp(-3.36 + 0.273*sofa))) %&gt;% 
+  group_by(sofa) %&gt;% 
+  add_tally(death_bin) %&gt;% 
+  rename(tot_death_by_group = n) %&gt;% 
+  add_tally() %&gt;% 
+  mutate(prop_death = tot_death_by_group/n) %&gt;% 
+  select(sofa, prob_death, prop_death)%&gt;% 
+  ggplot(aes(x = prob_death, y = prop_death)) + 
+  geom_point() +
+  geom_abline(slope = 1, intercept = 0) +
+  labs(x = &quot;Probability of Death from Mainterm Regression&quot;,
+       y = &quot;True Proportion of Deaths&quot;) + 
+  theme_bw()</code></pre>
+<p><img src="severity-scores_files/figure-html/unnamed-chunk-13-1.png" width="672" /></p>
+<p>This regression obtains a good fit, which makes sense because the probability was obtained from our data rather than a literature value.</p>
+</div>
+<div id="map-for-all-scores" class="section level2">
+<h2>Map for all Scores</h2>
+<p>We can use a <code>map</code> operation with some tidying of our original data to speed up the generation of the predicted probabilities of each score.</p>
+<pre class="r"><code>predictor_detail_data_tidy &lt;- predictor_detail_data %&gt;% 
+  distinct(icustay_id, .keep_all = TRUE) %&gt;% 
+  gather(key = score, value = score_value, sapsii, sofa, lods, apsiii, oasis) %&gt;% 
+  select(icustay_id, score, score_value, everything())
+
+predictor_detail_data_tidy %&gt;% 
+  select(score, death_bin, score_value) %&gt;% 
+  group_by(score) %&gt;% 
+  nest() %&gt;% 
+  mutate(glm = map(data, ~glm(death_bin ~ score_value, family = binomial, data = .))) %&gt;% 
+  mutate(glm_coef = map(glm, broom::tidy)) %&gt;% 
+  select(score, glm_coef) %&gt;% 
+  unnest() %&gt;% 
+  knitr::kable()</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">score</th>
+<th align="left">term</th>
+<th align="right">estimate</th>
+<th align="right">std.error</th>
+<th align="right">statistic</th>
+<th align="right">p.value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">sapsii</td>
+<td align="left">(Intercept)</td>
+<td align="right">-5.2192420</td>
+<td align="right">0.0488676</td>
+<td align="right">-106.80368</td>
+<td align="right">0</td>
+</tr>
+<tr class="even">
+<td align="left">sapsii</td>
+<td align="left">score_value</td>
+<td align="right">0.0802632</td>
+<td align="right">0.0010430</td>
+<td align="right">76.95157</td>
+<td align="right">0</td>
+</tr>
+<tr class="odd">
+<td align="left">sofa</td>
+<td align="left">(Intercept)</td>
+<td align="right">-3.3612355</td>
+<td align="right">0.0280183</td>
+<td align="right">-119.96578</td>
+<td align="right">0</td>
+</tr>
+<tr class="even">
+<td align="left">sofa</td>
+<td align="left">score_value</td>
+<td align="right">0.2729313</td>
+<td align="right">0.0040941</td>
+<td align="right">66.66408</td>
+<td align="right">0</td>
+</tr>
+<tr class="odd">
+<td align="left">lods</td>
+<td align="left">(Intercept)</td>
+<td align="right">-3.5465359</td>
+<td align="right">0.0301791</td>
+<td align="right">-117.51615</td>
+<td align="right">0</td>
+</tr>
+<tr class="even">
+<td align="left">lods</td>
+<td align="left">score_value</td>
+<td align="right">0.3235153</td>
+<td align="right">0.0047330</td>
+<td align="right">68.35295</td>
+<td align="right">0</td>
+</tr>
+<tr class="odd">
+<td align="left">apsiii</td>
+<td align="left">(Intercept)</td>
+<td align="right">-4.4522295</td>
+<td align="right">0.0400586</td>
+<td align="right">-111.14294</td>
+<td align="right">0</td>
+</tr>
+<tr class="even">
+<td align="left">apsiii</td>
+<td align="left">score_value</td>
+<td align="right">0.0494333</td>
+<td align="right">0.0006722</td>
+<td align="right">73.53993</td>
+<td align="right">0</td>
+</tr>
+<tr class="odd">
+<td align="left">oasis</td>
+<td align="left">(Intercept)</td>
+<td align="right">-5.8499849</td>
+<td align="right">0.0624610</td>
+<td align="right">-93.65818</td>
+<td align="right">0</td>
+</tr>
+<tr class="even">
+<td align="left">oasis</td>
+<td align="left">score_value</td>
+<td align="right">0.1129726</td>
+<td align="right">0.0016420</td>
+<td align="right">68.80387</td>
+<td align="right">0</td>
+</tr>
+</tbody>
+</table>
+<p>All severity scores are significant predictors. We’ll need to impute a special result for SAPSII following this code, because we’re taking the literature value:</p>
+<pre class="r"><code>score_data_tidy &lt;- predictor_detail_data_tidy %&gt;% 
+  select(score, death_bin, score_value) %&gt;% 
+  group_by(score) %&gt;% 
+  nest() %&gt;% 
+  mutate(glm = map(data, ~glm(death_bin ~ score_value, family = binomial, data = .))) %&gt;% 
+  mutate(glm_coef = map(glm, broom::tidy)) %&gt;% 
+  mutate(predictions = map2(data, glm, modelr::add_predictions)) %&gt;% 
+  select(score, predictions) %&gt;% 
+  unnest() %&gt;% 
+  mutate(prob_death = exp(pred)/(1 + exp(pred))) %&gt;% 
+  mutate(prob_death = if_else(score == &quot;sapsii&quot;, 
+                              exp(-7.7631 + 0.07237*score_value + 0.9971*log(1 + score_value))/(1 + exp(-7.7631 +  0.07237*score_value + 0.9971*log(1 + score_value))), 
+                              prob_death))</code></pre>
+<pre class="r"><code>score_data_tidy %&gt;% 
+  select(score, death_bin, prob_death) %&gt;% 
+  group_by(score, prob_death) %&gt;%
+  add_tally(death_bin) %&gt;% 
+  rename(tot_death_by_group = n) %&gt;% 
+  add_tally() %&gt;% 
+  mutate(prop_death = tot_death_by_group/n) %&gt;% 
+  ggplot(aes(x = prob_death, y = prop_death, color = score)) + 
+  geom_point() +
+  geom_abline(slope = 1, intercept = 0) +
+  labs(x = &quot;Probability of Death from Mainterm Regression or Literature Value&quot;,
+       y = &quot;True Proportion of Deaths&quot;)</code></pre>
+<p><img src="severity-scores_files/figure-html/plot%202-1.png" width="960" /></p>
+<p>Above, we’ve plotted the true, observed proportion of deaths for each score value versus the probability of death predicted from mainterm regression (or, in the SAPSII case, a literature value) for each severity score. Each point is a particular score value for a patient – i.e., there are 5x the numbers of ICU patients plotted.</p>
+<p>There’s some interesting data here! As expected, the SAPSII test, being from a literature value, is further under the equality line for most scores. This means that the external, literature value is more aggressive in estimating probability of death for patients, compared ot probabilities imputed from regression on our data. This could be because the care at Beth Israel Deaconness is unusually good, or it could be because it is clinically useful that</p>
+<p>Another interesting finding is that some severity scores “group up” near probabilities 1 and 0. This could mean that there needs to be an adjustment in the range of the severity scores.</p>
+</div>
+<div id="area-under-curves" class="section level2">
+<h2>Area under curves</h2>
+<p>To plot the area under the curve for the SAPSII and SOFA scores, I need to calculate the respective TPR and FPR for each score. I’ll use the literature value for the SAPSII score.</p>
+<pre class="r"><code>for_roc &lt;- predictor_detail_data %&gt;% 
+  distinct(icustay_id, .keep_all = TRUE) %&gt;% 
+  select(icustay_id, sapsii, sofa, death_bin) %&gt;% 
+  mutate(prob_death_sofa = exp(-3.36 + 0.273*sofa)/(1 + exp(-3.36 + 0.273*sofa))) %&gt;%
+  mutate(prob_death_sapsii = exp(-7.7631 + 0.07237*sapsii + 0.9971*log(1 + sapsii))/(1 + exp(-7.7631 +  0.07237*sapsii + 0.9971*log(1 + sapsii)))) %&gt;%  
+  select(icustay_id, death_bin, sapsii, prob_death_sapsii, sofa, prob_death_sofa) 
+
+for_roc &lt;- score_data_tidy %&gt;% 
+  select(score, death_bin, prob_death) %&gt;% 
+  group_by(score) %&gt;% 
+  nest()
+
+###############ROC AUC Functions#############################
+#This code could be improved with a better function.
+
+roc_log_fcn &lt;- function(result, y_prob){
+  probs &lt;- seq(0,1, by = 0.005)
+  roc_log &lt;- matrix(0, nrow = length(probs), ncol=2)
+  i &lt;- 1
+  for(p in probs){
+    pred &lt;- y_prob &gt; p
+    ##False positive rate
+    FPR &lt;- sum(!result &amp; pred)/sum(!result)
+    ##True positive rate
+    TPR &lt;- sum(result &amp; pred)/sum(result)
+    roc_log[i,] &lt;- c(FPR, TPR)
+    i &lt;- i + 1
+  }
+  return(roc_log)
+}
+
+#SAPSII
+sapsii_for_roc &lt;- for_roc %&gt;% 
+  filter(score == &quot;sapsii&quot;) %&gt;% 
+  unnest() 
+roc_log_sapsii &lt;- roc_log_fcn(sapsii_for_roc$death_bin, sapsii_for_roc$prob_death)
+
+#SOFA
+sofa_for_roc &lt;- for_roc %&gt;% 
+  filter(score == &quot;sofa&quot;) %&gt;% 
+  unnest() 
+roc_log_sofa &lt;- roc_log_fcn(sofa_for_roc$death_bin, sofa_for_roc$prob_death)
+
+#LODS
+lods_for_roc &lt;- for_roc %&gt;% 
+  filter(score == &quot;lods&quot;) %&gt;% 
+  unnest() 
+roc_log_lods &lt;- roc_log_fcn(lods_for_roc$death_bin, lods_for_roc$prob_death)
+
+#APSIII
+apsiii_for_roc &lt;- for_roc %&gt;% 
+  filter(score == &quot;apsiii&quot;) %&gt;% 
+  unnest() 
+roc_log_apsiii &lt;- roc_log_fcn(apsiii_for_roc$death_bin, apsiii_for_roc$prob_death)
+
+#OASIS
+oasis_for_roc &lt;- for_roc %&gt;% 
+  filter(score == &quot;oasis&quot;) %&gt;% 
+  unnest() 
+roc_log_oasis &lt;- roc_log_fcn(oasis_for_roc$death_bin, oasis_for_roc$prob_death)
+
+
+tibble(FPR_sapsii = roc_log_sapsii[,1], TPR_sapsii = roc_log_sapsii[,2],
+       FPR_sofa = roc_log_sofa[,1], TPR_sofa = roc_log_sofa[,2],
+       FPR_lods = roc_log_lods[,1], TPR_lods = roc_log_lods[,2],
+       FPR_apsiii = roc_log_apsiii[,1], TPR_apsiii = roc_log_apsiii[,2],
+       FPR_oasis = roc_log_oasis[,1], TPR_oasis = roc_log_oasis[,2]) %&gt;% 
+  gather(key = score, value = FPR, starts_with(&quot;FPR&quot;)) %&gt;% 
+  gather(key = score2, value = TPR, starts_with(&quot;TPR&quot;)) %&gt;% 
+  mutate(score = if_else(score == &quot;FPR_sapsii&quot;, 
+                         #yes sapsii
+                         if_else(score2 == &quot;TPR_sapsii&quot;, &quot;sapsii&quot;, &quot;NA&quot;),
+                         #no sapsii 
+                            (if_else(score == &quot;FPR_sofa&quot;, 
+                              # yes sofa 
+                              if_else(score2 == &quot;TPR_sofa&quot;, &quot;sofa&quot;, &quot;NA&quot;), 
+                              # no sofa
+                              (if_else(score == &quot;FPR_lods&quot;,
+                              #yes lods
+                                if_else(score2 == &quot;TPR_lods&quot;, &quot;lods&quot;, &quot;NA&quot;),
+                              # no lods
+                              (if_else(score == &quot;FPR_apsiii&quot;,
+                                if_else(score2 == &quot;TPR_apsiii&quot;, &quot;apsiii&quot;, &quot;NA&quot;), 
+                              (if_else(score == &quot;FPR_oasis&quot;, 
+                                if_else(score2 == &quot;TPR_oasis&quot;, &quot;oasis&quot;, &quot;NA&quot;), &quot;NA&quot;
+                              )))))))))
+                         ) %&gt;% 
+  filter(score != &quot;NA&quot;) %&gt;% 
+  select(score, FPR, TPR) %&gt;% 
+  ggplot(aes(x = FPR, y = TPR, color = score)) +
+  geom_point() +
+  geom_step() +
+  labs(title = &quot;ROC Curves&quot;) +
+  theme_bw() +
+  scale_color_viridis_d()</code></pre>
+<p><img src="severity-scores_files/figure-html/auc-1.png" width="672" /></p>
+<p>SAPSII looks like the best-performing model, and let’s confirm that with an AUROC analysis.</p>
+<pre class="r"><code>auc &lt;- function(roc){
+  len &lt;- nrow(roc)
+  ##The &quot;delta X&quot; values
+  delta &lt;- roc[-1,1]-roc[-len,1]
+  ##The &quot;heights&quot; the rectangle (drop the first or last).
+  hgt &lt;- roc[-1,2]
+  ##The Riemann Sum
+  sum(-delta*hgt)
+}</code></pre>
+</div>
+<div id="adding-other-predictors-to-our-model" class="section level2">
+<h2>Adding other predictors to our model</h2>
+<p>The above analysis showed us that when considered severity scores computed from biomarkers, the best analysis</p>
+</div>
+
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

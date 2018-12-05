@@ -211,12 +211,10 @@ Plot curves for all other scores
 
 ### Analysis with admissions data
 
-```{r}
+```{r cache = TRUE}
 icu_detail <- read_csv("./database/icu_detail.csv") %>% 
   janitor::clean_names()
 
-# TO IMPROVE: I should create a nested df where I can map the inner join and generate multiple plots in the same code chunk
-# Make a big datasheet?
 predictor_detail_data <- icu_detail %>% 
   inner_join(., sapsii_data, by = "hadm_id") %>% 
   inner_join(., sofa_data, by = "hadm_id") %>% 
@@ -272,7 +270,7 @@ A mortality prediction algorithm is said to have adequate discrimination if it t
 Because I suspect I may want the information to do subgroup analyses, I'm going to start by using the large datasheet from the `predictor_detail_data`.
 
 
-```{r}
+```{r, cache=TRUE}
 #Joining admissions and length of stay, and adding probability of death
 predictor_detail_data %>% 
   distinct(hadm_id, .keep_all = TRUE) %>% 
@@ -378,21 +376,86 @@ predictor_detail_data %>%
 
 This regression obtains a good fit, which makes sense because the probability was obtained from our data rather than a literature value. 
 
-## 
+## Map for all Scores
+
+We can use a `map` operation with some tidying of our original data to speed up the generation of the predicted probabilities of each score.
+
+```{r lods}
+predictor_detail_data_tidy <- predictor_detail_data %>% 
+  distinct(icustay_id, .keep_all = TRUE) %>% 
+  gather(key = score, value = score_value, sapsii, sofa, lods, apsiii, oasis) %>% 
+  select(icustay_id, score, score_value, everything())
+
+predictor_detail_data_tidy %>% 
+  select(score, death_bin, score_value) %>% 
+  group_by(score) %>% 
+  nest() %>% 
+  mutate(glm = map(data, ~glm(death_bin ~ score_value, family = binomial, data = .))) %>% 
+  mutate(glm_coef = map(glm, broom::tidy)) %>% 
+  select(score, glm_coef) %>% 
+  unnest() %>% 
+  knitr::kable()
+```
+
+All severity scores are significant predictors. We'll need to impute a special result for SAPSII following this code, because we're taking the literature value:
+
+```{r }
+score_data_tidy <- predictor_detail_data_tidy %>% 
+  select(score, death_bin, score_value) %>% 
+  group_by(score) %>% 
+  nest() %>% 
+  mutate(glm = map(data, ~glm(death_bin ~ score_value, family = binomial, data = .))) %>% 
+  mutate(glm_coef = map(glm, broom::tidy)) %>% 
+  mutate(predictions = map2(data, glm, modelr::add_predictions)) %>% 
+  select(score, predictions) %>% 
+  unnest() %>% 
+  mutate(prob_death = exp(pred)/(1 + exp(pred))) %>% 
+  mutate(prob_death = if_else(score == "sapsii", 
+                              exp(-7.7631 + 0.07237*score_value + 0.9971*log(1 + score_value))/(1 + exp(-7.7631 +  0.07237*score_value + 0.9971*log(1 + score_value))), 
+                              prob_death))
+```
+
+```{r plot 2, fig.width= 10, cache=TRUE}
+score_data_tidy %>% 
+  select(score, death_bin, prob_death) %>% 
+  group_by(score, prob_death) %>%
+  add_tally(death_bin) %>% 
+  rename(tot_death_by_group = n) %>% 
+  add_tally() %>% 
+  mutate(prop_death = tot_death_by_group/n) %>% 
+  ggplot(aes(x = prob_death, y = prop_death, color = score)) + 
+  geom_point() +
+  geom_abline(slope = 1, intercept = 0) +
+  labs(x = "Probability of Death from Mainterm Regression or Literature Value",
+       y = "True Proportion of Deaths")
+
+```
+
+Above, we've plotted the true, observed proportion of deaths for each score value versus the probability of death predicted from mainterm regression (or, in the SAPSII case, a literature value) for each severity score. Each point is a particular score value for a patient -- i.e., there are 5x the numbers of ICU patients plotted.
+
+There's some interesting data here!  As expected, the SAPSII test, being from a literature value, is further under the equality line for most scores. This means that the external, literature value is more aggressive in estimating probability of death for patients, compared ot probabilities imputed from regression on our data. This could be because the care at Beth Israel Deaconness is unusually good, or it could be because it is clinically useful that 
+
+Another interesting finding is that some severity scores "group up" near probabilities 1 and 0. This could mean that there needs to be an adjustment in the range of the severity scores.
 
 ## Area under curves
 
-To plot the area under the curve for the SAPSII and SOFA scores, I need to calculate the respective TPR and FPR for each score.
+To plot the area under the curve for the SAPSII and SOFA scores, I need to calculate the respective TPR and FPR for each score. I'll use the literature value for the SAPSII score.
 
 ```{r auc}
 for_roc <- predictor_detail_data %>% 
   distinct(icustay_id, .keep_all = TRUE) %>% 
   select(icustay_id, sapsii, sofa, death_bin) %>% 
   mutate(prob_death_sofa = exp(-3.36 + 0.273*sofa)/(1 + exp(-3.36 + 0.273*sofa))) %>%
-  mutate(prob_death_sapsii = exp( -5.22 + 0.0803*sapsii)/(1 + exp(-5.22 + 0.0803*sapsii))) %>%  
+  mutate(prob_death_sapsii = exp(-7.7631 + 0.07237*sapsii + 0.9971*log(1 + sapsii))/(1 + exp(-7.7631 +  0.07237*sapsii + 0.9971*log(1 + sapsii)))) %>%  
   select(icustay_id, death_bin, sapsii, prob_death_sapsii, sofa, prob_death_sofa) 
 
+for_roc <- score_data_tidy %>% 
+  select(score, death_bin, prob_death) %>% 
+  group_by(score) %>% 
+  nest()
+
 ###############ROC AUC Functions#############################
+#This code could be improved with a better function.
 
 roc_log_fcn <- function(result, y_prob){
   probs <- seq(0,1, by = 0.005)
@@ -410,29 +473,62 @@ roc_log_fcn <- function(result, y_prob){
   return(roc_log)
 }
 
-roc_log_sapsii <- roc_log_fcn(for_roc$death_bin, for_roc$prob_death_sapsii)
+#SAPSII
+sapsii_for_roc <- for_roc %>% 
+  filter(score == "sapsii") %>% 
+  unnest() 
+roc_log_sapsii <- roc_log_fcn(sapsii_for_roc$death_bin, sapsii_for_roc$prob_death)
 
-roc_log_sofa <- roc_log_fcn(for_roc$death_bin, for_roc$prob_death_sofa)
+#SOFA
+sofa_for_roc <- for_roc %>% 
+  filter(score == "sofa") %>% 
+  unnest() 
+roc_log_sofa <- roc_log_fcn(sofa_for_roc$death_bin, sofa_for_roc$prob_death)
 
-for_roc_2 <- for_roc %>% 
-  select(death_bin, prob_death_sapsii, prob_death_sofa) %>% 
-  rename(sapsii = prob_death_sapsii, sofa = prob_death_sofa) %>% 
-  gather(key = score, value = prob_death, sapsii, sofa) %>% 
-  select(score, death_bin, prob_death) %>% 
-  group_by(score) %>% 
-  nest() %>% 
-  mutate(roc_log_sapsii = list(roc_log_sapsii)) %>% 
-  mutate(roc_log_sofa = list(roc_log_sofa))
+#LODS
+lods_for_roc <- for_roc %>% 
+  filter(score == "lods") %>% 
+  unnest() 
+roc_log_lods <- roc_log_fcn(lods_for_roc$death_bin, lods_for_roc$prob_death)
+
+#APSIII
+apsiii_for_roc <- for_roc %>% 
+  filter(score == "apsiii") %>% 
+  unnest() 
+roc_log_apsiii <- roc_log_fcn(apsiii_for_roc$death_bin, apsiii_for_roc$prob_death)
+
+#OASIS
+oasis_for_roc <- for_roc %>% 
+  filter(score == "oasis") %>% 
+  unnest() 
+roc_log_oasis <- roc_log_fcn(oasis_for_roc$death_bin, oasis_for_roc$prob_death)
 
 
 tibble(FPR_sapsii = roc_log_sapsii[,1], TPR_sapsii = roc_log_sapsii[,2],
-       FPR_sofa = roc_log_sofa[,1], TPR_sofa = roc_log_sofa[,2]) %>% 
-  gather(key = score, value = FPR, FPR_sapsii, FPR_sofa) %>% 
-  gather(key = score2, value = TPR, TPR_sapsii, TPR_sofa) %>% 
+       FPR_sofa = roc_log_sofa[,1], TPR_sofa = roc_log_sofa[,2],
+       FPR_lods = roc_log_lods[,1], TPR_lods = roc_log_lods[,2],
+       FPR_apsiii = roc_log_apsiii[,1], TPR_apsiii = roc_log_apsiii[,2],
+       FPR_oasis = roc_log_oasis[,1], TPR_oasis = roc_log_oasis[,2]) %>% 
+  gather(key = score, value = FPR, starts_with("FPR")) %>% 
+  gather(key = score2, value = TPR, starts_with("TPR")) %>% 
   mutate(score = if_else(score == "FPR_sapsii", 
+                         #yes sapsii
                          if_else(score2 == "TPR_sapsii", "sapsii", "NA"),
-                         if_else(score2 == "TPR_sofa", "sofa", "NA")
-                         )) %>% 
+                         #no sapsii 
+                            (if_else(score == "FPR_sofa", 
+                              # yes sofa 
+                              if_else(score2 == "TPR_sofa", "sofa", "NA"), 
+                              # no sofa
+                              (if_else(score == "FPR_lods",
+                              #yes lods
+                                if_else(score2 == "TPR_lods", "lods", "NA"),
+                              # no lods
+                              (if_else(score == "FPR_apsiii",
+                                if_else(score2 == "TPR_apsiii", "apsiii", "NA"), 
+                              (if_else(score == "FPR_oasis", 
+                                if_else(score2 == "TPR_oasis", "oasis", "NA"), "NA"
+                              )))))))))
+                         ) %>% 
   filter(score != "NA") %>% 
   select(score, FPR, TPR) %>% 
   ggplot(aes(x = FPR, y = TPR, color = score)) +
@@ -442,6 +538,11 @@ tibble(FPR_sapsii = roc_log_sapsii[,1], TPR_sapsii = roc_log_sapsii[,2],
   theme_bw() +
   scale_color_viridis_d()
 
+```
+
+SAPSII looks like the best-performing model, and let's confirm that with an AUROC analysis.
+
+```{r auroc }
 auc <- function(roc){
   len <- nrow(roc)
   ##The "delta X" values
@@ -452,5 +553,9 @@ auc <- function(roc){
   sum(-delta*hgt)
 }
 
+
 ```
 
+## Adding other predictors to our model
+
+The above analysis showed us that when considered severity scores computed from biomarkers, the best analysis 
