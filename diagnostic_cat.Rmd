@@ -88,11 +88,12 @@ We've succesfully reduced the complexity of the high-level diagnostic categories
 ```{r}
 subject_diag_cat <- admissions %>% 
   inner_join(., diagnoses_icd_single_cat, by = "hadm_id") %>% 
-  select(hadm_id, diagnosis, icd9_code, short_title, description_single) %>% 
-  rename(admit_diagnosis = diagnosis, category = description_single) %>% 
+  select(hadm_id, hospital_expire_flag, diagnosis, icd9_code, short_title, description_single) %>% 
+  rename(death_bin = hospital_expire_flag, admit_diagnosis = diagnosis, category = description_single) %>% 
   group_by(hadm_id)
 
 write_csv(subject_diag_cat, "./database/subject_diag_cat.csv")
 
+ 
 ```
 
