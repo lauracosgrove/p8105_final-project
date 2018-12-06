@@ -49,7 +49,7 @@ Relationship
 severity_diag_cat_top <- 
   severity_diag_cat %>% 
   group_by(category) %>% 
-  add_tally() %>% 
+  add_tally(categoty) %>% 
   top_n(50)
 ```
 

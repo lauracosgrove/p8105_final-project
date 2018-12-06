@@ -1,0 +1,15 @@
+base
+ggplot2
+DBI
+RPostgreSQL
+tidyverse
+tibble
+tidyr
+readr
+purrr
+dplyr
+stringr
+forcats
+dbplyr
+lubridate
+bindrcpp
