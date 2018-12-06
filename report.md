@@ -9,12 +9,12 @@ Influential Factors in Critical Care Patients
 -   [Exploratory Analysis](#exploratory-analysis)
 -   [Additional Analysis](#additional-analysis)
     -   [Database Setup](#database-setup)
-    -   [Motivation](#motivation)
+    -   [Motivation for Additional Analysis](#motivation-for-additional-analysis)
     -   [Generating Views](#generating-views)
     -   [Visualize how fractions of death increase](#visualize-how-fractions-of-death-increase)
     -   [Other severity scores](#other-severity-scores)
     -   [Analysis with admissions data](#analysis-with-admissions-data)
-    -   [Individual mortality prediction](#individual-mortality-prediction)
+    -   [Validation of Predictive Ability](#validation-of-predictive-ability)
     -   [SOFA Score](#sofa-score)
     -   [Map for all Scores](#map-for-all-scores)
     -   [Area under ROC curves](#area-under-roc-curves)
@@ -209,11 +209,12 @@ deadly_diagnoses <- subject_diag_cat %>%
 #Top 6 for each category:
 
 common_diagnoses %>% 
+  rename("Diagnostic Category: Most Commonly Diagnosed" = category) %>% 
   head() %>% 
   knitr::kable(digits = 3)
 ```
 
-| category                                             |  pct\_deaths|      n|
+| Diagnostic Category: Most Commonly Diagnosed         |  pct\_deaths|      n|
 |:-----------------------------------------------------|------------:|------:|
 | Coronary atherosclerosis and other heart disease     |        0.084|  27196|
 | Essential hypertension                               |        0.097|  21157|
@@ -224,11 +225,12 @@ common_diagnoses %>%
 
 ``` r
 deadly_diagnoses %>% 
+  rename("Diagnostic Category: Highest Rate of Fatalities" = category) %>% 
   head() %>% 
   knitr::kable(digits = 3)
 ```
 
-| category                                         |  pct\_deaths|     n|
+| Diagnostic Category: Highest Rate of Fatalities  |  pct\_deaths|     n|
 |:-------------------------------------------------|------------:|-----:|
 | Cardiac arrest and ventricular fibrillation      |        0.478|  1933|
 | Cystic fibrosis                                  |        0.400|     5|
@@ -239,6 +241,8 @@ deadly_diagnoses %>%
 
 Additional Analysis
 -------------------
+
+It's necessary to have a working copy of a Postgres MIMIC database in order to execute the additional analysis. The working code is reproduced here:
 
 ### Database Setup
 
@@ -260,7 +264,7 @@ dbExecute(con, paste("SET search_path TO ", schema, sep=" "))
 
     ## [1] 0
 
-### Motivation
+### Motivation for Additional Analysis
 
 The purpose for this portion of the report is to leverage the physiologic data from the EMR in order to estimate likelihood of in-hospital death using severity scores pre-determined in the literature as being a useful proxy for likeliood of mortality. One of these severity scores, or a combination of the scores, will provide us with our base model, after which we will explore whether a model additionally considering factors like insurance coverage, gender, and ethnicity will improve the fit in any meaningful way.
 
@@ -310,16 +314,6 @@ write_csv(sapsii_data, path = "./database/sapsii.csv")
 
 Plot distribution:
 
-``` r
-sapsii_data %>% 
-  ggplot(aes(x = sapsii)) + 
-  geom_histogram()
-```
-
-    ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
-
-![](report_files/figure-markdown_github/unnamed-chunk-17-1.png)
-
 A note in the SQL file is the following:
 
 Note:
@@ -331,11 +325,6 @@ Note:
 ### Visualize how fractions of death increase
 
 For a quick validation, we'll visualize how the fractions of deaths increase for the SAPSII scores.
-
-``` r
-admissions <- read_csv("./database/data/ADMISSIONS.csv.gz") %>% 
-  janitor::clean_names()
-```
 
     ## Parsed with column specification:
     ## cols(
@@ -360,11 +349,6 @@ admissions <- read_csv("./database/data/ADMISSIONS.csv.gz") %>%
     ##   HAS_CHARTEVENTS_DATA = col_integer()
     ## )
 
-``` r
-patients <- read_csv("./database/data/PATIENTS.csv.gz") %>% 
-  janitor::clean_names()
-```
-
     ## Parsed with column specification:
     ## cols(
     ##   ROW_ID = col_integer(),
@@ -377,27 +361,9 @@ patients <- read_csv("./database/data/PATIENTS.csv.gz") %>%
     ##   EXPIRE_FLAG = col_integer()
     ## )
 
-``` r
-admissions %>% 
-  inner_join(., patients, by = "subject_id") %>% 
-  filter(has_chartevents_data == 1) %>% 
-  inner_join(., sapsii_data, by = "hadm_id") %>% 
-  mutate(target = if_else(deathtime %in% NA, 0, 1),
-         predictor = sapsii) %>%
-  select(subject_id.x, target, predictor) %>% 
-  group_by(predictor) %>% 
-  summarize(deaths = sum(target),
-            n = n()) %>% 
-  mutate(frac_deaths = deaths/n) %>% 
-  ggplot(aes(x = predictor, y = frac_deaths)) +
-  geom_point(aes(color = n)) + 
-  labs(x = "SAPS II Score",
-       y = "Mortality Fraction", 
-       title = "Predicting Mortality of ICU Patients with First-Day SAPS II scores") +
-  theme_bw()
-```
-
 ![](report_files/figure-markdown_github/unnamed-chunk-18-1.png)
+
+We see that more patients fall into the mid-range for SAPS II scores, and that the mortality fraction for a given SAPSII score shows an exponential increase with a unit increase in SAPSII score.
 
 ### Other severity scores
 
@@ -427,60 +393,12 @@ dbGetQuery(con, oasis_view)
 
 As before, read all the data from the generated materialized views into tibbles:
 
-``` r
-#SOFA
-sofa_query <- "SELECT *
-              FROM sofa i;"
-sofa_data <- as.tibble(dbGetQuery(con, sofa_query))
-#LODS
-lods_query <- "SELECT *
-              FROM lods i;"
-lods_data <- as.tibble(dbGetQuery(con, lods_query))
-#SAPS
-saps_query <- "SELECT *
-              FROM saps i;"
-saps_data <- as.tibble(dbGetQuery(con, saps_query))
-# APSIII  
-apsiii_query <- "SELECT *
-              FROM apsiii i;"
-apsiii_data <- as.tibble(dbGetQuery(con, apsiii_query))
-#OASIS
-oasis_query <- "SELECT *
-              FROM oasis i;"
-oasis_data <- as.tibble(dbGetQuery(con, oasis_query))
-```
-
 ### Analysis with admissions data
 
 ``` r
+#ICU detail is demographic data with length of stay: an improved version of the admssions dataset
 icu_detail <- read_csv("./database/icu_detail.csv") %>% 
   janitor::clean_names()
-```
-
-    ## Parsed with column specification:
-    ## cols(
-    ##   subject_id = col_integer(),
-    ##   hadm_id = col_integer(),
-    ##   icustay_id = col_integer(),
-    ##   gender = col_character(),
-    ##   dod = col_datetime(format = ""),
-    ##   admittime = col_datetime(format = ""),
-    ##   dischtime = col_datetime(format = ""),
-    ##   los_hospital = col_double(),
-    ##   admission_age = col_double(),
-    ##   ethnicity = col_character(),
-    ##   admission_type = col_character(),
-    ##   hospital_expire_flag = col_integer(),
-    ##   hospstay_seq = col_integer(),
-    ##   first_hosp_stay = col_logical(),
-    ##   intime = col_datetime(format = ""),
-    ##   outtime = col_datetime(format = ""),
-    ##   los_icu = col_double(),
-    ##   icustay_seq = col_integer(),
-    ##   first_icu_stay = col_logical()
-    ## )
-
-``` r
 predictor_detail_data <- icu_detail %>% 
   inner_join(., sapsii_data, by = "hadm_id") %>% 
   inner_join(., sofa_data, by = "hadm_id") %>% 
@@ -507,29 +425,19 @@ predictor_detail_data %>%
     ## apsiii 0.7558680 0.7025452 0.7509069 0.6562129 1.0000000 0.5838826
     ## oasis  0.6600098 0.4945946 0.5936155 0.6457071 0.5838826 1.0000000
 
-``` r
-predictor_detail_data %>% 
-#Select for single admission
-  distinct(icustay_id, .keep_all = TRUE) %>% 
-  gather(key = score, value, sapsii, saps, sofa, lods, apsiii, oasis) %>% 
-  group_by(score, value) %>% 
-  summarize(deaths = sum(death_bin), 
-            n = n()) %>% 
-  mutate(frac_deaths = deaths/n) %>% 
-  ggplot(aes(x = value, y = frac_deaths)) + 
-  geom_point(aes(color = n)) +
-  facet_grid(~score)
-```
+The physiologic scores show correlation between one another, which is intuitive.
 
 ![](report_files/figure-markdown_github/plot-1.png)
 
-### Individual mortality prediction
+All scores show a exponential association with the mortality fraction, which indicates promising predictive power. APSIII and SAPSII have a ceiling effect for very high scores, at which their mortality fraction hits 100%. For APSII, we could consider recommending that a score over 125 should be of extreme concern. APSII has a poor fit at the low range of scores, however, while SAPSII appears to acheive a good fit on the low-risk range. OASIS and SAPS seem to have a dense grouping around very low scores with high variability, indicating a poor fit in that range. SOFA and LODS have a smaller scale than other scores, with a more discrete distribution, and acheive a nearly linear fit with mortality fraction.
 
-It's fine just as a quick gut check to see how fraction of deaths increase over the distributions of the various severity scores. But how do the scores perform based on their original authored likelihoods?
+### Validation of Predictive Ability
+
+It's good just as a quick gut check to see how fraction of deaths increase over the distributions of the various severity scores. But how do the scores perform based on their original authored likelihoods or in terms of discriminative and predictive ability?
 
 #### SAPS II
 
-We'll start with the SAPS II score.
+We'll start with the SAPSII score.
 
 Individual mortality prediction for the SAPS II score is defined by its authors to be:
 
@@ -539,30 +447,9 @@ A mortality prediction algorithm is said to have adequate discrimination if it t
 
 Because I suspect I may want the information to do subgroup analyses, I'm going to start by using the large datasheet from the `predictor_detail_data`.
 
-``` r
-#Joining admissions and length of stay, and adding probability of death
-predictor_detail_data %>% 
-  distinct(hadm_id, .keep_all = TRUE) %>% 
-  select(hadm_id, sapsii, death_bin) %>% 
-  mutate(prob_death = exp(-7.7631 + 0.07237*sapsii + 0.9971*log(1 + sapsii))/(1 + exp(-7.7631 + 0.07237*sapsii + 0.9971*log(1 + sapsii)))) %>% 
-  group_by(sapsii) %>% 
-  add_tally(death_bin) %>% 
-  rename(tot_death_by_group = n) %>% 
-  add_tally() %>% 
-  mutate(prop_death = tot_death_by_group/n) %>% 
-  select(sapsii, prob_death, prop_death) %>% 
-  ggplot(aes(x = prob_death, y = prop_death)) + 
-  geom_point() +
-  geom_abline(slope = 1, intercept = 0) +
-  labs(title = "SAPSII",
-      x = "Probability of Death from Literature",
-       y = "True Proportion of Deaths") + 
-  theme_bw()
-```
-
 ![](report_files/figure-markdown_github/unnamed-chunk-22-1.png)
 
-Although the authors of the SAPS score publish a non-linear in parameters regression for association with likelihood of death, I'll fit a main-term logistic regression to obtain mortality prediction based on a linear-in-parameters assumption.
+We see that the SAPSII predicted values from the authored regression is more aggressive in assigning likelihood of mortaility, based on the observed true mortality fraction from those patients with the SAPSII score. Although the authors of the SAPS score publish a non-linear in parameters regression for association with likelihood of death, I'll fit a main-term logistic regression to obtain mortality prediction based on a linear-in-parameters assumption.
 
 ``` r
 fit_sapsii <- predictor_detail_data %>% 
@@ -590,29 +477,9 @@ fit_sapsii %>%
     ## 1 (Intercept)  0.00541   0.0489     -107.        0  0.00491   0.00595
     ## 2 sapsii       1.08      0.00104      77.0       0  1.08      1.09
 
-The regression fits a parameter estimate of log(\[pr(death)\]\[1 - pr(death)\]) = -5.22 + 0.0803\*SAPSII; or, for every unit increase in SOFA score, you can expect to have 1.08x the odds of death.
+The regression fits a parameter estimate of log(\[pr(death)\]\[1 - pr(death)\]) = -5.22 + 0.0803\*SAPSII; or, for every unit increase in SAPSII score, you can expect to have 1.08x the odds of death.
 
 I'll refit the plot based on the mainterm regression:
-
-``` r
-predictor_detail_data %>% 
-  distinct(icustay_id, .keep_all = TRUE) %>% 
-  select(hadm_id, sapsii, death_bin) %>% 
-  mutate(prob_death = exp( -5.22 + 0.0803*sapsii)/(1 + exp(-5.22 + 0.0803*sapsii))) %>% 
-  group_by(sapsii) %>% 
-  add_tally(death_bin) %>% 
-  rename(tot_death_by_group = n) %>% 
-  add_tally() %>% 
-  mutate(prop_death = tot_death_by_group/n) %>% 
-  select(sapsii, prob_death, prop_death) %>% 
-  ggplot(aes(x = prob_death, y = prop_death)) + 
-  geom_point() +
-  geom_abline(slope = 1, intercept = 0) +
-  labs(title = "SAPSII",
-      x = "Probability of Death from Mainterm Regression",
-       y = "True Proportion of Deaths") + 
-  theme_bw()
-```
 
 ![](report_files/figure-markdown_github/unnamed-chunk-24-1.png)
 
@@ -650,32 +517,11 @@ fit_sofa %>%
 
 The regression fits a parameter estimate of log(\[pr(death)\]\[1 - pr(death)\]) = -3.36 + 0.273\*SOFA; for every unit increase in SOFA score, you can expect to have 1.31x the odds of death.
 
-``` r
-predictor_detail_data %>% 
-  distinct(icustay_id, .keep_all = TRUE) %>% 
-  select(hadm_id, sofa, death_bin) %>% 
-  mutate(prob_death = exp(-3.36 + 0.273*sofa)/(1 + exp(-3.36 + 0.273*sofa))) %>% 
-  group_by(sofa) %>% 
-  add_tally(death_bin) %>% 
-  rename(tot_death_by_group = n) %>% 
-  add_tally() %>% 
-  mutate(prop_death = tot_death_by_group/n) %>% 
-  select(sofa, prob_death, prop_death)%>% 
-  ggplot(aes(x = prob_death, y = prop_death)) + 
-  geom_point() +
-  geom_abline(slope = 1, intercept = 0) +
-  labs(x = "Probability of Death from Mainterm Regression",
-       y = "True Proportion of Deaths") + 
-  theme_bw()
-```
-
-![](report_files/figure-markdown_github/unnamed-chunk-26-1.png)
-
 This regression obtains a good fit, which makes sense because the probability was obtained from our data rather than a literature value.
 
 ### Map for all Scores
 
-We can use a `map` operation with some tidying of our original data to speed up the generation of the predicted probabilities of each score.
+Taking lessons from the above methods, we can use a `map` operation with some tidying of our original data to speed up the generation of the predicted probabilities of each score.
 
 ``` r
 predictor_detail_data_tidy <- predictor_detail_data %>% 
@@ -722,21 +568,6 @@ score_data_tidy <- predictor_detail_data_tidy %>%
   mutate(prob_death = if_else(score == "sapsii", 
                               exp(-7.7631 + 0.07237*score_value + 0.9971*log(1 + score_value))/(1 + exp(-7.7631 +  0.07237*score_value + 0.9971*log(1 + score_value))), 
                               prob_death))
-```
-
-``` r
-score_data_tidy %>% 
-  select(score, death_bin, prob_death) %>% 
-  group_by(score, prob_death) %>%
-  add_tally(death_bin) %>% 
-  rename(tot_death_by_group = n) %>% 
-  add_tally() %>% 
-  mutate(prop_death = tot_death_by_group/n) %>% 
-  ggplot(aes(x = prob_death, y = prop_death, color = score)) + 
-  geom_point() +
-  geom_abline(slope = 1, intercept = 0) +
-  labs(x = "Probability of Death from Mainterm Regression or Literature Value",
-       y = "True Proportion of Deaths")
 ```
 
 ![](report_files/figure-markdown_github/plot%202-1.png)
@@ -829,7 +660,9 @@ tidy_for_roc %>%
   ggplot(aes(x = FPR, y = TPR, color = score)) +
   geom_point() +
   geom_step() +
-  labs(title = "ROC Curves") +
+  labs(title = "ROC Curves",
+       x = "False Positive Rate",
+       y = "True Positive Rate") +
   theme_bw() +
   scale_color_viridis_d()
 ```
@@ -837,21 +670,6 @@ tidy_for_roc %>%
 ![](report_files/figure-markdown_github/auc-1.png)
 
 SAPSII looks like the best-performing model, and let's confirm that with an AUROC analysis.
-
-``` r
-auc <- function(roc){
-  len <- nrow(roc)
-  ##The "delta X" values
-  delta <- roc[-1,1]-roc[-len,1]
-  ##The "heights" the rectangle (drop the first or last).
-  hgt <- roc[-1,2]
-  ##The Riemann Sum
-  sum(-delta*hgt)
-}
-tibble(score = c("sapsii", "sofa", "lods", "apsiii", "oasis"), AUROC = c(auc(roc_log_sapsii), auc(roc_log_sofa), auc(roc_log_lods), auc(roc_log_apsiii), auc(roc_log_oasis))) %>% 
-  arrange(desc(AUROC)) %>% 
-  knitr::kable()
-```
 
 | score  |      AUROC|
 |:-------|----------:|
@@ -901,18 +719,6 @@ anova(fit_null, fit_alt)
 
 ``` r
 library(lmtest)
-```
-
-    ## Loading required package: zoo
-
-    ## 
-    ## Attaching package: 'zoo'
-
-    ## The following objects are masked from 'package:base':
-    ## 
-    ##     as.Date, as.Date.numeric
-
-``` r
 lrtest(fit_null, fit_alt)
 ```
 
@@ -935,34 +741,6 @@ Our tests show a significant increase in log-likelihood for the alternative, lar
 
 We can calculate AUROC for our new model and compare against SAPSII. Note that we will be missing some values we previously had.
 
-``` r
- predictor_detail_data %>% 
-  mutate(prob_death_sapsii = exp(-7.7631 + 0.07237*sapsii + 0.9971*log(1 + sapsii))/(1 + exp(-7.7631 +  0.07237*sapsii + 0.9971*log(1 + sapsii)))) %>% 
-  modelr::add_predictions(fit_alt) %>% 
-  mutate(prob_death_full = exp(pred)/(1 + exp(pred))) %>% 
-  select(icustay_id, death_bin, prob_death_sapsii, prob_death_full) %>% 
-  group_by(prob_death_sapsii) %>% 
-  add_tally(death_bin) %>% 
-  rename(tot_death_by_sapsii = n) %>% 
-  add_tally() %>% 
-  mutate(prop_death_sapsii = tot_death_by_sapsii/n) %>% 
-  ungroup() %>% 
-  select(death_bin, prob_death_sapsii, prob_death_full, prop_death_sapsii) %>% 
-  group_by(prob_death_full) %>% 
-  add_tally(death_bin) %>% 
-  rename(tot_death_by_full = n) %>% 
-  add_tally() %>% 
-  mutate(prop_death_full = tot_death_by_full/n) %>% 
-  select(prob_death_sapsii, prop_death_sapsii, prob_death_full, prop_death_full) %>% 
-  ggplot() + 
-  geom_point(aes(x = prob_death_sapsii, y = prop_death_sapsii), color = "blue") +
-  geom_point(aes(x = prob_death_full, y = prop_death_full), color = "red") +
-  geom_abline(slope = 1, intercept = 0) +
-  labs(x = "Probability of Death from Mainterm Regression",
-       y = "True Proportion of Deaths",
-       caption = "Blue is SAPSII, red is with covariates")
-```
-
 ![](report_files/figure-markdown_github/unnamed-chunk-29-1.png)
 
 What a mess! This goes to show that something that looks promising from a model diagnostics perspective may, in fact, be more complex and far less predictive in terms of individual probability values.
@@ -982,7 +760,7 @@ head(caret::varImp(fit_alt))
     ## admission_locationHMO REFERRAL/SICK          0.01456729
 
 ``` r
-#Admission type
+#Admission type is the most important predictor
 fit_alt_2 <- predictor_detail_data %>% 
   glm(death_bin ~ sapsii + admission_type, family = binomial, data = .) 
 #Use anova to compare the null with the added predictors model
@@ -1013,37 +791,12 @@ lrtest(fit_null, fit_alt_2)
     ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
 ``` r
-#Plot
- predictor_detail_data %>% 
-  mutate(prob_death_sapsii = exp(-7.7631 + 0.07237*sapsii + 0.9971*log(1 + sapsii))/(1 + exp(-7.7631 +  0.07237*sapsii + 0.9971*log(1 + sapsii)))) %>% 
-  modelr::add_predictions(fit_alt_2) %>% 
-  mutate(prob_death_full = exp(pred)/(1 + exp(pred))) %>% 
-  select(icustay_id, death_bin, prob_death_sapsii, prob_death_full) %>% 
-  group_by(prob_death_sapsii) %>% 
-  add_tally(death_bin) %>% 
-  rename(tot_death_by_sapsii = n) %>% 
-  add_tally() %>% 
-  mutate(prop_death_sapsii = tot_death_by_sapsii/n) %>% 
-  ungroup() %>% 
-  select(death_bin, prob_death_sapsii, prob_death_full, prop_death_sapsii) %>% 
-  group_by(prob_death_full) %>% 
-  add_tally(death_bin) %>% 
-  rename(tot_death_by_full = n) %>% 
-  add_tally() %>% 
-  mutate(prop_death_full = tot_death_by_full/n) %>% 
-  select(prob_death_sapsii, prop_death_sapsii, prob_death_full, prop_death_full) %>% 
-  ggplot() + 
-  geom_point(aes(x = prob_death_sapsii, y = prop_death_sapsii), color = "blue") +
-  geom_point(aes(x = prob_death_full, y = prop_death_full), color = "red") +
-  geom_abline(slope = 1, intercept = 0) +
-  labs(x = "Probability of Death from Mainterm Regression",
-       y = "True Proportion of Deaths",
-       caption = "Blue is SAPSII, red is with covariates")
+##Significant result for the fuller model
 ```
 
-![](report_files/figure-markdown_github/unnamed-chunk-30-1.png)
+![](report_files/figure-markdown_github/unnamed-chunk-31-1.png)
 
-It looks like the algorithm with`admission_type` added as a covariate has far more variance on observed proportion of deaths for a given assigned probabiity of death.
+It looks like the algorithm with `admission_type` added as a covariate has far more variance on observed proportion of deaths for a given assigned probabiity of death.
 
 ### Testing original hypothesis
 
@@ -1080,67 +833,14 @@ lrtest(fit_null, fit_alt_3)
     ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
 ``` r
-#Plot
- predictor_detail_data %>% 
-  mutate(prob_death_sapsii = exp(-7.7631 + 0.07237*sapsii + 0.9971*log(1 + sapsii))/(1 + exp(-7.7631 +  0.07237*sapsii + 0.9971*log(1 + sapsii)))) %>% 
-  modelr::add_predictions(fit_alt_3) %>% 
-  mutate(prob_death_full = exp(pred)/(1 + exp(pred))) %>% 
-  select(icustay_id, death_bin, prob_death_sapsii, prob_death_full) %>% 
-  group_by(prob_death_sapsii) %>% 
-  add_tally(death_bin) %>% 
-  rename(tot_death_by_sapsii = n) %>% 
-  add_tally() %>% 
-  mutate(prop_death_sapsii = tot_death_by_sapsii/n) %>% 
-  ungroup() %>% 
-  select(death_bin, prob_death_sapsii, prob_death_full, prop_death_sapsii) %>% 
-  group_by(prob_death_full) %>% 
-  add_tally(death_bin) %>% 
-  rename(tot_death_by_full = n) %>% 
-  add_tally() %>% 
-  mutate(prop_death_full = tot_death_by_full/n) %>% 
-  select(prob_death_sapsii, prop_death_sapsii, prob_death_full, prop_death_full) %>% 
-  ggplot() + 
-  geom_point(aes(x = prob_death_sapsii, y = prop_death_sapsii), color = "blue") +
-  geom_point(aes(x = prob_death_full, y = prop_death_full), color = "red") +
-  geom_abline(slope = 1, intercept = 0) +
-  labs(x = "Probability of Death from Mainterm Regression",
-       y = "True Proportion of Deaths",
-       caption = "Blue is SAPSII, red is with covariates")
+##Another significant result
 ```
 
-![](report_files/figure-markdown_github/fit%20hypothesis-1.png)
+![](report_files/figure-markdown_github/unnamed-chunk-32-1.png)
 
-For this hypothesis, I'll create an AUROC curve.
+We see a significant result adding insurance coverage as an interaction term in favor of the full model, and we see a similar decreased biased (but increased variance) in the probability graph. For this hypothesis, I'll create an ROC curve.
 
-``` r
-full_for_roc <- predictor_detail_data %>% 
-  modelr::add_predictions(fit_alt_3) %>% 
-  mutate(prob_death = exp(pred)/(1 + exp(pred))) %>% 
-  select(death_bin, prob_death)
-roc_log_full <- roc_log_fcn(full_for_roc$death_bin, full_for_roc$prob_death)
-tibble(FPR_sapsii = roc_log_sapsii[,1], TPR_sapsii = roc_log_sapsii[,2],
-       FPR_full = roc_log_full[,1], TPR_full = roc_log_full[,2]) %>% 
-  gather(key = model, value = FPR, starts_with("FPR")) %>% 
-  gather(key = model2, value = TPR, starts_with("TPR")) %>% 
-  mutate(model = if_else(model == "FPR_sapsii", 
-                         if_else(model2 == "TPR_sapsii", "sapsii", "NA"),
-                         if_else(model2 == "TPR_full", "full", "NA"))) %>% 
-  filter(model != "NA") %>% 
-  select(model, FPR, TPR) %>% 
-  ggplot(aes(x = FPR, y = TPR, color = model)) +
-  geom_point() +
-  geom_step() +
-  labs(title = "ROC Curves") +
-  theme_bw() +
-  scale_color_viridis_d()
-```
-
-![](report_files/figure-markdown_github/unnamed-chunk-31-1.png)
-
-``` r
-tibble(score = c("sapsii", "sapsii with insurance interaction"), AUROC = c(auc(roc_log_sapsii), auc(roc_log_full))) %>% 
-  knitr::kable() 
-```
+![](report_files/figure-markdown_github/unnamed-chunk-33-1.png)
 
 | score                             |      AUROC|
 |:----------------------------------|----------:|
@@ -1154,7 +854,7 @@ Discussion
 
 In summary, we used the MIT LCP to generate severity scores and detailed ICU data for the &gt;50,000 patients in this dataset from their chart events in the ICU. We also used AHRQ's ICD code classification system to generate high-level classification of diagnosis for later manipulation in our interactive [Shiny webapp](https://mimicroc.shinyapps.io/severity-scores-analysis). We evaluated the different severity scores first through an intuitive visualization, and then through an AUROC analysis, making use of predictions imputed in the case of SAPSII by a published literature value and, for other scores, through a mainterm logicstic regression. An AUROC analysis maximizes the ratio of true positives to false positive through every possible "cutoff" value for a continuous-probability test; i.e., if an algorithem were to classify an outcome based on different levels of probability, the false positive rate and true positive rate would change. A algorithm with good discrimination will quickly maxi the true positive rate vs. false positive rate as your threshold for classification changes. We find this type of analysis applicable to the clinical use case; given that different clinicians, programs, or systems may assign different interpretations to the same severity, a useful algorithm will quickly be "better than chance" throughout its range. Our AUROC analysis resulted in SAPSII being the most predictive severity score.
 
-Following this, we revisited an earlier question of interest-- do demographic factors affect outcomes--through two means: first, we investigated whether adding additional terms to the model improved the SAPSII prediction, through our earlier "intuitive" graph and an AUROC analysis. We found a marginal improvement in AUROC when adding an interaction term with admission type (emergency or elective), and a log-likelihood test found the additional terms added to be significant. However, our main conclusion was how quickly models are muddied in interpretability by adding additional terms, which was a useful exploration of the principle of parsimony. To close our project, we found that a less certain, but more visualization-rich analysis would be a useful addition to this research question, and we created a [Shiny dashboard](https://mimicroc.shinyapps.io/severity-scores-analysis) wherein users can explore the effect of different diagnoses (from the top 50 most common diagnostic categories), insurance types, and age on observed deaths and the ROC curves for the severity scores. (N.b.: this also serves as an exploration of how sample size affects evaluation of algorithms).
+One of our initial aims was to fit a regression model purely based on demographic factors. We do not report the results here because we found we acheived a poor fit using only demographic factors, which provided the inspiration to use physiologic data to build the model. But following the completion of the severity score models, we revisited an earlier question of interest-- do demographic factors affect outcomes--through two means: first, we investigated whether adding additional terms to the model improved the SAPSII prediction, through our earlier "intuitive" graph and an AUROC analysis. We found a marginal improvement in AUROC when adding an interaction term with admission type (emergency or elective), and a log-likelihood test found the additional terms added to be significant. However, our main conclusion was how quickly models are muddied in interpretability by adding additional terms, which was a useful exploration of the principle of parsimony. To close our project, we found that a less certain, but more visualization-rich analysis would be a useful addition to this research question, and we created a [Shiny dashboard](https://mimicroc.shinyapps.io/severity-scores-analysis) wherein users can explore the effect of different diagnoses (from the top 50 most common diagnostic categories), insurance types, and age on observed deaths and the ROC curves for the severity scores. (N.b.: this also serves as an exploration of how sample size affects evaluation of algorithms).
 
 Conclusion
 ----------

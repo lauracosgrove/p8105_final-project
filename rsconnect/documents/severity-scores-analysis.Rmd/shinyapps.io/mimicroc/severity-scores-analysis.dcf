@@ -1,0 +1,10 @@
+name: severity-scores-analysis
+title:
+username:
+account: mimicroc
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 605347
+bundleId: 1743495
+url: https://mimicroc.shinyapps.io/severity-scores-analysis/
+when: 1544038028.39831
