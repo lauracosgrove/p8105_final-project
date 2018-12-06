@@ -1,6 +1,28 @@
 Influential Factors in Critical Care Patients
 ================
 
+-   [Introduction](#introduction)
+-   [Motivation and Related Work](#motivation-and-related-work)
+-   [Data Collection](#data-collection)
+    -   [Using SQL in RMarkdown](#using-sql-in-rmarkdown)
+-   [Initial Questions](#initial-questions)
+-   [Exploratory Analysis](#exploratory-analysis)
+-   [Additional Analysis](#additional-analysis)
+    -   [Database Setup](#database-setup)
+    -   [Motivation](#motivation)
+    -   [Generating Views](#generating-views)
+    -   [Visualize how fractions of death increase](#visualize-how-fractions-of-death-increase)
+    -   [Other severity scores](#other-severity-scores)
+    -   [Analysis with admissions data](#analysis-with-admissions-data)
+    -   [Individual mortality prediction](#individual-mortality-prediction)
+    -   [SOFA Score](#sofa-score)
+    -   [Map for all Scores](#map-for-all-scores)
+    -   [Area under ROC curves](#area-under-roc-curves)
+    -   [Adding other predictors to our model](#adding-other-predictors-to-our-model)
+    -   [Testing original hypothesis](#testing-original-hypothesis)
+-   [Discussion](#discussion)
+-   [Conclusion](#conclusion)
+
 | Group Members   | UNI     |
 |-----------------|---------|
 | Samantha Brown  | slb2240 |
@@ -9,26 +31,87 @@ Influential Factors in Critical Care Patients
 
 ### Introduction
 
-Critical care involves the specialized treatment of patients whose conditions pose life-threatening risks and require around-the-clock care. Critical care treatment typically takes place in an intensive care unit (ICU) of a hospital. Due to the nature of critical care, many patients eventually recover, but some die. For the purpose of this project, we seek to explore factors that influence critical care patients.
+Millions of data points are collected every second in hospitals and health systems across the U.S., providing a deep well of individual-level data about the course of a person's care. Historically, much of these data are stored in aging EHR and medical device lexicons and siloed on private servers; little of it is shared with the research community. The [MIMIC Critical Care Database](https://mimic.physionet.org/), developed in 2015 by the MIT Lab for Computational Physiology is a unique opportunity for researchers and data scientists to engage with this kind of patient data. Instructions about gaining access to MIMIC are [here](https://mimic.physionet.org/gettingstarted/access/), along with richer background information about the open research exchange.
+
+Critical care involves the specialized treatment of patients whose conditions pose life-threatening risks and require around-the-clock care. Critical care treatment typically takes place in an intensive care unit (ICU) of a hospital. Due to the nature of critical care, many patients eventually recover, but some die.
+
+This project aims to visualize the predictive capability of five physiologic severity scores computed from first-day stays in the ICU, and to determine whether covariate demographic factors affect mortality outcomes. More loosely, we hoped to explore our capability to reproduce analyses in an open research community and find new ways to understand the data through interactive visualization.
 
 ### Motivation and Related Work
 
-Previous research has focused on the physiological- and disease-driven factors that influence critical care. In this report, we consider whether demographic characteristics of patients in critical care influence outcomes such as mortality and length of hospital stay.
+Previous research with MIMIC has focused primarily on the physiological- and disease-driven factors that influence critical care. In this report, we aimed to consider whether demographic characteristics of patients in critical care influence mortality outcomes.
 
-Related work includes MIT Computational Lab's 2015 research publication titled *"Mortality prediction in the ICU: can we do better? Results from the Super ICU Learner Algorithm (SICULA) project, a population-based study"*, which considers whether a machine learning technique can help predict mortality for patients in critical care. This publication considers MIMIC, an openly accessible critical care database released by Beth Israel Deaconess Medical Center. Since its release in 2014 created by the MIT Lab for Computational Physiology. With the goal of engaging in open research by reproducing an analysis, this project works to understand and analyze the MIMIC database. MIMIC will be described further in the Data Collection section of the report.
+This project could not have been completed without, of course, the MIT Lab for Computational Physiology's [MIMIC open code repository](https://github.com/MIT-LCP/mimic-code) and Pirracchio et al.'s [2014 research paper](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4321691/) on mortality prediction in the ICU. In this work, the authors describe development of SICULA, a super-learner algorithm trained on the MIMIC data. Our aim was to reproduce their benchmark analyses of the known severity scores for mortality prediction, which make use, primarily, of physiologic data from a patient's first stay in the ICU.
 
 Data Collection
 ---------------
 
 The MIMIC database comprises deidentified health-related data associated with over forty thousand patients who stayed in critical care units of the Beth Israel Deaconess Medical Center between 2001 and 2012. It includes the following information: demographics, vital sign measurements made at the bedside (~1 data point per hour), laboratory test results, procedures, medications, caregiver notes, imaging reports, and mortality (both in and out of hospital). After completing the CITI “Data or Specimens Only Research” training course, PhysioNet granted us access to the MIMIC database.
 
-The next step was to follow the MIMIC website's open tutorial to install MIMIC in a local Postgres database. We referenced the public Github MIMIC-code repository for MIT Lab for Computational Physiology (<https://github.com/MIT-LCP/mimic-code/tree/master/buildmimic>) as a guide. The MIT researchers who built the MIMIC database also built this repository with the goal of sharing how they performed the technical analysis described in their published literature. Given the time constraints of this project, we were limited to how much we could understand how to make use of the MIMIC data on our own. Therefore, MIT's Lab for Computational Physiology Github repository served as the most productive and efficient way for us to understand and analyze the MIMIC database.
+Following access, downloading the data is straightforward to do either using command-line tools or through the browser interface. The full MIMIC dataset consists of 26 datasheets, linked across topics or data inputs by unique keys (usually subject\_id, hadm\_id, or icustay\_id). The datasheets range in size from manageable to process in R (e.g. ~1 MB, admissions data) to impossible to use in R without running out of memory (e.g. 7.5 MB, procedure events data).
 
-From this database query, we were able to gain a clean table of demographic data for all patients who were in the ICU. Using the query, we performed exploratory analysis on the Admissions data from MIMIC. This gave us patient admit time and discharge time, along with several other demographic variables. However we wanted to dig deeper into the relationship between length of total stay in the hospital, length of stay in the ICU, and proportion of mortalities to try to predict the probability of death. This led us to focus a portion of our analysis on patient severity scores. These scores represent aggregate indices of a patient's condition when they arrive at the ICU. Ultimately we found that the SAPS-II severity score performs best. Using the SAPS-II scores, we ran a regression to obtain the probability of patient mortality. This data collection process allowed us to perform a comprehensive analysis on the MIMIC data.
+To work with large data in an independent project, it's efficient to use SQL queries. As soon as we decided that we wanted to explore physiologic data, which were located in datasheets from ~5MB to 1 GB in size, it became clear that we needed to build a local database for which we could make use of the MIT open code repository's public SQL queries that create useful views into data we would need in order to fill our goal in reproducing the mortality prediction analysis. There are many great tutorials on how to build a local Postgres database, and I followed the one published by MIMIC: the MIT researchers who built the MIMIC database also built this repository with the goal of sharing how they performed the technical analysis described in their published literature. Given the time constraints of this project, we were limited to how much we could understand how to make use of the physiologic data on our own. Therefore, MIT's Lab for Computational Physiology Github repository served as the most productive and efficient way for us to understand and analyze the MIMIC database. Following that, though, I had to troubleshoot how to integrate SQL in an R workflow. I'm going to go into some detail of how to use Postgres with RMarkdown in hopes that it will prove useful.
 
-We also used AHRQ's ICD code classification system to generate high-level classification of diagnosis for later manipulation in our interactive [Shiny webapp](https://mimicroc.shinyapps.io/severity-scores-analysis). The R code contained in diagnostic\_cat.Rmd in our project fo makes use of the Clinical Classification Software (CCS), which categorizes ICD-9 coded diagnoses into clinically meaningful groups. The categorization was developed by the Agency for Healthcare Research and Quality (AHRQ). More detail can be found on the AHRQ website: <https://www.hcup-us.ahrq.gov/tools_software.jsp>. This software contains two tables: `ccs_single_level_dx.csv.gz` and `ccs_multi_level_dx.csv.gz`. The first table contains high-level diagnostic category infomation, while the multi-level diagnostic category information contains four levels of diagnostic detail.
+### Using SQL in RMarkdown
 
-The purpose of reading in AHRQ's clinical categories is to help make diagnosis descriptions for our data more intuitive.
+``` r
+library(RPostgreSQL)
+library(tidyverse)
+```
+
+The below chunk loads your configuration settings.
+
+``` r
+# Load configuration settings
+dbdriver <- 'PostgreSQL'
+host  <- '127.0.0.1'
+port  <- '5432'
+user  <- 'postgres'
+password <- 'postgres'
+dbname <- 'mimic'
+schema <- 'mimiciii'
+# Connect to the database using the configuration settings
+con <- dbConnect(dbDriver(dbdriver), dbname = dbname, host = host, port = port, 
+                 user = user, password = password)
+# Set the default schema
+dbExecute(con, paste("SET search_path TO ", schema, sep=" "))
+```
+
+Set this database as the connection for all future sql chunks:
+
+``` r
+knitr::opts_chunk$set(connection = "con")
+```
+
+The above chunk is useful if you use knitr to generate the query by including an SQL chunk in your R Markdown. Similar to building websites, it would be necessary to "knit" in order to execute the query. For this project, I decided instead to primarily use `read_file` in order to save SQL queries as a character object then using `dbGetQuery`.
+
+``` r
+sample_view <- read_file("./database/sample.sql")
+
+#Generate materialized views
+dbGetQuery(con, sample_view)
+```
+
+The above chunk generates a "materialized view" in your Postgres database, meaning the data is sitting in your database in the right format (specified by your SQL file): you just need to grab it, by selecting all (\*) from the name of your materialized view. It's easiest to generate that in a `tidyverse` workflow by saving a query as a character object, then saving the output of your query as a tibble:
+
+``` r
+#View sapsii_data
+sample_query <- "SELECT *
+              FROM sample i;"
+sample_data <- as.tibble(dbGetQuery(con, sample_query))
+```
+
+The final step is to write a .csv to share with your group members.
+
+``` r
+write_csv(sample_data, path = "./database/sample.csv")
+```
+
+Examples of real code I used in the analysis can be seen in our [github](https://github.com/lauracosgrove/p8105_final-project) repository.
+
+From database queries, we were able to gain a few interesting views of the data. First, we were able to use SQL to pre-process timestamp data, which proved essential as we ran into issues with R's interpretation of the timestamps. Using the length of care query, we performed exploratory analysis on the Admissions data from MIMIC. After initial exploration of demographic variables' association in mortality, we wanted to compare our predictions with predictions made from physiologic data. This led us to focus a portion of our analysis on patient severity scores. These scores represent aggregate indices of a patient's condition when they arrive at the ICU. Ultimately, we found that the SAPS-II severity score performs best. Using the SAPS-II scores, we ran a regression to obtain the probability of patient mortality. This data collection process allowed us to perform a comprehensive analysis on the MIMIC data.
+
+We also used AHRQ's ICD code classification system to generate high-level classification of diagnosis for later manipulation in our interactive [Shiny webapp](https://mimicroc.shinyapps.io/severity-scores-analysis). The R code contained in diagnostic\_cat.Rmd in our project fo makes use of the Clinical Classification Software (CCS), which categorizes ICD-9 coded diagnoses into clinically meaningful groups. The categorization was developed by the Agency for Healthcare Research and Quality (AHRQ). More detail can be found on the AHRQ website: <https://www.hcup-us.ahrq.gov/tools_software.jsp>. This software contains two tables: `ccs_single_level_dx.csv.gz` and `ccs_multi_level_dx.csv.gz`. The first table contains high-level diagnostic category infomation, while the multi-level diagnostic category information contains four levels of diagnostic detail. The purpose of reading in AHRQ's clinical categories is to help make diagnosis descriptions for our data more intuitive.
 
 Initial Questions
 -----------------
@@ -76,7 +159,7 @@ The raw admissions dataset consists of 58976 observations of the following 19 va
 
 Next, we considered the association between length of total hospital stay and length of time in the ICU. As expected, we saw a positive relationship between length of total hospital stay and length of time in the ICU. However, we were surprised to see that a portion of the patients had nearly exactly proportional length of ICU stay to length of total hospital stay. In context, this means that the entirety of these patients' hospital stays were inside the ICU. There are two notable recorded points in which length of ICU stay is greater than the length of total hospital stay; this is impossible and suggest the existence of flaws in the dataset. These results are illustrated below:
 
-![](report_files/figure-markdown_github/unnamed-chunk-9-1.png)
+![](report_files/figure-markdown_github/unnamed-chunk-13-1.png)
 
 We considered whether this nearly exactly proportional relationship would be different if we filtered out newborns from the data. Subsequently, we removed newborns replotted the graph above. The resulting relationship between length of total hospital stay vs. length of stay in the ICU showed to be about the same. Therefore, we concluded that newborns did not significantly influence the overall association between length of total hospital stay and length of ICU stay.
 
@@ -84,11 +167,75 @@ Then, we calculated the ratio of length of ICU stay to length of total hospital 
 
 Next, we considered the relationship between patient demographic characteristics and this proportion. The proportion of length of ICU stay to length of total hospital stay did not show any notable results when considering insurance type, ethnicity, or marital status. However, we found an interesting association between this proportion and patient admission type, specifically according to mortality outcome. Our analysis indicated that unfortunately, nearly all newborns who spent the entirety of the their hospital stay in the ICU resulted in mortalities. In contrast, approximately 75% newborns who were eventually discharged had proportions of ICU stays less than or equal to 0.5. These results are depicted below:
 
-![](report_files/figure-markdown_github/unnamed-chunk-10-1.png)
+![](report_files/figure-markdown_github/unnamed-chunk-14-1.png)
 
-**Include top 10 diagnoses associated with death**
+From a .csv generated with code in `diagnostic_cat.Rmd`, the top 50 most common and most deadly diagnoses can be materialized with:
 
-**From rubric: Show any major changes to our ideas in this section**
+``` r
+subject_diag_cat <- read_csv("./database/subject_diag_cat.csv")
+```
+
+    ## Parsed with column specification:
+    ## cols(
+    ##   hadm_id = col_integer(),
+    ##   death_bin = col_integer(),
+    ##   admit_diagnosis = col_character(),
+    ##   icd9_code = col_character(),
+    ##   short_title = col_character(),
+    ##   category = col_character()
+    ## )
+
+``` r
+common_diagnoses <- subject_diag_cat %>% 
+  group_by(category) %>%
+  add_tally() %>% 
+  add_tally(death_bin) %>% 
+  mutate(pct_deaths = nn/n) %>% 
+  select(category, pct_deaths, n) %>% 
+  distinct(category, .keep_all = TRUE) %>% ungroup() %>%  arrange(desc(n)) %>% top_n(50)
+```
+
+    ## Selecting by n
+
+``` r
+deadly_diagnoses <- subject_diag_cat %>% 
+  group_by(category) %>%
+  add_tally() %>% 
+  add_tally(death_bin) %>% 
+  mutate(pct_deaths = nn/n) %>% 
+  select(category, pct_deaths, n) %>% 
+  distinct(category, .keep_all = TRUE) %>% ungroup() %>% arrange(desc(pct_deaths)) %>% top_n(50, wt = pct_deaths)
+
+#Top 6 for each category:
+
+common_diagnoses %>% 
+  head() %>% 
+  knitr::kable(digits = 3)
+```
+
+| category                                             |  pct\_deaths|      n|
+|:-----------------------------------------------------|------------:|------:|
+| Coronary atherosclerosis and other heart disease     |        0.084|  27196|
+| Essential hypertension                               |        0.097|  21157|
+| Congestive heart failure; nonhypertensive            |        0.131|  21113|
+| Cardiac dysrhythmias                                 |        0.140|  19683|
+| Fluid and electrolyte disorders                      |        0.185|  18645|
+| Complications of surgical procedures or medical care |        0.103|  15323|
+
+``` r
+deadly_diagnoses %>% 
+  head() %>% 
+  knitr::kable(digits = 3)
+```
+
+| category                                         |  pct\_deaths|     n|
+|:-------------------------------------------------|------------:|-----:|
+| Cardiac arrest and ventricular fibrillation      |        0.478|  1933|
+| Cystic fibrosis                                  |        0.400|     5|
+| Shock                                            |        0.388|  4468|
+| Coma; stupor; and brain damage                   |        0.347|  1202|
+| Cancer of other male genital organs              |        0.333|    15|
+| Malignant neoplasm without specification of site |        0.330|   188|
 
 Additional Analysis
 -------------------
@@ -171,7 +318,7 @@ sapsii_data %>%
 
     ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
 
-![](report_files/figure-markdown_github/unnamed-chunk-12-1.png)
+![](report_files/figure-markdown_github/unnamed-chunk-17-1.png)
 
 A note in the SQL file is the following:
 
@@ -250,7 +397,7 @@ admissions %>%
   theme_bw()
 ```
 
-![](report_files/figure-markdown_github/unnamed-chunk-13-1.png)
+![](report_files/figure-markdown_github/unnamed-chunk-18-1.png)
 
 ### Other severity scores
 
@@ -413,7 +560,7 @@ predictor_detail_data %>%
   theme_bw()
 ```
 
-![](report_files/figure-markdown_github/unnamed-chunk-17-1.png)
+![](report_files/figure-markdown_github/unnamed-chunk-22-1.png)
 
 Although the authors of the SAPS score publish a non-linear in parameters regression for association with likelihood of death, I'll fit a main-term logistic regression to obtain mortality prediction based on a linear-in-parameters assumption.
 
@@ -467,7 +614,7 @@ predictor_detail_data %>%
   theme_bw()
 ```
 
-![](report_files/figure-markdown_github/unnamed-chunk-19-1.png)
+![](report_files/figure-markdown_github/unnamed-chunk-24-1.png)
 
 We see a better fit with the mainterm logistic regression, which makes sense given that the literature value was an externally-generated prediction, while our regression is internally-generated. Keep that caveat in mind as we continue with algorithm comparison for other scores, because no direct external value exists for predictive capability of the other severity scores; rather, they're used in practive as clinical decision support rather than giving probability determination.
 
@@ -522,7 +669,7 @@ predictor_detail_data %>%
   theme_bw()
 ```
 
-![](report_files/figure-markdown_github/unnamed-chunk-21-1.png)
+![](report_files/figure-markdown_github/unnamed-chunk-26-1.png)
 
 This regression obtains a good fit, which makes sense because the probability was obtained from our data rather than a literature value.
 
@@ -816,7 +963,7 @@ We can calculate AUROC for our new model and compare against SAPSII. Note that w
        caption = "Blue is SAPSII, red is with covariates")
 ```
 
-![](report_files/figure-markdown_github/unnamed-chunk-24-1.png)
+![](report_files/figure-markdown_github/unnamed-chunk-29-1.png)
 
 What a mess! This goes to show that something that looks promising from a model diagnostics perspective may, in fact, be more complex and far less predictive in terms of individual probability values.
 
@@ -894,7 +1041,7 @@ lrtest(fit_null, fit_alt_2)
        caption = "Blue is SAPSII, red is with covariates")
 ```
 
-![](report_files/figure-markdown_github/unnamed-chunk-25-1.png)
+![](report_files/figure-markdown_github/unnamed-chunk-30-1.png)
 
 It looks like the algorithm with`admission_type` added as a covariate has far more variance on observed proportion of deaths for a given assigned probabiity of death.
 
@@ -988,7 +1135,7 @@ tibble(FPR_sapsii = roc_log_sapsii[,1], TPR_sapsii = roc_log_sapsii[,2],
   scale_color_viridis_d()
 ```
 
-![](report_files/figure-markdown_github/unnamed-chunk-26-1.png)
+![](report_files/figure-markdown_github/unnamed-chunk-31-1.png)
 
 ``` r
 tibble(score = c("sapsii", "sapsii with insurance interaction"), AUROC = c(auc(roc_log_sapsii), auc(roc_log_full))) %>% 
@@ -1007,7 +1154,7 @@ Discussion
 
 In summary, we used the MIT LCP to generate severity scores and detailed ICU data for the &gt;50,000 patients in this dataset from their chart events in the ICU. We also used AHRQ's ICD code classification system to generate high-level classification of diagnosis for later manipulation in our interactive [Shiny webapp](https://mimicroc.shinyapps.io/severity-scores-analysis). We evaluated the different severity scores first through an intuitive visualization, and then through an AUROC analysis, making use of predictions imputed in the case of SAPSII by a published literature value and, for other scores, through a mainterm logicstic regression. An AUROC analysis maximizes the ratio of true positives to false positive through every possible "cutoff" value for a continuous-probability test; i.e., if an algorithem were to classify an outcome based on different levels of probability, the false positive rate and true positive rate would change. A algorithm with good discrimination will quickly maxi the true positive rate vs. false positive rate as your threshold for classification changes. We find this type of analysis applicable to the clinical use case; given that different clinicians, programs, or systems may assign different interpretations to the same severity, a useful algorithm will quickly be "better than chance" throughout its range. Our AUROC analysis resulted in SAPSII being the most predictive severity score.
 
-Following this, we revisited an earlier question of interest-- do demographic factors affect outcomes--through two means: first, we investigated whether adding additional terms to the model improved the SAPSII prediction, through our earlier "intuitive" graph and an AUROC analysis. We found a marginal improvement in AUROC when adding an interaction term with admission type (emergency or elective), and a log-likelihood test found the additional terms added to be significant. However, our main conclusion was how quickly models are muddied in interpretability by adding additional terms, which was a useful exploration of the principle of parsimony. To close our project, we found that a less certain, but more visualization-rich would be a useful addition to this research question, and we created a [Shiny dashboard](https://mimicroc.shinyapps.io/severity-scores-analysis) wherein users can explore the effect of different diagnoses (from the top 50 most common diagnostic categories), insurance types, and age on observed deaths and the ROC curves for the severity scores. (N.b.: this also serves as an exploration of how sample size affects evaluation of algorithms).
+Following this, we revisited an earlier question of interest-- do demographic factors affect outcomes--through two means: first, we investigated whether adding additional terms to the model improved the SAPSII prediction, through our earlier "intuitive" graph and an AUROC analysis. We found a marginal improvement in AUROC when adding an interaction term with admission type (emergency or elective), and a log-likelihood test found the additional terms added to be significant. However, our main conclusion was how quickly models are muddied in interpretability by adding additional terms, which was a useful exploration of the principle of parsimony. To close our project, we found that a less certain, but more visualization-rich analysis would be a useful addition to this research question, and we created a [Shiny dashboard](https://mimicroc.shinyapps.io/severity-scores-analysis) wherein users can explore the effect of different diagnoses (from the top 50 most common diagnostic categories), insurance types, and age on observed deaths and the ROC curves for the severity scores. (N.b.: this also serves as an exploration of how sample size affects evaluation of algorithms).
 
 Conclusion
 ----------

@@ -175,8 +175,6 @@ oasis_query <- "SELECT *
 oasis_data <- as.tibble(dbGetQuery(con, oasis_query))
 ```
 
-Plot curves for all other scores
-
 ### Analysis with admissions data
 
 ```{r cache = TRUE}
