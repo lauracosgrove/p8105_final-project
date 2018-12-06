@@ -312,7 +312,7 @@ deadly_diagnoses %>%
 
 ## Additional Analysis
 
-It's necessary to have a working copy of a Postgres MIMIC database in order to execute the additional analysis. The working code is reproduced here:
+It's necessary to have a working copy of a Postgres MIMIC database in order to execute the database queries for the additional analysis, but I'll write and reread the CSVs in this document so that the knitting works for those who don't set up the database. The working code is reproduced here:
 
 ### Database Setup
 ```{r dbconnect, message = FALSE}
@@ -373,7 +373,7 @@ dbGetQuery(con, sapsii_view)
 ```
 
 
-```{r view, include = FALSE}
+```{r view}
 #View sapsii_data
 sapsii_query <- "SELECT *
               FROM sapsii i;"
@@ -406,6 +406,7 @@ admissions <- read_csv("./database/data/ADMISSIONS.csv.gz") %>%
   janitor::clean_names()
 patients <- read_csv("./database/data/PATIENTS.csv.gz") %>% 
   janitor::clean_names()
+sapsii_data <- read_csv("./database/sapsii.csv")
 admissions %>% 
   inner_join(., patients, by = "subject_id") %>% 
   filter(has_chartevents_data == 1) %>% 
@@ -430,7 +431,7 @@ We see that more patients fall into the mid-range for SAPS II scores, and that t
 
 ### Other severity scores
 
-(Note: must run document once before knitting, but eval is set to false so the views aren't re-loaded every time you knit.)
+(Note: if you have a working local copy of the database, you must run document once before knitting, but eval should be set to false so the views aren't re-loaded every time you knit.)
 ```{r, eval = FALSE, message = FALSE}
 sofa_view <- read_file("./database/mimic-code/concepts/severityscores/sofa.sql")
 lods_view <- read_file("./database/mimic-code/concepts/severityscores/lods.sql")
@@ -455,32 +456,54 @@ dbGetQuery(con, oasis_view)
 
 As before, read all the data from the generated materialized views into tibbles:
 
-```{r, include = FALSE, message = FALSE}
+```{r, include = FALSE, message = FALSE, eval = FALSE}
 #SOFA
 sofa_query <- "SELECT *
               FROM sofa i;"
 sofa_data <- as.tibble(dbGetQuery(con, sofa_query))
+write_csv(sofa_data, path = "./database/sofa.csv")
+
 #LODS
 lods_query <- "SELECT *
               FROM lods i;"
 lods_data <- as.tibble(dbGetQuery(con, lods_query))
+write_csv(lods_data, path = "./database/lods.csv")
+
 #SAPS
 saps_query <- "SELECT *
               FROM saps i;"
 saps_data <- as.tibble(dbGetQuery(con, saps_query))
+write_csv(saps_data, path = "./database/saps.csv")
+
 # APSIII  
 apsiii_query <- "SELECT *
               FROM apsiii i;"
 apsiii_data <- as.tibble(dbGetQuery(con, apsiii_query))
+write_csv(apsiii_data, path = "./database/apsiii.csv")
+
 #OASIS
 oasis_query <- "SELECT *
               FROM oasis i;"
 oasis_data <- as.tibble(dbGetQuery(con, oasis_query))
+write_csv(oasis_data, path = "./database/oasis.csv")
+
 ```
+
+Loading data from local copy:
+
+```{r, message = FALSE}
+sapsii_data <- read_csv("./database/sapsii.csv")
+sofa_data <- read_csv("./database/sofa.csv")
+saps_data <- read_csv("./database/saps.csv")
+lods_data <- read_csv("./database/lods.csv")
+apsiii_data <- read_csv("./database/apsiii.csv")
+oasis_data <- read_csv("./database/oasis.csv")
+```
+
 
 ### Analysis with admissions data
 
-```{r cache = TRUE, message=FALSE}
+```{r message=FALSE}
 #ICU detail is demographic data with length of stay: an improved version of the admssions dataset
 icu_detail <- read_csv("./database/icu_detail.csv") %>% 
   janitor::clean_names()

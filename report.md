@@ -199,7 +199,7 @@ From a .csv generated with code in `diagnostic_cat.Rmd`, the top 50 most common 
 Additional Analysis
 -------------------
 
-It's necessary to have a working copy of a Postgres MIMIC database in order to execute the additional analysis. The working code is reproduced here:
+It's necessary to have a working copy of a Postgres MIMIC database in order to execute the database queries for the additional analysis, but I'll write and reread the CSVs in this document so that the knitting works for those who don't set up the database. The working code is reproduced here:
 
 ### Database Setup
 
@@ -261,6 +261,14 @@ dbGetQuery(con, bloodgasarterial_view)
 dbGetQuery(con, sapsii_view)
 ```
 
+``` r
+#View sapsii_data
+sapsii_query <- "SELECT *
+              FROM sapsii i;"
+sapsii_data <- as.tibble(dbGetQuery(con, sapsii_query))
+write_csv(sapsii_data, path = "./database/sapsii.csv")
+```
+
 A note in the SQL file is the following:
 
 Note:
@@ -279,7 +287,7 @@ We see that more patients fall into the mid-range for SAPS II scores, and that t
 
 ### Other severity scores
 
-(Note: must run document once before knitting, but eval is set to false so the views aren't re-loaded every time you knit.)
+(Note: if you have a working local copy of the database, you must run document once before knitting, but eval should be set to false so the views aren't re-loaded every time you knit.)
 
 ``` r
 sofa_view <- read_file("./database/mimic-code/concepts/severityscores/sofa.sql")
@@ -304,6 +312,17 @@ dbGetQuery(con, oasis_view)
 ```
 
 As before, read all the data from the generated materialized views into tibbles:
+
+Loading data from local copy:
+
+``` r
+sapsii_data <- read_csv("./database/sapsii.csv")
+sofa_data <- read_csv("./database/sofa.csv")
+saps_data <- read_csv("./database/saps.csv")
+lods_data <- read_csv("./database/lods.csv")
+apsiii_data <- read_csv("./database/apsiii.csv")
+oasis_data <- read_csv("./database/oasis.csv")
+```
 
 ### Analysis with admissions data
 
@@ -359,7 +378,7 @@ A mortality prediction algorithm is said to have adequate discrimination if it t
 
 Because I suspect I may want the information to do subgroup analyses, I'm going to start by using the large datasheet from the `predictor_detail_data`.
 
-![](report_files/figure-markdown_github/unnamed-chunk-22-1.png)
+![](report_files/figure-markdown_github/unnamed-chunk-23-1.png)
 
 We see that the SAPSII predicted values from the authored regression is more aggressive in assigning likelihood of mortaility, based on the observed true mortality fraction from those patients with the SAPSII score. Although the authors of the SAPS score publish a non-linear in parameters regression for association with likelihood of death, I'll fit a main-term logistic regression to obtain mortality prediction based on a linear-in-parameters assumption.
 
@@ -379,7 +398,7 @@ The regression fits a parameter estimate of log(\[pr(death)\]\[1 - pr(death)\]) 
 
 I'll refit the plot based on the mainterm regression:
 
-![](report_files/figure-markdown_github/unnamed-chunk-24-1.png)
+![](report_files/figure-markdown_github/unnamed-chunk-25-1.png)
 
 We see a better fit with the mainterm logistic regression, which makes sense given that the literature value was an externally-generated prediction, while our regression is internally-generated. Keep that caveat in mind as we continue with algorithm comparison for other scores, because no direct external value exists for predictive capability of the other severity scores; rather, they're used in practive as clinical decision support rather than giving probability determination.
 
@@ -609,7 +628,7 @@ Our tests show a significant increase in log-likelihood for the alternative, lar
 
 We can calculate AUROC for our new model and compare against SAPSII. Note that we will be missing some values we previously had.
 
-![](report_files/figure-markdown_github/unnamed-chunk-29-1.png)
+![](report_files/figure-markdown_github/unnamed-chunk-30-1.png)
 
 What a mess! This goes to show that something that looks promising from a model diagnostics perspective may, in fact, be more complex and far less predictive in terms of individual probability values.
 
@@ -662,7 +681,7 @@ lrtest(fit_null, fit_alt_2)
 ##Significant result for the fuller model
 ```
 
-![](report_files/figure-markdown_github/unnamed-chunk-31-1.png)
+![](report_files/figure-markdown_github/unnamed-chunk-32-1.png)
 
 It looks like the algorithm with `admission_type` added as a covariate has far more variance on observed proportion of deaths for a given assigned probabiity of death.
 
@@ -704,11 +723,11 @@ lrtest(fit_null, fit_alt_3)
 ##Another significant result
 ```
 
-![](report_files/figure-markdown_github/unnamed-chunk-32-1.png)
+![](report_files/figure-markdown_github/unnamed-chunk-33-1.png)
 
 We see a significant result adding insurance coverage as an interaction term in favor of the full model, and we see a similar decreased biased (but increased variance) in the probability graph. For this hypothesis, I'll create an ROC curve.
 
-![](report_files/figure-markdown_github/unnamed-chunk-33-1.png)
+![](report_files/figure-markdown_github/unnamed-chunk-34-1.png)
 
 | score                             |      AUROC|
 |:----------------------------------|----------:|
