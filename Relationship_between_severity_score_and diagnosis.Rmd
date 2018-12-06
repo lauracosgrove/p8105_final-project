@@ -4,4 +4,69 @@ author: "Francis"
 date: "12/5/2018"
 output: github_document
 ---
+Merge diagnosis type
 
+```{r}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+library(RPostgreSQL)
+library(tidyverse)
+library(dbplyr)
+```
+
+
+```{r}
+subject_diag_cat <- read_csv("./database/data/subject_diag_cat.csv") %>% 
+  as.tibble()
+severity_score <- read_csv("./database/data/all_severity_scores.csv") %>% 
+  as.tibble()
+```
+
+
+
+
+
+
+
+
+
+Merge
+```{r}
+severity_diag_cat <-
+  inner_join(subject_diag_cat, severity_score, by="hadm_id") %>% 
+  as.data.frame()
+```
+
+```{r}
+#table(unlist(severity_diag_cat)) %>% 
+#  knitr::kable()
+```
+
+Relationship
+
+
+```{r}
+severity_diag_cat_top <- 
+  severity_diag_cat %>% 
+  group_by(category) %>% 
+  add_tally() %>% 
+  top_n(50)
+```
+
+
+
+
+
+```{r}
+severity_diag_cat_top %>% 
+ggplot(aes(x = category, y = sapsii)) +
+  geom_point()
+```
+
+The distribution of diagnosis category
+```{r}
+
+ggplot(data = subject_diag_cat_top, aes(x = category)) + 
+  geom_histogram()
+
+```
