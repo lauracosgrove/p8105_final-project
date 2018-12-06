@@ -17,7 +17,7 @@ library(modelr)
 predictor_detail_data_tidy <- read_csv("./database/predictor_detail_data_tidy.csv")
 subject_diag_cat <- read_csv("./database/subject_diag_cat.csv")
 
-common_diagnoses <- subject_diag_cat %>% group_by(category) %>% add_tally %>% select(category, n) %>% arrange(desc(n)) %>% distinct(category, .keep_all = TRUE) %>% ungroup() %>%  top_n(50)
+common_diagnoses <- subject_diag_cat %>% group_by(category) %>% add_tally %>% select(category, n) %>% distinct(category, .keep_all = TRUE) %>% ungroup() %>%  top_n(50)
 
 ```
 
