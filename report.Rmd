@@ -980,4 +980,9 @@ Following this, we revisited an earlier question of interest-- do demographic fa
 
 ## Conclusion
 
+We found that physiologic severity scores were reasonably effective algorithmic predictors of death for critical care patients in the ICU. We also found that demographic additions to the severity scores did not improve our predictions meaningfully.
+
+Future directions could subgroup patients by demographic in order to determine which severity score should be used for mortality prediction, if there is a significant difference. We began to explore this opportunity with our Shiny visualization, but did not do rigorous inference for the research question.
+
+The MIMIC database is rich with opportunity for analysis. We are interested in exploring medication-related factors of adverse events and death, which could be approached by combining the medications table with the chartevents table. To answer this question, we'll need to know more about how chart events are coded in order to process medication-related adverse events.
 
